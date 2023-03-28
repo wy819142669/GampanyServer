@@ -1,0 +1,4 @@
+repository "SandTableClient@unity_xv5scgh3ct@cloud.cn"
+  path "/"
+    br "/main"
+    co "/main"
