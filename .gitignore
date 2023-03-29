@@ -3,3 +3,4 @@ SandTableClient/Library/*
 *.meta
 SandTableClient/.vs
 SandTableClient/Temp/
+*.pid

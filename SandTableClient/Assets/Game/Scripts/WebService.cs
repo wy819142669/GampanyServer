@@ -41,7 +41,7 @@ public class WebService : MonoBehaviour
             Debug.LogErrorFormat("asycWebRequet failed: network error {0}", www.error);
             yield break;
         }
-        System.Threading.Thread.Sleep(1000);    
+
         string body = www.text;
         www.Dispose();
 
