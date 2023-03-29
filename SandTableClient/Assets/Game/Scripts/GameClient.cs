@@ -31,7 +31,7 @@ public class GameClient : MonoBehaviour
 
         if (_webservice == null)
         {
-            _webservice = new WebService();
+            _webservice = gameObject.AddComponent<WebService>();
         }
 
         if (_LuaEnv == null)
