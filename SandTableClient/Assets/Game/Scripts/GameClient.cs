@@ -19,7 +19,7 @@ public class GameClient : MonoBehaviour
     public static GameClient _Instance { get; private set; } = null;
     public static int _InitPercent = 0;
     public static XLua.LuaEnv _LuaEnv = null;
-    private static WebService _webservice = null;
+    public static WebService webservice = null;
     
 
     void Awake()
@@ -28,12 +28,6 @@ public class GameClient : MonoBehaviour
 
     void Start()
     {
-
-        if (_webservice == null)
-        {
-            _webservice = gameObject.AddComponent<WebService>();
-        }
-
         if (_LuaEnv == null)
         {
             _LuaEnv = new XLua.LuaEnv();
@@ -128,8 +122,8 @@ public class GameClient : MonoBehaviour
 
     static public int PostWebRequest(string url, string bodyjson)
     {
-        UnityEngine.Debug.LogError(string.Format("PostWebRequest={0}", _webservice.GetCurRequestId()));
-        return _webservice.WebRequest(url, bodyjson);
+        UnityEngine.Debug.LogError(string.Format("PostWebRequest={0}", webservice.GetCurRequestId()));
+        return webservice.WebRequest(url, bodyjson);
     }
 
 }
