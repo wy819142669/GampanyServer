@@ -21,7 +21,7 @@ func main() {
 	LoadLua()
 	defer g_L.Close()
 
-	pidF := NewPidF("game_server.pid")
+	pidF := NewPidF("SandTableServer.pid")
 	defer pidF.Close()
 
 	g_L.SetGlobal("RemoteToClient", g_L.NewFunction(RemoteToClient))
