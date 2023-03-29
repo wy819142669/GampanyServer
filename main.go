@@ -12,7 +12,6 @@ import (
 
 	//"runtime"
 	"syscall"
-
 )
 
 var g_L *lua.LState
@@ -21,6 +20,9 @@ var mutex sync.Mutex
 func main() {
 	LoadLua()
 	defer g_L.Close()
+
+	pidF := NewPidF("game_server.pid")
+	defer pidF.Close()
 
 	g_L.SetGlobal("RemoteToClient", g_L.NewFunction(RemoteToClient))
 
