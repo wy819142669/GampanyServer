@@ -3,3 +3,5 @@ SandTableClient/Library/*
 *.meta
 SandTableClient/.vs
 SandTableClient/Temp/
+SandTableClient/obj/
+pidf.go
