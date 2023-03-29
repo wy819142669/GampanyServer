@@ -14,7 +14,9 @@ public class GameStart : MonoBehaviour
         UnityEngine.Debug.LogError("Start");
         GameObject clientObject = new GameObject("GameClient");
         GameObject.DontDestroyOnLoad(clientObject);
-        clientObject.AddComponent<GameClient>();
+        var web = clientObject.AddComponent<WebService>();
+        var game = clientObject.AddComponent<GameClient>();
+        GameClient.webservice = web;
     }
 
     // Update is called once per frame
