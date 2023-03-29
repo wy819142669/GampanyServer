@@ -1,14 +1,18 @@
 -- local cjson = require "luascript/cjson"
 
 require("luascript/Ui.lua")
+require("luascript/Json.lua")
+require("luascript/lib.lua")
+Log=print
+LogErr=print
+LogWarn=print
 
 
 Client = {}
 Client.GameClient = CS.GameClient
 function Client:OnClientStartUp(nParam)
     print("Client:OnClientStartUp()!!", nParam)
-    -- self:DoRequestWeb("http://8.219.208.117:13134/reload", {a = 1, b = 2})
-    self:DoRequestWeb("http://8.219.208.117:13134/reload", "{\"aaa\":1111, \"bbb\":222}")
+    self:DoRequestWeb("http://8.219.208.117:13134/reload", {a = 1, b = 2})
 end
 
 function Client:OnUpdate(nParam)
@@ -17,14 +21,14 @@ end
 
 
 function Client:DoRequestWeb(szUrl, tbBody)
-    local szBody = ""
-    -- local szBody = cjson.encode(tbBody)
-    local nRequestId = self.GameClient.PostWebRequest(szUrl, tbBody)
+    local szBody = JsonEncode(tbBody)
+    local nRequestId = self.GameClient.PostWebRequest(szUrl, szBody)
     print("Client:DoRequestWeb()!!", szUrl, szBody, nRequestId)
 end
 
 function Client:OnWebRespond(szBody)
-    -- local tbBody = cjson.decode(szBody)
+    local tbBody = JsonDecode(szBody)
+    Lib:ShowTB(tbBody)
     print("Client:OnWebRespond()!!", szBody)
 end
 
