@@ -1,5 +1,6 @@
 *.log
-SandTableClient/Library/*
+SandTableClient/Library
 *.meta
-SandTableClient/.vs
+SandTableClient/\.vs
 SandTableClient/Temp/
+SandTableClient/obj/Debug
