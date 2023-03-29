@@ -1,0 +1,4 @@
+*.log
+SandTableClient/Library/*
+*.meta
+SandTableClient/.vs
