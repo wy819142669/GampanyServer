@@ -55,8 +55,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Game\Scripts\BaseLoader.cs" />
+     <Compile Include="Assets\Game\Scripts\EmojiText.cs" />
      <Compile Include="Assets\Game\Scripts\GameClient.cs" />
+     <Compile Include="Assets\Game\Scripts\GameEnv.cs" />
      <Compile Include="Assets\Game\Scripts\GameStart.cs" />
+     <Compile Include="Assets\Game\Scripts\LoaderManager.cs" />
+     <Compile Include="Assets\Game\Scripts\PrefabAnchor.cs" />
+     <Compile Include="Assets\Game\Scripts\ResourceDef.cs" />
+     <Compile Include="Assets\Game\Scripts\UIAnimation.cs" />
+     <Compile Include="Assets\Game\Scripts\UIDoubleClick.cs" />
+     <Compile Include="Assets\Game\Scripts\UILongPressEnd.cs" />
+     <Compile Include="Assets\Game\Scripts\UIModule.cs" />
+     <Compile Include="Assets\Game\Scripts\UIPanel.cs" />
+     <Compile Include="Assets\Game\Scripts\UIView.cs" />
      <Compile Include="Assets\Game\Scripts\WebService.cs" />
      <Compile Include="Assets\XLua\Examples\01_Helloworld\Helloworld.cs" />
      <Compile Include="Assets\XLua\Examples\02_U3DScripting\LuaBehaviour.cs" />

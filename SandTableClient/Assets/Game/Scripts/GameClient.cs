@@ -128,7 +128,7 @@ public class GameClient : MonoBehaviour
 
     static public int PostWebRequest(string url, string bodyjson)
     {
-        UnityEngine.Debug.LogError(string.Format("PostWebRequest={0}", _webservice.GetRequestId()));
+        UnityEngine.Debug.LogError(string.Format("PostWebRequest={0}", _webservice.GetCurRequestId()));
         return _webservice.WebRequest(url, bodyjson);
     }
 

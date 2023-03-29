@@ -2,6 +2,7 @@
 
 require("luascript/Ui.lua")
 
+
 Client = {}
 Client.GameClient = CS.GameClient
 function Client:OnClientStartUp(nParam)

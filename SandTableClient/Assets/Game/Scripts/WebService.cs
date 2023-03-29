@@ -20,7 +20,7 @@ public class WebService : MonoBehaviour
         
     }
 
-    public int GetRequestId()
+    public int GetCurRequestId()
     { 
         return _requestID;
     }
@@ -28,24 +28,24 @@ public class WebService : MonoBehaviour
 
     public int WebRequest(string url, string body)
     {
-        asycWebRequet(url, body, _requestID);
+        StartCoroutine(asycWebRequet(url, body, _requestID));
         return _requestID++;
     }
 
-    public void asycWebRequet(string url, string param, int requestID)
+    IEnumerator asycWebRequet(string url, string param, int requestID)
     {
         WWW www = new WWW(url, Encoding.UTF8.GetBytes(param));
-        //yield return www;
+        yield return www;
         if (!String.IsNullOrEmpty(www.error))
         {
             Debug.LogErrorFormat("asycWebRequet failed: network error {0}", www.error);
-            //yield break;
+            yield break;
         }
         System.Threading.Thread.Sleep(1000);    
         string body = www.text;
         www.Dispose();
 
-        // Debug.Log(body);
+        //Debug.Log(body);
         GameClient.CallLua("Client:OnWebRespond", body);
     }
 }
