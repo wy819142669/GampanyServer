@@ -11,8 +11,10 @@ function Reload(jsonParam)
     --jsonParam = '{"x":1, "y":2}'
     local tbParam = JsonDecode(jsonParam)
     print(type(tbParam))
+    tbParam = tbParam or {}
+    tbParam.result = "reload success!"
     print(JsonEncode(tbParam))
-    return "reload success!" .. JsonEncode(tbParam)
+    return JsonEncode(tbParam)
 end
 
 function Action(jsonParam)
