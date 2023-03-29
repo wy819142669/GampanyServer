@@ -19,7 +19,7 @@ type service struct {
 func Start(port int32) error {
 	http.HandleFunc("/reload", doReload)
 	http.HandleFunc("/query", doQuery)
-	http.HandleFunc("/doAction", doAction)
+	http.HandleFunc("/action", doAction)
 
 	address := fmt.Sprintf(":%v", port)
 	err := http.ListenAndServe(address, nil)
