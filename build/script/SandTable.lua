@@ -8,8 +8,37 @@ local tbRuntimeData = {
     tbAccount = {},
     tbUser = {
         default = {
+            -- 预研
             tbResearch = { d = { manpower = 20, leftPoint = 20 }, e = { manpower = 30, leftPoint = 30 } },
-            tbProject = {},
+            -- 产品
+            tbProject = {
+                a1 = { manpower = 0, progress = 0, market = { 1, 2, 3 } },
+                a2 = {},
+                b1 = {},
+                b2 = {},
+                d1 = {},
+                d2 = {},
+                e1 = {},
+                e2 = {},
+            },
+            -- 待岗
+            nIdleManpower = 0,
+            -- 代收款
+            tbReceivables = {0, 0, 0, 0},
+            -- 现金
+            nCash = 0,
+            -- 追加市场费
+            nAppendMarketCost = 0,
+            -- 税收
+            nTax = 0,
+            -- 市场营销费
+            nMarketingExpense = 0,
+            -- 总人力
+            nTotalManpower = 0,
+            -- 招聘、解雇费用
+            nSeverancePackage = 0,
+            -- 薪水
+            tbLaborCost = {0, 0, 0, 0}
         }
     }
 }
@@ -20,7 +49,7 @@ local tbConfig = {
         { desc = "市场竞标，抢订单", },
         { desc = "招聘并支付费用", },
     },
-    tbMaxStepPerSeason = {
+    tbStepPerSeason = {
         { desc = "产品上线，额外市场上线", },
         { desc = "临时招聘、解聘，支付临时招聘和解聘费用", },
         { desc = "现有人力资源调整（选初始市场立项、产品线调整人力、预研人力投入）", },
@@ -31,8 +60,23 @@ local tbConfig = {
         { desc = "市场竞标，抢订单", },
         { desc = "招聘并支付费用", },
     },
-    tbEndStepPerYear = 3,
+    tbEndStepPerYear = {
+        { desc = "海外市场自动开放", },
+        { desc = "结算已抢但未完成的订单罚款（50%订单金额）", },
+        { desc = "结清账务（填损益表、负债表）", },
+    },
+    tbProduct = {
+        a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, },
+
+    },
+    tbResearch = {
+        d = { manpower = 20, totalPoint = 20 },
+        e = { manpower = 30, totalPoint = 30 },
+    },
+    nInitialCash = 120,
 }
+
+local tbFunc = {}
 
 function Reload(jsonParam)
     print("[lua] reload")
@@ -80,22 +124,44 @@ function Query(jsonParam)
 end
 
 
+
+
+function QueryTest(tbParam)
+
+    return "success"
+end
+
+function ActionLogin(tbParam)
+
+    return "success"
+end
+
 function ActionNewGame(tbParam)
 
+    return "success"
 end
 
 function ActionNextStep(tbParam)
 
+    return "success"
 end
 
 function ActionNextSeason(tbParam)
 
+    return "success"
 end
 
-local tbFunc = {
-    Query = {},
-    Action = { NewGame = ActionNewGame, NextStep = ActionNextStep, NextSeason = ActionNextSeason },
-    Reload = {},
+tbFunc.Query = {
+    Test = QueryTest,
+}
+tbFunc.Action = {
+    Login = ActionLogin,
+    NewGame = ActionNewGame,
+    NextStep = ActionNextStep,
+    NextSeason = ActionNextSeason
+}
+tbFunc.Reload = {
+
 }
 
 print("load success")
