@@ -6,8 +6,13 @@ require("Json")
 
 local tbRuntimeData = {
     tbAccount = {},
+    nCurYear = 1,
     tbUser = {
         default = {
+            nCurYearStep = 4,
+            nCurSeason = 1,
+            nCurSeasonStep = 1,
+            szTitle = "",
             -- 预研
             tbResearch = { d = { manpower = 20, leftPoint = 20 }, e = { manpower = 30, leftPoint = 30 } },
             -- 产品
