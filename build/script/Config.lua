@@ -7,8 +7,8 @@ tbConfig = {
     nFireCost = 8, -- 解雇 薪水*4
     nSalary = 2, -- 薪水
     tbBeginStepPerYear = {
-        { desc = "支付税款", mustDone = true, },
-        { desc = "市场竞标，抢订单", mustDone = true, },
+        { desc = "支付税款", mustDone = true, syncNextStep = true, },
+        { desc = "市场竞标，抢订单", mustDone = true, syncNextStep = true, finalAction = "SettleOrder"},
         { desc = "招聘并支付费用", },
     },
     tbStepPerSeason = {
@@ -26,7 +26,8 @@ tbConfig = {
     tbEndStepPerYear = {
         { desc = "海外市场自动开放", },
         { desc = "结算已抢但未完成的订单罚款（50%订单金额）", },
-        { desc = "结清账务（填损益表、负债表）", },
+        { desc = "结清账务（填损益表、负债表）", syncNextStep = true, },
+        { desc = "排名总结", syncNextStep = true, }
     },
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },

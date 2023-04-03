@@ -18,7 +18,15 @@ function table.contain_value(tb, value)
 	end
 	return false
 end
-
+-- 获取table中元素的个数
+function table.get_len(t)
+	if not t then return 0 end
+	local nLen = 0
+	for _, _ in pairs(t) do
+		nLen = nLen + 1
+	end
+	return nLen
+end
 Lib = Lib or {}
 --Table的拷贝
 function Lib.copyTab(st)

@@ -14,10 +14,14 @@ local tbRuntimeData = {
     tbLoginAccount = {
         -- "王" = 4151234,
     }, -- 已登录账号
-    tbPlayAccount = {}, -- 参加游戏账号
+    nReadyNextStepCount = 0,
     -- 当前年份
     nCurYear = 1,
     nCurYearStep = 1,
+    tbCutdownProduct = {
+        -- a1 = true,
+        -- b1 = true,
+    },
     tbUser = {
         --[[default = {
             -- 当前年步骤
@@ -28,6 +32,8 @@ local tbRuntimeData = {
             nCurSeasonStep = 1,
             -- 当前步骤已经操作完，防止重复操作
             bStepDone = false,
+            -- 等待下一步
+            bReadyNextStep = false,
             -- 提示
             szTitle = "",
             -- 市场营销投入
@@ -49,6 +55,10 @@ local tbRuntimeData = {
                 e1 = {},
                 e2 = {},
             },
+            -- 订单
+            tbOrder = {
+                a1 = {{ cfg = {}, done = false}, {cfg = {}, done = true}}
+            }
             -- 待岗
             nIdleManpower = 0,
             -- 代收款
@@ -179,7 +189,6 @@ function tbFunc.Action.DoStart(tbParam)
     tbRuntimeData.nDataVersion = 1
     tbRuntimeData.tbRuntimeData.nCurYear = 1
     tbRuntimeData.nCurYearStep = 1
-    tbRuntimeData.tbPlayAccount = tbParam.tbAccount
     tbRuntimeData.nGameID = tbRuntimeData.nGameID + 1
     tbRuntimeData.bPlaying = true
     return "success", true
@@ -188,31 +197,170 @@ end
 -- 重置 {FuncName = "DoReset"}
 function tbFunc.Action.DoReset(tbParam)
     tbRuntimeData.nDataVersion = 0
-    tbRuntimeData.tbPlayAccount = {}
     tbRuntimeData.tbRuntimeData.nCurYear = 1
     tbRuntimeData.nCurYearStep = 1
     tbRuntimeData.tbRuntimeData.tbUser = {}
+    tbRuntimeData.tbRuntimeData.tbLoginAccount = {}
+    tbRuntimeData.tbCutdownProduct = {}
     tbRuntimeData.bPlaying = false
     return "success", true
-end
-
-function tbFunc.Action.DoReset()
-    
 end
 
 function tbFunc.Action.DoOperate(tbParam)
     return tbFunc.Action.funcDoOperate[tbParam.OperateType](tbParam)
 end
 
+tbFunc.finalAction = {}
+
+function tbFunc.finalAction.SettleOrder()
+    --[[
+        tbOrder = { -- 订单cfg
+        [1] =  {  -- Y1
+            a1 = {
+                { n = 4, arpu = 6.6}, { n = 3, arpu = 6.3 }, { n = 2, arpu = 6 }, { n = 2, arpu = 5.7 }, -- 国内
+                {}, -- 日韩
+                {}, -- 欧美
+            },
+
+        tbOrder = {
+            a1 = {{ cfg = {}, done = false}, {cfg = {}, done = true}}
+        }
+
+    ]]
+
+    local tbOrderCfg = tbConfig.tbOrder[tbRuntimeData.nCurYear]
+    for productName, tbMarketOrder in pairs(tbOrderCfg) do
+        for marketIndex, tbOrderList in ipairs(tbMarketOrder) do
+            local sortedUserList = {}
+            local nExpenseCount = 0
+            for userName, tbUser in pairs(tbRuntimeData.tbUser) do
+                if tbUser.tbMarketingExpense[productName] then
+                    table.insert(sortedUserList, {
+                        user = userName,
+                        count = tbUser.tbMarketingExpense[productName][marketIndex] or 0
+                    })
+
+                    if tbUser.tbMarketingExpense[productName][marketIndex] then
+                        nExpenseCount = nExpenseCount + tbUser.tbMarketingExpense[productName][marketIndex] or 0
+                    end
+                end
+            end
+
+            table.sort(sortedUserList, function (x, y)
+                return x.count > y.count
+            end)
+
+            local nIndex = 1
+            for _, tbOrder in ipairs(tbOrderList) do
+                if nExpenseCount == 0 then break end
+
+                if sortedUserList[nIndex].count == 0 then
+                    nIndex = 1
+                end
+
+                local tbUser = tbRuntimeData.tbUser[sortedUserList[nIndex].user]
+                table.insert(tbUser.tbOrder[productName], {cfg = tbOrder, done = false})
+                nExpenseCount = nExpenseCount - 1
+                nIndex = nIndex + 1
+            end
+        end
+    end
+end
+
 tbFunc.Action.funcDoOperate = {}
--- 下一步 推进进度 {FuncName = "DoOperate", OperateType = "NextStep"}
+-- 下一步 推进进度 {FuncName = "DoOperate", OperateType = "NextStep"}   -- 考虑校验当前Step，防止点了2次Step
 function tbFunc.Action.funcDoOperate.NextStep(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    local tbStepCfg = {}
+    if tbUser.nCurYearStep == #tbConfig.tbBeginStepPerYear + 1 then
+        tbStepCfg = tbConfig.tbStepPerSeason[tbUser.nCurSeasonStep]
+    elseif tbUser.nCurYearStep <= #tbConfig.tbBeginStepPerYear then
+        tbStepCfg = tbConfig.tbBeginStepPerYear[tbUser.nCurYearStep]
+    else
+        tbStepCfg = tbConfig.tbEndStepPerYear[tbUser.nCurYearStep]
+    end
+
+    if tbStepCfg.mustDone and not tbUser.bStepDone then
+        return "must done step", true
+    end
+
+    if tbUser.bReadyNextStep then
+        return "waitting others", true
+    end
+
+    local bSeasonEnd = false
+    if tbUser.nCurYearStep == #tbConfig.tbBeginStepPerYear + 1 then  -- 处理季度
+        if tbUser.nCurSeasonStep == #tbConfig.tbStepPerSeason then
+            if tbUser.nCurSeason < 4 then -- 跨季度
+                tbUser.nCurSeason = tbUser.nCurSeason + 1
+                tbUser.nCurSeasonStep = 1
+            else
+                bSeasonEnd = true
+                tbUser.nCurSeasonStep = 1
+            end
+        else
+            tbUser.nCurSeasonStep = tbUser.nCurSeasonStep + 1
+        end
+    else
+        if tbStepCfg.syncNextStep then
+            tbUser.bReadyNextStep = true
+            tbRuntimeData.nReadyNextStepCount = tbRuntimeData.nReadyNextStepCount + 1
+            checkAllNextStep(tbStepCfg)
+            return "success", true
+        else
+            tbUser.nCurYearStep = tbUser.nCurYearStep + 1
+        end
+    end
+
+    if tbStepCfg.finalAction then
+        tbFunc.finalAction[tbStepCfg.finalAction]()
+    end
 
     for _, v in pairs(tbUser.tbProduct) do
         v.done = false
     end
     tbUser.bStepDone = false
+    tbUser.bReadyNextStep = false
+    if bSeasonEnd then
+        tbUser.nCurYearStep = tbUser.nCurYearStep + 1
+    end
+    return "success", true
+end
+
+function checkAllNextStep(tbStepCfg)
+    if tbRuntimeData.nReadyNextStepCount ~= table.get_len(tbRuntimeData.tbLoginAccount) then
+        return
+    end
+
+    local bNewYear = false
+
+    if tbStepCfg.finalAction then
+        tbFunc.finalAction[tbStepCfg.finalAction]()
+    end
+
+    tbRuntimeData.nCurYearStep = tbRuntimeData.nCurYearStep + 1
+    tbRuntimeData.nReadyNextStepCount = 0
+    if tbRuntimeData.nCurYearStep > #tbConfig.tbBeginStepPerYear + 1 + #tbConfig.tbEndStepPerYear then
+        tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
+        tbRuntimeData.nCurYearStep = 1
+        bNewYear = true
+    end
+
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        for _, v in pairs(tbUser.tbProduct) do
+            v.done = false
+        end
+        tbUser.bStepDone = false
+        tbUser.bReadyNextStep = false
+        tbUser.nCurYearStep = tbUser.nCurYearStep + 1
+
+        if bNewYear then
+            tbUser.nCurYearStep = 1
+            tbUser.nCurSeason = 1
+            tbUser.tbOrder = {}
+        end
+    end
+
     return "success", true
 end
 
@@ -293,6 +441,13 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
         tbProduct.manpower = tbProduct.manpower - moveNum
         tbUser.nIdleManpower = tbUser.nIdleManpower + moveNum
     end
+
+    local productType = string.sub(tbParam.ProductName, 1, 1)
+    local productLevel = string.sub(tbParam.ProductName, 2, 1)
+    if productLevel == "2" then
+        tbRuntimeData.tbCutdownProduct[productType.."1"] = true
+    end
+
     tbProduct.published = true
     tbUser.bStepDone = true
     return "success", true
@@ -464,8 +619,29 @@ end
 -- 订单收款 {FuncName = "DoOperate", OperateType = "GainMoney", ProductName="b2"}
 function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    
+    local tbProduct = tbUser.tbProduct[tbParam.ProductName]
+    if not tbProduct.published then
+        return "unpublished", true
+    end
 
+    if tbProduct.done then
+        return "already done", true
+    end
+
+    local nCashCount = 0
+    local tbOrderList = tbUser.tbOrder[tbParam.ProductName]
+    for _, tbOrder in ipairs(tbOrderList) do
+        if tbRuntimeData.tbCutdownProduct[tbParam.ProductName] then
+            nCashCount = nCashCount + math.floor(tbOrder.n * tbOrder.arpu / 2 + 0.5)
+        else
+            nCashCount = nCashCount + math.floor(tbOrder.n * tbOrder.arpu + 0.5)
+        end
+        tbOrder.done = true
+    end
+
+    -- todo：高品质产品对低品质的碾压， 需要大家同步推进季度？
+    tbUser.nCash = tbUser.nCash + nCashCount  -- todo: 还未定义收款期限
+    tbProduct.done = true
     tbUser.bStepDone = true
     return "success", true
 end
@@ -474,8 +650,8 @@ end
 function tbFunc.Action.funcDoOperate.UpdateProductProgress(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.ProductName]
-    if not tbProduct.published then
-        return "unpublished", true
+    if tbProduct.published then
+        return "published", true
     end
 
     if tbProduct.done then
