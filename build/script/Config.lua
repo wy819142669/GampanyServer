@@ -45,13 +45,19 @@ tbConfig = {
     },
     tbInitUserData = {
         -- 当前年步骤
-        nCurYearStep = 4,
+        nCurYearStep = 1,
         -- 当前季度
         nCurSeason = 1,
         -- 当前季度步骤
         nCurSeasonStep = 1,
+        -- 当前步骤已经操作完，防止重复操作
+        bStepDone = false,
+        -- 等待下一步
+        bReadyNextStep = false,
         -- 提示
         szTitle = "",
+         -- 市场营销投入
+        tbMarketingExpense = {},
         -- 预研
         tbResearch = { d = { manpower = 20, leftPoint = 20 }, e = { manpower = 30, leftPoint = 30 } },
         -- 产品
@@ -59,6 +65,10 @@ tbConfig = {
             a1 = { manpower = 20, progress = 4, market = { 1 }, published = true, done = false },
             a2 = { manpower = 40, progress = 0, market = { 1 }, published = false, done = false },
             b1 = { manpower = 20, progress = 0, market = { 1 }, published = false, done = false },
+        },
+         -- 订单
+         tbOrder = {
+            --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
         },
         -- 待岗
         nIdleManpower = 0,
@@ -71,29 +81,36 @@ tbConfig = {
         -- 税收
         nTax = 0,
         -- 市场营销费
-        nMarketingExpense = 0,
+        nMarketingExpense = 130,
         -- 总人力
         nTotalManpower = 0,
         -- 招聘、解雇费用
         nSeverancePackage = 0,
         -- 薪水
-        tbLaborCost = {0, 0, 0, 0}
+        tbLaborCost = {0, 0, 0, 0},
+        -- 上一年财报
+        tbLastYearReport = {
+            -- 利润
+            nProfitBeforeTax = 0,
+            -- 需要缴纳税款
+            nTax = 0,
+        },
     },
     tbOrder = { -- 订单
         [1] =  {  -- Y1
             a1 = {
-                { n = 4, arpu = 6.6}, { n = 3, arpu = 6.3 }, { n = 2, arpu = 6 }, { n = 2, arpu = 5.7 }, -- 国内
+                {{ n = 4, arpu = 6.6}, { n = 3, arpu = 6.3 }, { n = 2, arpu = 6 }, { n = 2, arpu = 5.7 }}, -- 国内
                 {}, -- 日韩
                 {}, -- 欧美
             },
             a2 = {
-                { n = 4, arpu = 16.5}, { n = 3, arpu = 15.8 }, { n = 2, arpu = 15 }, { n = 2, arpu = 14.3 }
+                {{ n = 4, arpu = 16.5}, { n = 3, arpu = 15.8 }, { n = 2, arpu = 15 }, { n = 2, arpu = 14.3 }},
             },
             b1 = {
-                { n = 5, arpu = 5.5}, { n =4, arpu = 5.3 }, { n = 2, arpu = 5 }, { n = 2, arpu = 4.8 }
+                {{ n = 5, arpu = 5.5}, { n =4, arpu = 5.3 }, { n = 2, arpu = 5 }, { n = 2, arpu = 4.8 }},
             },
             b2 = {
-                { n = 5, arpu = 22}, { n = 4, arpu = 21 }, { n = 2, arpu = 20 }, { n = 2, arpu = 19 }
+                {{ n = 5, arpu = 22}, { n = 4, arpu = 21 }, { n = 2, arpu = 20 }, { n = 2, arpu = 19 }},
             },
         },
         [2] = { -- Y2

@@ -58,7 +58,7 @@ local tbRuntimeData = {
             -- 订单
             tbOrder = {
                 a1 = {{ cfg = {}, done = false}, {cfg = {}, done = true}}
-            }
+            },
             -- 待岗
             nIdleManpower = 0,
             -- 代收款
@@ -182,12 +182,16 @@ end
 
 -- 开始 {FuncName = "DoStart", tbAccount = { "张", "王" }}
 function tbFunc.Action.DoStart(tbParam)
-    if #tbRuntimeData.bPlaying ~= 0 then
+    if tbRuntimeData.bPlaying then
         return "failed, already start", true
     end
 
+    for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
+        tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
+    end
+
     tbRuntimeData.nDataVersion = 1
-    tbRuntimeData.tbRuntimeData.nCurYear = 1
+    tbRuntimeData.nCurYear = 1
     tbRuntimeData.nCurYearStep = 1
     tbRuntimeData.nGameID = tbRuntimeData.nGameID + 1
     tbRuntimeData.bPlaying = true
@@ -197,10 +201,10 @@ end
 -- 重置 {FuncName = "DoReset"}
 function tbFunc.Action.DoReset(tbParam)
     tbRuntimeData.nDataVersion = 0
-    tbRuntimeData.tbRuntimeData.nCurYear = 1
+    tbRuntimeData.nCurYear = 1
     tbRuntimeData.nCurYearStep = 1
-    tbRuntimeData.tbRuntimeData.tbUser = {}
-    tbRuntimeData.tbRuntimeData.tbLoginAccount = {}
+    tbRuntimeData.tbUser = {}
+    tbRuntimeData.tbLoginAccount = {}
     tbRuntimeData.tbCutdownProduct = {}
     tbRuntimeData.bPlaying = false
     return "success", true
@@ -230,10 +234,16 @@ function tbFunc.finalAction.SettleOrder()
 
     local tbOrderCfg = tbConfig.tbOrder[tbRuntimeData.nCurYear]
     for productName, tbMarketOrder in pairs(tbOrderCfg) do
+        --print("productName:" .. productName)
+
         for marketIndex, tbOrderList in ipairs(tbMarketOrder) do
+            --print("----------------------------------------------------------")
+            --print("marketIndex:" .. tostring(marketIndex))
+            
             local sortedUserList = {}
             local nExpenseCount = 0
             for userName, tbUser in pairs(tbRuntimeData.tbUser) do
+                --print("userName:" .. userName)
                 if tbUser.tbMarketingExpense[productName] then
                     table.insert(sortedUserList, {
                         user = userName,
@@ -243,6 +253,7 @@ function tbFunc.finalAction.SettleOrder()
                     if tbUser.tbMarketingExpense[productName][marketIndex] then
                         nExpenseCount = nExpenseCount + tbUser.tbMarketingExpense[productName][marketIndex] or 0
                     end
+                    --print("nExpenseCount"..tostring(nExpenseCount))
                 end
             end
 
@@ -251,15 +262,20 @@ function tbFunc.finalAction.SettleOrder()
             end)
 
             local nIndex = 1
+           -- print("#tbOrderList:"..tostring(#tbOrderList))
             for _, tbOrder in ipairs(tbOrderList) do
+                --print("gain")
                 if nExpenseCount == 0 then break end
 
-                if sortedUserList[nIndex].count == 0 then
+                if nIndex > #sortedUserList or sortedUserList[nIndex].count == 0 then
                     nIndex = 1
                 end
 
                 local tbUser = tbRuntimeData.tbUser[sortedUserList[nIndex].user]
+                tbUser.tbOrder[productName] = tbUser.tbOrder[productName] or {}
                 table.insert(tbUser.tbOrder[productName], {cfg = tbOrder, done = false})
+
+                sortedUserList[nIndex].count = sortedUserList[nIndex].count - 1
                 nExpenseCount = nExpenseCount - 1
                 nIndex = nIndex + 1
             end
@@ -379,7 +395,7 @@ function tbFunc.Action.funcDoOperate.Tax(tbParam)
     return "success", true
 end
 
--- 提交市场预算 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a1 = { 2, 1, 1}, a2 = { 5, 3, 3}, b1 = { 20, 40, 3}}
+-- 提交市场预算 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a1 = { 2, 1, 1}, a2 = { 5, 3, 3}, b1 = { 20, 40, 3}}}
 function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bStepDone then
@@ -426,6 +442,10 @@ end
 function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.PublishProduct]
+    if not tbProduct then
+        return "product not exist", true
+    end
+
     if tbProduct.published then
         return "already published", true
     end
@@ -620,6 +640,10 @@ end
 function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.ProductName]
+    if not tbProduct then
+        return "product not exist", true
+    end
+
     if not tbProduct.published then
         return "unpublished", true
     end
@@ -650,6 +674,10 @@ end
 function tbFunc.Action.funcDoOperate.UpdateProductProgress(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.ProductName]
+    if not tbProduct then
+        return "product not exist", true
+    end
+
     if tbProduct.published then
         return "published", true
     end
@@ -714,7 +742,7 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
     return "success", true
 end
 
--- 随机研发进度 {FuncName = "DoOperate", OperateType = "RollResearchPoint", ResearchName:"d"}
+-- 随机研发进度 {FuncName = "DoOperate", OperateType = "RollResearchPoint", ResearchName="d"}
 function tbFunc.Action.funcDoOperate.RollResearchPoint(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbResearch = tbUser.tbResearch[tbParam.ResearchName]
