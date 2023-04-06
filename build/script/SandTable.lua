@@ -591,7 +591,7 @@ end
 function tbFunc.Action.funcDoOperate.Turnover(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
 
-    if GridType == "research" then
+    if tbParam.GridType == "research" then
         local manpower = tbUser.tbResearch[tbParam.GridName].manpower
         local manpowerCfg = tbConfig.tbResearch[tbParam.GridName].manpower
         if manpower < manpowerCfg and manpower + tbUser.nIdleManpower >= manpowerCfg then
@@ -601,18 +601,19 @@ function tbFunc.Action.funcDoOperate.Turnover(tbParam)
             tbUser.tbResearch[tbParam.GridName].manpower = 0
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower
         end
-    elseif GridType == "product" then
-        local manpower = tbUser.tbProduct[tbParam.GridName].manpower
+    elseif tbParam.GridType == "product" then
+        local tbProduct = tbUser.tbProduct[tbParam.GridName]
+        local manpower = tbProduct.manpower
         local minManpowerCfg = tbConfig.tbProduct[tbParam.GridName].minManpower
         local maxManpowerCfg = tbConfig.tbProduct[tbParam.GridName].maxManpower
         if manpower < minManpowerCfg and manpower + tbUser.nIdleManpower >= minManpowerCfg then
-            tbUser.tbProduct[tbParam.GridName].manpower = minManpowerCfg
+            tbProduct.manpower = minManpowerCfg
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - minManpowerCfg
-        elseif manpower < maxManpowerCfg and manpower + tbUser.nIdleManpower >= maxManpowerCfg then
-            tbUser.tbProduct[tbParam.GridName].manpower = maxManpowerCfg
+        elseif not tbProduct.published and manpower < maxManpowerCfg and manpower + tbUser.nIdleManpower >= maxManpowerCfg then
+            tbProduct.manpower = maxManpowerCfg
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - maxManpowerCfg
         else
-            tbUser.tbProduct[tbParam.GridName].manpower = 0
+            tbProduct.manpower = 0
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower
         end
     end
@@ -656,9 +657,9 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
     local tbOrderList = tbUser.tbOrder[tbParam.ProductName]
     for _, tbOrder in ipairs(tbOrderList) do
         if tbRuntimeData.tbCutdownProduct[tbParam.ProductName] then
-            nCashCount = nCashCount + math.floor(tbOrder.n * tbOrder.arpu / 2 + 0.5)
+            nCashCount = nCashCount + math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu / 2 + 0.5)
         else
-            nCashCount = nCashCount + math.floor(tbOrder.n * tbOrder.arpu + 0.5)
+            nCashCount = nCashCount + math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu + 0.5)
         end
         tbOrder.done = true
     end

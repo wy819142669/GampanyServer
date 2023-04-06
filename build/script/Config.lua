@@ -81,9 +81,9 @@ tbConfig = {
         -- 税收
         nTax = 0,
         -- 市场营销费
-        nMarketingExpense = 130,
+        nMarketingExpense = 0,
         -- 总人力
-        nTotalManpower = 0,
+        nTotalManpower = 130,
         -- 招聘、解雇费用
         nSeverancePackage = 0,
         -- 薪水
