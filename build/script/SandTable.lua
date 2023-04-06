@@ -284,7 +284,7 @@ function tbFunc.finalAction.NewYear()
     tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.nCurYearStep = 1
+        tbUser.nCurYearStep = 0
         tbUser.nCurSeason = 1
         tbUser.nCurSeasonStep = 1
         tbUser.tbOrder = {}
