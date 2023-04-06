@@ -1,7 +1,6 @@
 tbConfig = {
     nLuaVersion = 1,
-    nGameNeedUserNum = 2,
-    tbAccount = { "李", "陈", "薛", "王", "张", "刘" },
+    tbAccount = { "李", "陈", "薛", "王", "张", "刘" },  -- 准备弃用，客户端可以输入自己的名字
     nNormalHireCost = 2, -- 招聘费用
     nTempHireCost = 4, -- 临时招聘费用
     nFireCost = 8, -- 解雇 薪水*4
@@ -12,7 +11,7 @@ tbConfig = {
         { desc = "招聘并支付费用", },
     },
     tbStepPerSeason = {
-        { desc = "产品上线，把加倍进度的员工放到待岗区", },
+        { desc = "产品上线，把加倍进度的员工放到待岗区", syncNextStep = true, },
         { desc = "临时招聘、解聘，支付临时招聘和解聘费用", },
         { desc = "选择初始市场，并立项", },
         { desc = "现有人力资源调整（产品线调整人力、预研人力投入）", },
@@ -27,7 +26,7 @@ tbConfig = {
         { desc = "海外市场自动开放", },
         { desc = "结算已抢但未完成的订单罚款（50%订单金额）", },
         { desc = "结清账务（填损益表、负债表）", syncNextStep = true, },
-        { desc = "排名总结", syncNextStep = true, }
+        { desc = "排名总结", syncNextStep = true, finalAction = "NewYear"}
     },
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
