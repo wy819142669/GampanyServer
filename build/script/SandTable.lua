@@ -288,11 +288,15 @@ function tbFunc.finalAction.NewYear()
         tbUser.nCurSeason = 1
         tbUser.nCurSeasonStep = 1
         tbUser.tbOrder = {}
+
+        tbUser.tbLastYearReport = tbUser.tbYearReport
+        tbUser.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
     end
 end
 
 function tbFunc.finalAction.EnableNextMarket()
-    for _, v in ipairs(tbConfig.tbMarket) do
+    local tbEnableMarket = tbConfig.tbEnableMarketPerYear[tbRuntimeData.nCurYear]
+    for _, v in ipairs(tbEnableMarket) do
         if not table.contain_value(tbRuntimeData.tbMarket, v) then
             table.insert(tbRuntimeData.tbMarket, v)
             break
@@ -302,7 +306,53 @@ end
 
 tbFunc.enterAction = {}
 function tbFunc.enterAction.FinancialReport(tbUser)
-    
+    tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + tbUser.nSeverancePackage
+    for _, v in ipairs(tbUser.tbLaborCost) do
+        tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + v
+    end
+
+    tbUser.tbYearReport.nMarketingExpense = tbUser.nMarketingExpense
+    tbUser.tbYearReport.nSGA = tbUser.tbYearReport.nSGA + tbUser.nAppendMarketCost
+    tbUser.tbYearReport.nGrossProfit = tbUser.tbYearReport.nTurnover
+                                        - tbUser.tbYearReport.nLaborCosts
+                                        - tbUser.tbYearReport.nMarketingExpense
+                                        - tbUser.tbYearReport.nSGA
+
+    tbUser.tbYearReport.nFinancialExpenses = 0
+    tbUser.tbYearReport.nProfitBeforeTax = tbUser.tbYearReport.nGrossProfit
+                                        - tbUser.tbYearReport.nFinancialExpenses
+
+    tbUser.tbYearReport.nTax = math.floor(tbUser.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
+
+    tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax
+                                        - tbUser.tbYearReport.nTax
+end
+
+function tbFunc.enterAction.EnableMarketTip(tbUser)
+    local tbEnableMarket = tbConfig.tbEnableMarketPerYear[tbRuntimeData.nCurYear]
+    if tbEnableMarket and #tbEnableMarket > 0 then
+        tbUser.szTitle = "开放市场:"..table.concat(tbEnableMarket, ", ")
+    else
+        tbUser.szTitle = "无新开放市场"
+    end
+end
+
+function tbFunc.enterAction.UndoneOrderPunish(tbUser)
+    local nPay = 0
+    for _, tbProductOrder in pairs(tbUser.tbOrder) do
+        for _, tbOrder in pairs(tbProductOrder) do
+            if not tbOrder.done then
+                nPay = nPay + math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu / 2 + 0.5)
+            end
+        end
+    end
+
+    tbUser.nCash = tbUser.nCash - nPay
+    if nPay == 0 then
+        tbUser.szTitle = "你已完成所有订单"
+    else
+        tbUser.szTitle = "因未完成订单扣除订单面值50%罚金。 扣除现金"..tostring(nPay)
+    end
 end
 
 tbFunc.Action.funcDoOperate = {}
@@ -402,7 +452,7 @@ function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
 
     tbUser.nCash = tbUser.nCash - nTotalCost
     tbUser.tbMarketingExpense = tbParam.tbMarketingExpense
-    tbUser.nMarketingExpense = nTotalCost
+    tbUser.nMarketingExpense = tbUser.nMarketingExpense + nTotalCost
     tbUser.bStepDone = true
     return "success", true
 end
@@ -662,6 +712,8 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
 
     -- todo：高品质产品对低品质的碾压， 需要大家同步推进季度？
     tbUser.nCash = tbUser.nCash + nCashCount  -- todo: 还未定义收款期限
+    tbUser.tbYearReport.nTurnover = tbUser.tbYearReport.nTurnover + nCashCount
+
     tbProduct.done = true
     tbUser.bStepDone = true
     return "success", true
@@ -768,6 +820,7 @@ function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
     local nCost = nTens * tbConfig.nSalary
 
     tbUser.nCash = tbUser.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
+    tbUser.tbLaborCost[tbUser.nCurSeason] = nCost
     tbUser.bStepDone = true
     return "success", true
 end

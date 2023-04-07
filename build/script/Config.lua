@@ -5,7 +5,8 @@ tbConfig = {
     nTempHireCost = 4, -- 临时招聘费用
     nFireCost = 8, -- 解雇 薪水*4
     nSalary = 2, -- 薪水
-    tbMarket = {1, 2, 3},
+    fTaxRate = 0.1,
+    tbEnableMarketPerYear = {{2}, {3}},
     tbBeginStepPerYear = {
         { desc = "支付税款", mustDone = true, syncNextStep = true, },
         { desc = "市场竞标，抢订单", mustDone = true, syncNextStep = true, finalAction = "SettleOrder"},
@@ -25,8 +26,8 @@ tbConfig = {
     },
     tbEndStepPerYear = {
         { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket"},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
-        { desc = "海外市场自动开放", },
-        { desc = "结算已抢但未完成的订单罚款（50%订单金额）",},
+        { desc = "海外市场自动开放", enterAction = "EnableMarketTip"},
+        { desc = "结算已抢但未完成的订单罚款（50%订单金额）", enterAction = "UndoneOrderPunish"},
         { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport"},
         { desc = "排名总结", syncNextStep = true, finalAction = "NewYear"}
     },
@@ -71,7 +72,7 @@ tbConfig = {
             b1 = { manpower = 20, progress = 0, market = { 1 }, published = false, done = false },
         },
          -- 订单
-         tbOrder = {
+        tbOrder = {
             --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
         },
         -- 待岗
@@ -94,11 +95,47 @@ tbConfig = {
         tbLaborCost = {0, 0, 0, 0},
         -- 上一年财报
         tbLastYearReport = {
+            -- 收入
+            nTurnover = 0,
+            -- 人力费用
+            nLaborCosts = 0,
+            -- 销售费用
+            nMarketingExpense = 0,
+            -- 行政+本地化费用
+            nSGA = 0,
+            -- 营业利润
+            nGrossProfit = 0,
+            -- 财务费用
+            nFinancialExpenses = 0,
             -- 利润
             nProfitBeforeTax = 0,
             -- 需要缴纳税款
             nTax = 0,
+            -- 净利润
+            nNetProfit = 0,
         },
+        tbYearReport = {
+        },
+    },
+    tbInitReport = {
+        -- 收入
+        nTurnover = 0,
+        -- 人力费用
+        nLaborCosts = 0,
+        -- 销售费用
+        nMarketingExpense = 0,
+        -- 行政+本地化费用
+        nSGA = 0,
+        -- 营业利润
+        nGrossProfit = 0,
+        -- 财务费用
+        nFinancialExpenses = 0,
+        -- 利润
+        nProfitBeforeTax = 0,
+        -- 需要缴纳税款
+        nTax = 0,
+        -- 净利润
+        nNetProfit = 0,
     },
     tbOrder = { -- 订单
         [1] =  {  -- Y1
@@ -139,3 +176,6 @@ end
 for _, v in ipairs(tbConfig.tbEndStepPerYear) do
     table.insert(tbConfig.tbYearStep, Lib.copyTab(v))
 end
+
+tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
+tbConfig.tbInitUserData.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
