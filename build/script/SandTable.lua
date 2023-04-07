@@ -126,7 +126,8 @@ function Action(jsonParam)
         tbRuntimeData = tbRuntimeData
     }
 
-    tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
+    -- 客户端要用tbLoginAccount来判断登录状态
+    -- tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
     return JsonEncode(tbResult)
 end
 
@@ -198,7 +199,7 @@ function tbFunc.Action.DoStart(tbParam)
 
     for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
         tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
-        tbRuntimeData.tbUser.szAccount = userName
+        tbRuntimeData.tbUser[userName].szAccount = userName
     end
 
     tbRuntimeData.nDataVersion = 1
@@ -552,7 +553,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
             if not tbUser.tbResearch[tbParam.GridName] or tbUser.tbResearch[tbParam.GridName].manpower < nTens * 10 then
                 return "manpower not enough", false
             end
-            return true
+            return "success", true
         end
 
         doUpdateManpowerFunc = function ()
@@ -582,7 +583,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
         end
     end
 
-    local bOk, result = checkFunc()
+    local result, bOk = checkFunc()
     if not bOk then
         return result, false
     end

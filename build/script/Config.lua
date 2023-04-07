@@ -8,28 +8,28 @@ tbConfig = {
     fTaxRate = 0.1,
     tbEnableMarketPerYear = {{2}, {3}},
     tbBeginStepPerYear = {
-        { desc = "支付税款", mustDone = true, syncNextStep = true, },
-        { desc = "市场竞标，抢订单", mustDone = true, syncNextStep = true, finalAction = "SettleOrder"},
-        { desc = "招聘并支付费用", },
+        { desc = "支付税款", mustDone = true, syncNextStep = true, nStepUniqueId = 1},
+        { desc = "市场竞标，抢订单", mustDone = true, syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 2},
+        { desc = "招聘并支付费用", nStepUniqueId = 3},
     },
     tbStepPerSeason = {
-        { desc = "产品上线，把加倍进度的员工放到待岗区", syncNextStep = true, },
-        { desc = "临时招聘、解聘，支付临时招聘和解聘费用", },
-        { desc = "选择初始市场，并立项", },
-        { desc = "现有人力资源调整（产品线调整人力、预研人力投入）", },
-        { desc = "更新应收款", },
-        { desc = "本季收入结算—现结款收入、放置延期收款", },
-        { desc = "研发推进", },
-        { desc = "追加额外市场，支付本地化费用", },
-        { desc = "roll点扣除剩余点数，查看预研结果", },
-        { desc = "支付人员工资（总人力*工资）", mustDone = true,},
+        { desc = "产品上线，把加倍进度的员工放到待岗区", syncNextStep = true, nStepUniqueId = 101},
+        { desc = "临时招聘、解聘，支付临时招聘和解聘费用", nStepUniqueId = 102},
+        { desc = "选择初始市场，并立项", nStepUniqueId = 103},
+        { desc = "现有人力资源调整（产品线调整人力、预研人力投入）", nStepUniqueId = 104},
+        { desc = "更新应收款", nStepUniqueId = 105},
+        { desc = "本季收入结算—现结款收入、放置延期收款", nStepUniqueId = 106},
+        { desc = "研发推进", nStepUniqueId = 107},
+        { desc = "追加额外市场，支付本地化费用", nStepUniqueId = 108},
+        { desc = "roll点扣除剩余点数，查看预研结果", nStepUniqueId = 109},
+        { desc = "支付人员工资（总人力*工资）", mustDone = true, nStepUniqueId = 110},
     },
     tbEndStepPerYear = {
-        { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket"},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
-        { desc = "海外市场自动开放", enterAction = "EnableMarketTip"},
-        { desc = "结算已抢但未完成的订单罚款（50%订单金额）", enterAction = "UndoneOrderPunish"},
-        { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport"},
-        { desc = "排名总结", syncNextStep = true, finalAction = "NewYear"}
+        { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket", nStepUniqueId = 201},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
+        { desc = "海外市场自动开放", enterAction = "EnableMarketTip", nStepUniqueId = 202},
+        { desc = "结算已抢但未完成的订单罚款（50%订单金额）", enterAction = "UndoneOrderPunish", nStepUniqueId = 203},
+        { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport", nStepUniqueId = 204},
+        { desc = "排名总结", syncNextStep = true, finalAction = "NewYear", nStepUniqueId = 205}
     },
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
@@ -41,6 +41,8 @@ tbConfig = {
         e1 = { minManpower = 60, maxManpower = 180, maxProgress = 4, addMarketCost = 12,},
         e2 = { minManpower = 120, maxManpower = 360, maxProgress = 8, addMarketCost = 48,},
     },
+    tbProductSort = {"a1", "a2", "b1", "b2", "d1", "d2", "e1", "e2"},
+    tbMarketName = {"国内", "日韩", "欧美"},
 
     tbYearStep = {},
 
@@ -48,6 +50,7 @@ tbConfig = {
         d = { manpower = 20, totalPoint = 20 },
         e = { manpower = 30, totalPoint = 30 },
     },
+    tbResearchSort = {"d", "e"},
     tbInitUserData = {
         -- 当前年步骤
         nCurYearStep = 1,
