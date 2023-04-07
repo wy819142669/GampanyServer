@@ -113,14 +113,16 @@ end
 function Action(jsonParam)
     local tbParam = JsonDecode(jsonParam)
     local func = tbFunc.Action[tbParam.FuncName]
-    local result = ""
+    local szMsg = ""
+    local bRet = false
     if func then
-        result = func(tbParam)
+        szMsg, bRet = func(tbParam)
     else
-        result = "invalid FuncName"
+        szMsg = "invalid FuncName"
     end
     local tbResult = {
-        result = result,
+        code = bRet and 0 or -1,
+        msg = szMsg,
         tbRuntimeData = tbRuntimeData
     }
 
@@ -174,18 +176,29 @@ end
 
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)
+    -- if tbRuntimeData.bPlaying then
+    --     return "failed, already start", false
+    -- end
     tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
+    return "success", true
+end
+
+-- 登出 {FuncName = "Logout"}
+function tbFunc.Action.Logout(tbParam)
+    tbRuntimeData.tbLoginAccount[tbParam.Account] = nil
+    tbRuntimeData.tbUser[tbParam.Account] = nil
     return "success", true
 end
 
 -- 开始 {FuncName = "DoStart", tbAccount = { "张", "王" }}
 function tbFunc.Action.DoStart(tbParam)
     if tbRuntimeData.bPlaying then
-        return "failed, already start", true
+        return "failed, already start", false
     end
 
     for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
         tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
+        tbRuntimeData.tbUser.szAccount = userName
     end
 
     tbRuntimeData.nDataVersion = 1
@@ -362,7 +375,7 @@ function tbFunc.Action.funcDoOperate.NextStep(tbParam)
     local tbStepCfg = tbConfig.tbYearStep[tbUser.nCurYearStep]
 
     if tbStepCfg.mustDone and not tbUser.bStepDone then
-        return "must done step", true
+        return "must done step", false
     end
 
     if tbUser.bReadyNextStep then
@@ -421,7 +434,7 @@ end
 function tbFunc.Action.funcDoOperate.Tax(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bStepDone then
-        return "already done", true
+        return "already done", false
     end
 
     if tbUser.tbLastYearReport and tbUser.tbLastYearReport.nTax > 0 then
@@ -436,7 +449,7 @@ end
 function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bStepDone then
-        return "already done", true
+        return "already done", false
     end
 
     local nTotalCost = 0
@@ -447,7 +460,7 @@ function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
     end
 
     if nTotalCost > tbUser.nCash then
-        return "cash not enough", true
+        return "cash not enough", false
     end
 
     tbUser.nCash = tbUser.nCash - nTotalCost
@@ -464,7 +477,7 @@ function tbFunc.Action.funcDoOperate.CommitNormalHire(tbParam)
     local nCost = nTens * tbConfig.nNormalHireCost
 
     if nCost > tbUser.nCash then
-        return "cash not enough", true
+        return "cash not enough", false
     end
 
     tbUser.nCash = tbUser.nCash - nCost
@@ -480,16 +493,16 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.PublishProduct]
     if not tbProduct then
-        return "product not exist", true
+        return "product not exist", false
     end
 
     if tbProduct.published then
-        return "already published", true
+        return "already published", false
     end
 
     local tbProductCfg = tbConfig.tbProduct[tbParam.PublishProduct]
     if tbProduct.progress ~= tbProductCfg.maxProgress then
-        return "progress not enough", true
+        return "progress not enough", false
     end
 
     if tbProduct.manpower > tbProductCfg.minManpower then
@@ -517,7 +530,7 @@ function tbFunc.Action.funcDoOperate.CommitTempHire(tbParam)
     local nCost = nTens * tbConfig.nTempHireCost
 
     if nCost > tbUser.nCash then
-        return "cash not enough", true
+        return "cash not enough", false
     end
 
     tbUser.nCash = tbUser.nCash - nCost
@@ -537,7 +550,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
     if tbParam.GridType == "research" then
         checkFunc = function ()
             if not tbUser.tbResearch[tbParam.GridName] or tbUser.tbResearch[tbParam.GridName].manpower < nTens * 10 then
-                return false, "manpower not enough"
+                return "manpower not enough", false
             end
             return true
         end
@@ -548,9 +561,9 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
     elseif tbParam.GridType == "product" then
         checkFunc = function ()
             if not tbUser.tbProduct[tbParam.GridName] or tbUser.tbProduct[tbParam.GridName].manpower < nTens * 10 then
-                return false, "manpower not enough"
+                return "manpower not enough", false
             end
-            return true
+            return "success", true
         end
 
         doUpdateManpowerFunc = function ()
@@ -559,9 +572,9 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
     elseif tbParam.GridType == "idle" then
         checkFunc = function ()
             if tbUser.nIdleManpower < nTens * 10 then
-                return false, "manpower not enough"
+                return "manpower not enough", false
             end
-            return true
+            return "success", true
         end
 
         doUpdateManpowerFunc = function ()
@@ -571,7 +584,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
 
     local bOk, result = checkFunc()
     if not bOk then
-        return result, true
+        return result, false
     end
 
     tbUser.nCash = tbUser.nCash - nCost
@@ -586,11 +599,11 @@ end
 function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if not table.contain_key(tbConfig.tbProduct, tbParam.ProductName) then
-        return "invalid product name", true
+        return "invalid product name", false
     end
 
     if table.contain_key(tbUser.tbProduct, tbParam.ProductName) then
-        return "product already exist", true
+        return "product already exist", false
     end
 
     local productType = string.sub(tbParam.ProductName, 1, 1)
@@ -598,23 +611,23 @@ function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
     if productLevel == "2" then
         local lowProductName = productType.."1"
         if not tbUser.tbProduct[lowProductName] or not tbUser.tbProduct[lowProductName].published then
-            return "need product "..productType.."1 published", true
+            return "need product "..productType.."1 published", false
         end
     end
 
     if #tbParam.tbMarket < 1 then
-        return "at least on market", true
+        return "at least on market", false
     end
 
     for _, v in ipairs(tbParam.tbMarket) do
         if not table.contain_value(tbRuntimeData.tbMarket, v) then
-            return "invalid market:" .. tostring(v), true
+            return "invalid market:" .. tostring(v), false
         end
     end
 
     local productType = string.sub(tbParam.ProductName, 1, 1)
     if tbUser.tbResearch[productType] and tbUser.tbResearch[productType].leftPoint ~= 0 then
-        return "need research ready", true
+        return "need research ready", false
     end
 
     local nCost = 0
@@ -623,7 +636,7 @@ function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
         nCost = math.floor(addMarketCost / 2 + 0.5) * (#tbParam.tbMarket - 1)
 
         if tbUser.nCash < nCost then
-            return "cash not enough", true
+            return "cash not enough", false
         end
     end
 
@@ -672,7 +685,7 @@ end
 function tbFunc.Action.funcDoOperate.UpdateReceivables(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bStepDone then
-        return "already done", true
+        return "already done", false
     end
 
     local nCash = tbUser.tbReceivables[1]
@@ -688,19 +701,22 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.ProductName]
     if not tbProduct then
-        return "product not exist", true
+        return "product not exist", false
     end
 
     if not tbProduct.published then
-        return "unpublished", true
+        return "unpublished", false
     end
 
     if tbProduct.done then
-        return "already done", true
+        return "already done", false
     end
 
     local nCashCount = 0
     local tbOrderList = tbUser.tbOrder[tbParam.ProductName]
+    if not tbOrderList then
+        return string.format("not order %s", tbParam.ProductName), false
+    end
     for _, tbOrder in ipairs(tbOrderList) do
         if tbRuntimeData.tbCutdownProduct[tbParam.ProductName] then
             nCashCount = nCashCount + math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu / 2 + 0.5)
@@ -724,15 +740,15 @@ function tbFunc.Action.funcDoOperate.UpdateProductProgress(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.ProductName]
     if not tbProduct then
-        return "product not exist", true
+        return "product not exist", false
     end
 
     if tbProduct.published then
-        return "published", true
+        return "published", false
     end
 
     if tbProduct.done then
-        return "already done", true
+        return "already done", false
     end
 
     local tbProductCfg = tbConfig.tbProduct[tbParam.ProductName]
@@ -754,23 +770,23 @@ end
 function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if not table.contain_key(tbConfig.tbProduct, tbParam.ProductName) then
-        return "invalid product name", true
+        return "invalid product name", false
     end
 
     local tbProduct = tbUser.tbProduct[tbParam.ProductName]
     if not tbProduct then
-        return "product not exist", true
+        return "product not exist", false
     end
 
     for _, v in ipairs(tbParam.tbMarket) do
         if not table.contain_value(tbRuntimeData.tbMarket, v) then
-            return "invalid market:" .. tostring(v), true
+            return "invalid market:" .. tostring(v), false
         end
     end
 
     for _, v in ipairs(tbProduct.market) do
         if not table.contain_value(tbParam.tbMarket, v) then
-            return "can not unselect market:" .. tostring(v), true
+            return "can not unselect market:" .. tostring(v), false
         end
     end
 
@@ -780,7 +796,7 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
         nCost = math.floor(addMarketCost + 0.5) * (#tbParam.tbMarket - #tbProduct.market)
 
         if tbUser.nCash < nCost then
-            return "cash not enough", true
+            return "cash not enough", false
         end
     end
 
@@ -796,11 +812,11 @@ function tbFunc.Action.funcDoOperate.RollResearchPoint(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbResearch = tbUser.tbResearch[tbParam.ResearchName]
     if tbResearch.done then
-        return "already done", true
+        return "already done", false
     end
 
     if tbResearch.manpower < tbConfig.tbResearch[tbParam.ResearchName].manpower then
-        return "manpower not enough", true
+        return "manpower not enough", false
     end
 
     local nResearchPoint = math.random(1, 6)
