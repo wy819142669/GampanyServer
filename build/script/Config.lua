@@ -5,6 +5,7 @@ tbConfig = {
     nTempHireCost = 4, -- 临时招聘费用
     nFireCost = 8, -- 解雇 薪水*4
     nSalary = 2, -- 薪水
+    tbMarket = {1, 2, 3},
     tbBeginStepPerYear = {
         { desc = "支付税款", mustDone = true, syncNextStep = true, },
         { desc = "市场竞标，抢订单", mustDone = true, syncNextStep = true, finalAction = "SettleOrder"},
@@ -23,9 +24,10 @@ tbConfig = {
         { desc = "支付人员工资（总人力*工资）", mustDone = true,},
     },
     tbEndStepPerYear = {
+        { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket"},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
         { desc = "海外市场自动开放", },
-        { desc = "结算已抢但未完成的订单罚款（50%订单金额）", },
-        { desc = "结清账务（填损益表、负债表）", syncNextStep = true, },
+        { desc = "结算已抢但未完成的订单罚款（50%订单金额）",},
+        { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport"},
         { desc = "排名总结", syncNextStep = true, finalAction = "NewYear"}
     },
     tbProduct = {
@@ -38,6 +40,9 @@ tbConfig = {
         e1 = { minManpower = 60, maxManpower = 180, maxProgress = 4, addMarketCost = 12,},
         e2 = { minManpower = 120, maxManpower = 360, maxProgress = 8, addMarketCost = 48,},
     },
+
+    tbYearStep = {},
+
     tbResearch = {
         d = { manpower = 20, totalPoint = 20 },
         e = { manpower = 30, totalPoint = 30 },
@@ -117,3 +122,20 @@ tbConfig = {
         },
     }
 }
+
+for _, v in ipairs(tbConfig.tbBeginStepPerYear) do
+    table.insert(tbConfig.tbYearStep, Lib.copyTab(v))
+end
+
+for i = 1, 4 do
+    for j, v in ipairs(tbConfig.tbStepPerSeason) do
+        local tbSeasonCfg = Lib.copyTab(v)
+        tbSeasonCfg.nCurSeason = i
+        tbSeasonCfg.nCurSeasonStep = j
+        table.insert(tbConfig.tbYearStep, tbSeasonCfg)
+    end
+end
+
+for _, v in ipairs(tbConfig.tbEndStepPerYear) do
+    table.insert(tbConfig.tbYearStep, Lib.copyTab(v))
+end

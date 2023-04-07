@@ -291,18 +291,25 @@ function tbFunc.finalAction.NewYear()
     end
 end
 
+function tbFunc.finalAction.EnableNextMarket()
+    for _, v in ipairs(tbConfig.tbMarket) do
+        if not table.contain_value(tbRuntimeData.tbMarket, v) then
+            table.insert(tbRuntimeData.tbMarket, v)
+            break
+        end
+    end
+end
+
+tbFunc.enterAction = {}
+function tbFunc.enterAction.FinancialReport(tbUser)
+    
+end
+
 tbFunc.Action.funcDoOperate = {}
 -- 下一步 推进进度 {FuncName = "DoOperate", OperateType = "NextStep"}   -- 考虑校验当前Step，防止点了2次Step
 function tbFunc.Action.funcDoOperate.NextStep(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local tbStepCfg
-    if tbUser.nCurYearStep == #tbConfig.tbBeginStepPerYear + 1 then
-        tbStepCfg = tbConfig.tbStepPerSeason[tbUser.nCurSeasonStep]
-    elseif tbUser.nCurYearStep <= #tbConfig.tbBeginStepPerYear then
-        tbStepCfg = tbConfig.tbBeginStepPerYear[tbUser.nCurYearStep]
-    else
-        tbStepCfg = tbConfig.tbEndStepPerYear[tbUser.nCurYearStep - #tbConfig.tbBeginStepPerYear - 1]
-    end
+    local tbStepCfg = tbConfig.tbYearStep[tbUser.nCurYearStep]
 
     if tbStepCfg.mustDone and not tbUser.bStepDone then
         return "must done step", true
@@ -340,31 +347,11 @@ function checkAllNextStep(tbStepCfg)
 end
 
 function userNewStep(tbUser)
-    local bInSeason = false
-    --print("userNewStep =====================")
-    --print(tbUser.nCurYearStep, #tbConfig.tbBeginStepPerYear + 1)
-    if tbUser.nCurYearStep == #tbConfig.tbBeginStepPerYear + 1 then  -- 处理季度
-        --print("tbUser.nCurSeasonStep", tbUser.nCurSeasonStep)
-        --print("#tbConfig.tbStepPerSeason", #tbConfig.tbStepPerSeason)
-        if tbUser.nCurSeasonStep == #tbConfig.tbStepPerSeason then
-            --print("tbUser.nCurSeason", tbUser.nCurSeason)
-            if tbUser.nCurSeason < 4 then -- 跨季度
-                tbUser.nCurSeason = tbUser.nCurSeason + 1
-                tbUser.nCurSeasonStep = 1
-                bInSeason = true
-            else
-                tbUser.nCurSeasonStep = 1
-            end
-        else
-            tbUser.nCurSeasonStep = tbUser.nCurSeasonStep + 1
-            bInSeason = true
-        end
-    end
+    tbUser.nCurYearStep = tbUser.nCurYearStep + 1
 
-    --print("bInSeason", bInSeason)
-    if not bInSeason then
-        tbUser.nCurYearStep = tbUser.nCurYearStep + 1
-    end
+    local tbNewStepCfg = tbConfig.tbYearStep[tbUser.nCurYearStep]
+    tbUser.nCurSeason = tbNewStepCfg.nCurSeason or tbUser.nCurSeason
+    tbUser.nCurSeasonStep = tbNewStepCfg.nCurSeasonStep or tbUser.nCurSeasonStep
 
     for _, v in pairs(tbUser.tbProduct) do
         v.done = false
@@ -374,6 +361,10 @@ function userNewStep(tbUser)
     end
     tbUser.bStepDone = false
     tbUser.bReadyNextStep = false
+
+    if tbNewStepCfg.enterAction then
+        tbFunc.enterAction[tbNewStepCfg.enterAction](tbUser)
+    end
 end
 
 -- 交税{FuncName = "DoOperate", OperateType = "Tax"}
