@@ -59,7 +59,7 @@ local tbRuntimeData = {
             },
             -- 订单
             tbOrder = {
-                a1 = {{ cfg = {}, done = false}, {cfg = {}, done = true}}
+                a1 = {{ cfg = {}, market = 1, done = false}, {cfg = {}, market = 2, done = true}}
             },
             -- 待岗
             nIdleManpower = 0,
@@ -191,7 +191,7 @@ function tbFunc.Action.Logout(tbParam)
     return "success", true
 end
 
--- 开始 {FuncName = "DoStart", tbAccount = { "张", "王" }}
+-- 开始 {FuncName = "DoStart", tbAccount = { "王" }}
 function tbFunc.Action.DoStart(tbParam)
     if tbRuntimeData.bPlaying then
         return "failed, already start", false
@@ -202,6 +202,7 @@ function tbFunc.Action.DoStart(tbParam)
         tbRuntimeData.tbUser[userName].szAccount = userName
     end
 
+    tbRuntimeData.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     tbRuntimeData.nDataVersion = 1
     tbRuntimeData.nCurYear = 1
     tbRuntimeData.nGameID = tbRuntimeData.nGameID + 1
@@ -242,7 +243,7 @@ function tbFunc.finalAction.SettleOrder()
 
     ]]
 
-    local tbOrderCfg = tbConfig.tbOrder[tbRuntimeData.nCurYear]
+    local tbOrderCfg = tbRuntimeData.tbOrder[tbRuntimeData.nCurYear]
     for productName, tbMarketOrder in pairs(tbOrderCfg) do
         --print("productName:" .. productName)
 
@@ -255,13 +256,14 @@ function tbFunc.finalAction.SettleOrder()
             for userName, tbUser in pairs(tbRuntimeData.tbUser) do
                 --print("userName:" .. userName)
                 if tbUser.tbMarketingExpense[productName] then
+                    local expense = tbUser.tbMarketingExpense[productName][marketIndex] or 0
                     table.insert(sortedUserList, {
                         user = userName,
-                        count = tbUser.tbMarketingExpense[productName][marketIndex] or 0
+                        count = expense
                     })
 
                     if tbUser.tbMarketingExpense[productName][marketIndex] then
-                        nExpenseCount = nExpenseCount + tbUser.tbMarketingExpense[productName][marketIndex] or 0
+                        nExpenseCount = nExpenseCount + expense
                     end
                     --print("nExpenseCount"..tostring(nExpenseCount))
                 end
@@ -273,23 +275,32 @@ function tbFunc.finalAction.SettleOrder()
 
             local nIndex = 1
            -- print("#tbOrderList:"..tostring(#tbOrderList))
-            for _, tbOrder in ipairs(tbOrderList) do
-                --print("gain")
+            while #tbOrderList > 0 do
+                --print(" #tbOrderList")
+                local tbOrder =  tbOrderList[1]
+
                 if nExpenseCount == 0 then break end
 
                 if nIndex > #sortedUserList or sortedUserList[nIndex].count == 0 then
-                    nIndex = 1
+                    --nIndex = 1 -- 改成每个产品最多一个订单
+                    break
                 end
-
+                --print("gain")
                 local tbUser = tbRuntimeData.tbUser[sortedUserList[nIndex].user]
                 tbUser.tbOrder[productName] = tbUser.tbOrder[productName] or {}
-                table.insert(tbUser.tbOrder[productName], {cfg = tbOrder, done = false})
+                table.insert(tbUser.tbOrder[productName], { market = marketIndex, cfg = tbOrder, done = false})
 
                 sortedUserList[nIndex].count = sortedUserList[nIndex].count - 1
                 nExpenseCount = nExpenseCount - 1
                 nIndex = nIndex + 1
+
+                table.remove(tbOrderList, 1)
             end
         end
+    end
+
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        tbUser.tbMarketingExpense = {}
     end
 end
 
@@ -454,8 +465,58 @@ function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
     end
 
     local nTotalCost = 0
-    for _, tbMarketingExpenseCurPrdt in pairs(tbParam.tbMarketingExpense) do
-        for _, v in ipairs(tbMarketingExpenseCurPrdt) do
+    for productName, tbMarketingExpenseCurPrdt in pairs(tbParam.tbMarketingExpense) do
+        if not tbUser.tbProduct[productName] or not tbUser.tbProduct[productName].published then
+            return "need published", false
+        end
+
+        for i, v in ipairs(tbMarketingExpenseCurPrdt) do
+            if v ~= 0 and not table.contain_value(tbUser.tbProduct[productName].market, i) then
+                return "product not published in market"..tostring(i), false
+            end
+
+            nTotalCost = nTotalCost + v
+        end
+    end
+
+    if nTotalCost > tbUser.nCash then
+        return "cash not enough", false
+    end
+
+    tbUser.nCash = tbUser.nCash - nTotalCost
+    tbUser.tbMarketingExpense = tbParam.tbMarketingExpense
+    tbUser.nMarketingExpense = tbUser.nMarketingExpense + nTotalCost
+    tbUser.bStepDone = true
+    return "success", true
+end
+
+-- 提交市场预算 {FuncName = "DoOperate", OperateType = "SeasonCommitMarket", tbMarketingExpense = {a1 = { 2, 1, 1}, a2 = { 5, 3, 3}, b1 = { 20, 40, 3}}}
+function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
+    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    if tbUser.bStepDone then
+        return "already done", false
+    end
+
+    local nTotalCost = 0
+    for productName, tbMarketingExpenseCurPrdt in pairs(tbParam.tbMarketingExpense) do
+        if not tbUser.tbProduct[productName] or not tbUser.tbProduct[productName].published then
+            return "need published", false
+        end
+
+        for i, v in ipairs(tbMarketingExpenseCurPrdt) do
+            if v ~= 0 and not table.contain_value(tbUser.tbProduct[productName].market, i) then
+                return "product not published in market"..tostring(i), false
+            end
+
+            local tbProductOrder = tbUser.tbOrder[productName]
+            if tbProductOrder then
+                for _, tbOrder in pairs(tbProductOrder) do
+                    if i == tbOrder.market then
+                        return "already has order", false
+                    end
+                end
+            end
+
             nTotalCost = nTotalCost + v
         end
     end
