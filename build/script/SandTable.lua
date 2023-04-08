@@ -215,6 +215,7 @@ function tbFunc.Action.DoReset(tbParam)
     tbRuntimeData.nDataVersion = 0
     tbRuntimeData.nCurYear = 1
     tbRuntimeData.tbUser = {}
+    tbRuntimeData.nReadyNextStepCount = 0
     tbRuntimeData.tbLoginAccount = {}
     tbRuntimeData.tbCutdownProduct = {}
     tbRuntimeData.bPlaying = false
@@ -314,8 +315,15 @@ function tbFunc.finalAction.NewYear()
         tbUser.nCurSeasonStep = 1
         tbUser.tbOrder = {}
 
+        -- 历年财报
+        tbUser.tbHistoryYearReport = tbUser.tbHistoryYearReport or {}
+        tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear - 1] = tbUser.tbYearReport
+        -- 去年财报
         tbUser.tbLastYearReport = tbUser.tbYearReport
+        -- 今年财报
         tbUser.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
+         -- 把今年财报也引用进来，万一能看实时呢^_^
+        tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
     end
 end
 
@@ -894,6 +902,9 @@ end
 -- 发工资 {FuncName = "DoOperate", OperateType = "PayOffSalary"}
 function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    if tbUser.bStepDone then
+        return "already done", false
+    end
     local nTens = math.floor(tbUser.nTotalManpower / 10 + 0.5)
     local nCost = nTens * tbConfig.nSalary
 

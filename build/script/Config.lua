@@ -122,6 +122,7 @@ tbConfig = {
         tbYearReport = {
         },
     },
+
     tbInitReport = {
         -- 收入
         nTurnover = 0,

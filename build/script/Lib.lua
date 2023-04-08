@@ -18,6 +18,16 @@ function table.contain_value(tb, value)
 	end
 	return false
 end
+
+-- table 是否全是0
+function table.is_all_zero(tb)
+	if not tb then return false end
+	for i, v in pairs(tb) do
+		if v ~= 0 then return false end
+	end
+	return true
+end
+
 -- 获取table中元素的个数
 function table.get_len(t)
 	if not t then return 0 end
