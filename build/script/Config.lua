@@ -14,9 +14,9 @@ tbConfig = {
     },
     tbStepPerSeason = {
         { desc = "产品上线，把加倍进度的员工放到待岗区", syncNextStep = true, nStepUniqueId = 101},
-        { desc = "季度竞标市场订单", syncNextStep = true, finalAction = "SettleOrder", --[[nStepUniqueId = 101]]},
+        { desc = "季度竞标市场订单", syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 111},
         { desc = "临时招聘，支付临时招聘费用", nStepUniqueId = 102},
-        { desc = "临时解聘，支付临时解聘费用", --[[nStepUniqueId = 102]]},
+        { desc = "解聘，支付解聘费用", nStepUniqueId = 112},
         { desc = "选择初始市场，并立项", nStepUniqueId = 103},
         { desc = "现有人力资源调整（产品线调整人力、预研人力投入）", nStepUniqueId = 104},
         { desc = "更新应收款", nStepUniqueId = 105},

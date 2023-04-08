@@ -827,7 +827,7 @@ function tbFunc.Action.funcDoOperate.RollResearchPoint(tbParam)
     end
     tbResearch.done = true
     tbUser.bStepDone = true
-    return "success", true
+    return string.format("success，%s产品roll点成功：%d", tbParam.ResearchName, nResearchPoint), true
 end
 
 -- 发工资 {FuncName = "DoOperate", OperateType = "PayOffSalary"}
