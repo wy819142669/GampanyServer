@@ -177,9 +177,10 @@ end
 
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)
-    -- if tbRuntimeData.bPlaying then
-    --     return "failed, already start", false
-    -- end
+    if tbRuntimeData.bPlaying then
+        return "failed, already start", false
+    end
+    
     tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
     return "success", true
 end
