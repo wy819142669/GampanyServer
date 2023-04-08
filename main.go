@@ -57,6 +57,7 @@ func CallLua(funcName, params string) string {
 	}
 	//这里获取函数返回值
 	ret := g_L.Get(-1)
+	g_L.Pop(1)
 	return lua.LVAsString(ret)
 }
 
