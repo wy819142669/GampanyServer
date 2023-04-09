@@ -49,8 +49,8 @@ tbConfig = {
     tbYearStep = {},
 
     tbResearch = {
-        d = { manpower = 20, totalPoint = 20 },
-        e = { manpower = 30, totalPoint = 30 },
+        d = { manpower = 20, totalPoint = 15 },
+        e = { manpower = 30, totalPoint = 20 },
     },
     tbResearchSort = {"d", "e"},
     tbInitUserData = {
@@ -69,7 +69,7 @@ tbConfig = {
          -- 市场营销投入
         tbMarketingExpense = {},
         -- 预研
-        tbResearch = { d = { manpower = 20, leftPoint = 20 }, e = { manpower = 30, leftPoint = 30 } },
+        tbResearch = { d = { manpower = 20, leftPoint = 15 }, e = { manpower = 30, leftPoint = 20 } },
         -- 产品
         tbProduct = {
             a1 = { manpower = 20, progress = 4, market = { 1 }, published = true, done = false },
