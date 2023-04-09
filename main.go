@@ -47,6 +47,9 @@ func CallLua(funcName, params string) string {
 	mutex.Lock()
 	defer mutex.Unlock()
 
+	top := g_L.GetTop()
+	defer g_L.SetTop(top)
+
 	fn := g_L.GetGlobal(funcName)
 	if err := g_L.CallByParam(lua.P{
 		Fn: fn,
@@ -57,22 +60,12 @@ func CallLua(funcName, params string) string {
 	}
 	//这里获取函数返回值
 	ret := g_L.Get(-1)
-	g_L.Pop(1)
+
 	return lua.LVAsString(ret)
 }
 
 func RemoteToClient(l *lua.LState) int {
-	player := l.ToInt(1)
-	msg := l.ToString(2)
 
-	if player == 0 || msg == "" {
-
-	}
-	//net.send(player, msg)
-
-	//将返回参数压入栈中
-	g_L.Push(lua.LBool(true))
-	//返回参数为1个
 	return 1
 }
 
