@@ -72,7 +72,7 @@ tbConfig = {
         tbResearch = { d = { manpower = 20, leftPoint = 15 }, e = { manpower = 30, leftPoint = 20 } },
         -- 产品
         tbProduct = {
-            a1 = { manpower = 20, progress = 4, market = { 1 }, published = true, done = false },
+            a1 = { manpower = 20, progress = 3, market = { 1 }, published = true, done = false },
             a2 = { manpower = 40, progress = 0, market = { 1 }, published = false, done = false },
             b1 = { manpower = 20, progress = 0, market = { 1 }, published = false, done = false },
         },
