@@ -319,6 +319,10 @@ function tbFunc.finalAction.NewYear()
         tbUser.nCurSeasonStep = 1
         tbUser.tbOrder = {}
         tbUser.tbLaborCost = {0, 0, 0, 0}
+        tbUser.nMarketingExpense = 0
+        tbUser.nAppendMarketCost = 0
+        tbUser.nTax = 0
+        tbUser.nSeverancePackage = 0
 
         -- 历年财报
         tbUser.tbHistoryYearReport = tbUser.tbHistoryYearReport or {}
@@ -879,7 +883,7 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
         end
     end
 
-    for _, v in tbParam.tbMarket do
+    for _, v in ipairs(tbParam.tbMarket) do
         table.insert(tbProduct.market, v)
     end
     tbUser.nCash = tbUser.nCash - nCost
