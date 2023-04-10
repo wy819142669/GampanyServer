@@ -479,8 +479,8 @@ function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
 
     local nTotalCost = 0
     for productName, tbMarketingExpenseCurPrdt in pairs(tbParam.tbMarketingExpense) do
-        if not tbUser.tbProduct[productName] or not tbUser.tbProduct[productName].published then
-            return "need published", false
+        if not tbUser.tbProduct[productName] or tbUser.tbProduct[productName].progress ~= tbConfig.tbProduct[productName].maxProgress then
+            return "need develpment max progress", false
         end
 
         for i, v in ipairs(tbMarketingExpenseCurPrdt) do
@@ -512,8 +512,8 @@ function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
 
     local nTotalCost = 0
     for productName, tbMarketingExpenseCurPrdt in pairs(tbParam.tbMarketingExpense) do
-        if not tbUser.tbProduct[productName] or not tbUser.tbProduct[productName].published then
-            return "need published", false
+        if not tbUser.tbProduct[productName] or tbUser.tbProduct[productName].progress ~= tbConfig.tbProduct[productName].maxProgress then
+            return "need develpment max progress", false
         end
 
         for i, v in ipairs(tbMarketingExpenseCurPrdt) do
@@ -853,6 +853,10 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
         return "product not exist", false
     end
 
+    if tbProduct.progress ~= tbConfig.tbProduct[tbParam.ProductName].maxProgress then
+        return "need develpment max progress", false
+    end
+
     for _, v in ipairs(tbParam.tbMarket) do
         if not table.contain_value(tbRuntimeData.tbMarket, v) then
             return "invalid market:" .. tostring(v), false
@@ -860,22 +864,24 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
     end
 
     for _, v in ipairs(tbProduct.market) do
-        if not table.contain_value(tbParam.tbMarket, v) then
-            return "can not unselect market:" .. tostring(v), false
+        if table.contain_value(tbParam.tbMarket, v) then
+            return "can not select market:" .. tostring(v), false
         end
     end
 
     local nCost = 0
-    if #tbParam.tbMarket > #tbProduct.market then
+    if #tbParam.tbMarket > 0 then
         local addMarketCost = tbConfig.tbProduct[tbParam.ProductName].addMarketCost
-        nCost = math.floor(addMarketCost + 0.5) * (#tbParam.tbMarket - #tbProduct.market)
+        nCost = math.floor(addMarketCost + 0.5) * #tbParam.tbMarket
 
         if tbUser.nCash < nCost then
             return "cash not enough", false
         end
     end
 
-    tbProduct.market = tbParam.tbMarket
+    for _, v in tbParam.tbMarket do
+        table.insert(tbProduct.market, v)
+    end
     tbUser.nCash = tbUser.nCash - nCost
     tbUser.nAppendMarketCost = tbUser.nAppendMarketCost + nCost
     tbUser.bStepDone = true
