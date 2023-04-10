@@ -17,9 +17,6 @@ local tbRuntimeData = {
     nReadyNextStepCount = 0,
     -- 当前年份
     nCurYear = 1,
-    --nCurYearStep = 1,
-    --nCurSeason = 0,
-    --nCurSeasonStep = 0,
     tbCutdownProduct = {
         -- a1 = true,
         -- b1 = true,
@@ -116,7 +113,7 @@ function Action(jsonParam)
     local szMsg = ""
     local bRet = false
     if func then
-        szMsg, bRet = func(tbParam)
+        szMsg, bRet, tbCustomData = func(tbParam)
     else
         szMsg = "invalid FuncName"
     end
@@ -125,6 +122,12 @@ function Action(jsonParam)
         msg = szMsg,
         tbRuntimeData = tbRuntimeData
     }
+
+    if tbCustomData then
+        for k, v in pairs(tbCustomData) do
+            tbResult[k] = v 
+        end
+    end
 
     -- 客户端要用tbLoginAccount来判断登录状态
     -- tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
@@ -164,11 +167,7 @@ end
 --------------------接口实现---------------------------------------
 tbFunc.Action = {}
 function tbFunc.Action.GetLuaFile(tbParam)
-    if tbConfig.nLuaVersion ~= tbParam.nLuaVersion then
-        -- todo:
-        --return "success", false, { LuaFileContent = "" }
-    end
-    return "success", false
+    return "success", true,  { tbConfig = tbConfig }
 end
 
 function tbFunc.Action.QueryRunTimeData(tbParam)
@@ -290,9 +289,13 @@ function tbFunc.finalAction.SettleOrder()
                 --print("gain")
                 local tbUser = tbRuntimeData.tbUser[sortedUserList[nIndex].user]
                 tbUser.tbOrder[productName] = tbUser.tbOrder[productName] or {}
-                table.insert(tbUser.tbOrder[productName], { market = marketIndex, cfg = tbOrder, done = false})
+                table.insert(tbUser.tbOrder[productName], {
+                    market = marketIndex,
+                    expense = sortedUserList[nIndex].count,
+                    cfg = tbOrder,
+                    done = false
+                })
 
-                sortedUserList[nIndex].count = sortedUserList[nIndex].count - 1
                 nExpenseCount = nExpenseCount - 1
                 nIndex = nIndex + 1
 
@@ -312,9 +315,10 @@ function tbFunc.finalAction.NewYear()
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.nCurYearStep = 0
-        tbUser.nCurSeason = 1
+        tbUser.nCurSeason = 0
         tbUser.nCurSeasonStep = 1
         tbUser.tbOrder = {}
+        tbUser.tbLaborCost = {0, 0, 0, 0}
 
         -- 历年财报
         tbUser.tbHistoryYearReport = tbUser.tbHistoryYearReport or {}

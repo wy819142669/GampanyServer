@@ -9,6 +9,7 @@ tbConfig = {
     tbEnableMarketPerYear = {{2}, {3}},
     tbBeginStepPerYear = {
         { desc = "支付税款", mustDone = true, syncNextStep = true, nStepUniqueId = 1},
+        { desc = "追加额外市场，支付本地化费用", nStepUniqueId = 108},
         { desc = "市场竞标，抢订单", mustDone = true, syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 2},
         { desc = "招聘并支付费用", nStepUniqueId = 3},
     },
@@ -22,7 +23,6 @@ tbConfig = {
         { desc = "更新应收款", nStepUniqueId = 105},
         { desc = "本季收入结算—现结款收入、放置延期收款", nStepUniqueId = 106},
         { desc = "研发推进", nStepUniqueId = 107},
-        { desc = "追加额外市场，支付本地化费用", nStepUniqueId = 108},
         { desc = "roll点扣除剩余点数，查看预研结果", nStepUniqueId = 109},
         { desc = "支付人员工资（总人力*工资）", mustDone = true, nStepUniqueId = 110},
     },
@@ -57,7 +57,7 @@ tbConfig = {
         -- 当前年步骤
         nCurYearStep = 1,
         -- 当前季度
-        nCurSeason = 1,
+        nCurSeason = 0,
         -- 当前季度步骤
         nCurSeasonStep = 1,
         -- 当前步骤已经操作完，防止重复操作
@@ -344,8 +344,11 @@ tbConfig = {
     }
 }
 
-for _, v in ipairs(tbConfig.tbBeginStepPerYear) do
-    table.insert(tbConfig.tbYearStep, Lib.copyTab(v))
+for i, v in ipairs(tbConfig.tbBeginStepPerYear) do
+    local tbBeginStep = Lib.copyTab(v)
+    tbBeginStep.nCurSeason = 0
+    tbBeginStep.nCurSeasonStep = i
+    table.insert(tbConfig.tbYearStep, tbBeginStep)
 end
 
 for i = 1, 4 do
@@ -357,8 +360,10 @@ for i = 1, 4 do
     end
 end
 
-for _, v in ipairs(tbConfig.tbEndStepPerYear) do
-    table.insert(tbConfig.tbYearStep, Lib.copyTab(v))
+for i, v in ipairs(tbConfig.tbEndStepPerYear) do
+    local tbEndStep = Lib.copyTab(v)
+    tbEndStep.nCurSeasonStep = i
+    table.insert(tbConfig.tbYearStep, tbEndStep)
 end
 
 tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
