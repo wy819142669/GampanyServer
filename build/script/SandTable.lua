@@ -337,7 +337,7 @@ function tbFunc.finalAction.NewYear()
 end
 
 function tbFunc.finalAction.EnableNextMarket()
-    local tbEnableMarket = tbConfig.tbEnableMarketPerYear[tbRuntimeData.nCurYear]
+    local tbEnableMarket = tbConfig.tbEnableMarketPerYear[tbRuntimeData.nCurYear] or {}
     for _, v in ipairs(tbEnableMarket) do
         if not table.contain_value(tbRuntimeData.tbMarket, v) then
             table.insert(tbRuntimeData.tbMarket, v)
@@ -471,7 +471,8 @@ function tbFunc.Action.funcDoOperate.Tax(tbParam)
         tbUser.nTax = tbUser.tbLastYearReport.nTax
     end
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = string.format("成功交税，花费：%d", tbUser.tbLastYearReport and tbUser.tbLastYearReport.nTax or 0)
+    return szReturnMsg, true
 end
 
 -- 提交市场预算 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a1 = { 2, 1, 1}, a2 = { 5, 3, 3}, b1 = { 20, 40, 3}}}
@@ -504,7 +505,8 @@ function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
     tbUser.tbMarketingExpense = tbParam.tbMarketingExpense
     tbUser.nMarketingExpense = tbUser.nMarketingExpense + nTotalCost
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = string.format("成功提交市场营销预算，共花费：%d", nTotalCost)
+    return szReturnMsg, true
 end
 
 -- 提交市场预算 {FuncName = "DoOperate", OperateType = "SeasonCommitMarket", tbMarketingExpense = {a1 = { 2, 1, 1}, a2 = { 5, 3, 3}, b1 = { 20, 40, 3}}}
@@ -564,7 +566,8 @@ function tbFunc.Action.funcDoOperate.CommitNormalHire(tbParam)
     tbUser.nIdleManpower = tbUser.nIdleManpower + nTens * 10
     tbUser.nTotalManpower = tbUser.nTotalManpower + nTens * 10
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = string.format("成功招聘人员：%d，花费：%d", nTens * 10, nCost)
+    return szReturnMsg, true
 end
 
 -- 产品上线 {FuncName = "DoOperate", OperateType = "PublishProduct", PublishProduct = "b2"}}
@@ -599,7 +602,8 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
 
     tbProduct.published = true
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = string.format("成功发布产品:%s", tbParam.PublishProduct)
+    return szReturnMsg, true
 end
 
 -- 临时招聘 {FuncName = "DoOperate", OperateType = "CommitTempHire", nNum = 20}
@@ -617,7 +621,11 @@ function tbFunc.Action.funcDoOperate.CommitTempHire(tbParam)
     tbUser.nIdleManpower = tbUser.nIdleManpower + nTens * 10
     tbUser.nTotalManpower = tbUser.nTotalManpower + nTens * 10
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = "跳过临时招聘"
+    if nTens > 0 then
+        szReturnMsg = string.format("成功临时招聘人员%d, 花费：%d", nTens * 10, nCost)
+    end
+    return szReturnMsg, true
 end
 
 -- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", GridType = "idle", GridName = "", nNum = 20} -- GridType:[research\product\idle], GridName:[d\e\a1\b2\""]
@@ -626,6 +634,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
     local nTens = math.floor(tbParam.nNum / 10)
     local nCost = nTens * tbConfig.nFireCost
     local checkFunc, doUpdateManpowerFunc
+    local szReturnMsg = "跳过解聘"
     if tbParam.GridType == "research" then
         checkFunc = function ()
             if not tbUser.tbResearch[tbParam.GridName] or tbUser.tbResearch[tbParam.GridName].manpower < nTens * 10 then
@@ -636,6 +645,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
 
         doUpdateManpowerFunc = function ()
             tbUser.tbResearch[tbParam.GridName].manpower = tbUser.tbResearch[tbParam.GridName].manpower - nTens * 10
+            szReturnMsg = string.format("成功解雇产品%s预研人员%d", tbParam.GridName, nTens * 10)
         end
     elseif tbParam.GridType == "product" then
         checkFunc = function ()
@@ -647,6 +657,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
 
         doUpdateManpowerFunc = function ()
             tbUser.tbProduct[tbParam.GridName].manpower = tbUser.tbProduct[tbParam.GridName].manpower - nTens * 10
+            szReturnMsg = string.format("成功解雇产品%s研发人员%d", tbParam.GridName, nTens * 10)
         end
     elseif tbParam.GridType == "idle" then
         checkFunc = function ()
@@ -658,6 +669,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
 
         doUpdateManpowerFunc = function ()
             tbUser.nIdleManpower = tbUser.nIdleManpower - nTens * 10
+            szReturnMsg = string.format("成功解雇待岗人员%d", nTens * 10)
         end
     end
 
@@ -671,7 +683,7 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
     doUpdateManpowerFunc()
     tbUser.nTotalManpower = tbUser.nTotalManpower - nTens * 10
     tbUser.bStepDone = true
-    return "success", true
+    return szReturnMsg, true
 end
 
 -- 立项 {FuncName = "DoOperate", OperateType = "CreateProduct", ProductName="b2", tbMarket = {1,2,3}}
@@ -722,12 +734,17 @@ function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
     tbUser.tbProduct[tbParam.ProductName] = { manpower = 0, progress = 0, market = tbParam.tbMarket, published = false, done = false }
     tbUser.nCash = tbUser.nCash - nCost
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = string.format("成功立项：%s，初始市场：", tbParam.ProductName)
+    for _, v in ipairs(tbParam.tbMarket) do
+        szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
+    end
+    return szReturnMsg, true
 end
 
 -- 人员调整 {FuncName = "DoOperate", OperateType = "Turnover", GridType="product", GridName="b2"}
 function tbFunc.Action.funcDoOperate.Turnover(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    local szReturnMsg = "success"
 
     if tbParam.GridType == "research" then
         local manpower = tbUser.tbResearch[tbParam.GridName].manpower
@@ -735,29 +752,37 @@ function tbFunc.Action.funcDoOperate.Turnover(tbParam)
         if manpower < manpowerCfg and manpower + tbUser.nIdleManpower >= manpowerCfg then
             tbUser.tbResearch[tbParam.GridName].manpower = manpowerCfg
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - manpowerCfg
+            szReturnMsg = string.format("产品%s预研人员+%d", tbParam.GridName, manpowerCfg)
         else
             tbUser.tbResearch[tbParam.GridName].manpower = 0
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower
+            szReturnMsg = string.format("产品%s预研人员-%d", tbParam.GridName, manpowerCfg)
         end
     elseif tbParam.GridType == "product" then
         local tbProduct = tbUser.tbProduct[tbParam.GridName]
+        if not tbProduct then
+            return "not product "..tbParam.GridName, false
+        end
         local manpower = tbProduct.manpower
         local minManpowerCfg = tbConfig.tbProduct[tbParam.GridName].minManpower
         local maxManpowerCfg = tbConfig.tbProduct[tbParam.GridName].maxManpower
         if manpower < minManpowerCfg and manpower + tbUser.nIdleManpower >= minManpowerCfg then
             tbProduct.manpower = minManpowerCfg
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - minManpowerCfg
+            szReturnMsg = string.format("产品%s研发人员+%d", tbParam.GridName, minManpowerCfg)
         elseif not tbProduct.published and manpower < maxManpowerCfg and manpower + tbUser.nIdleManpower >= maxManpowerCfg then
             tbProduct.manpower = maxManpowerCfg
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - maxManpowerCfg
+            szReturnMsg = string.format("产品%s研发人员+%d", tbParam.GridName, maxManpowerCfg - manpower)
         else
             tbProduct.manpower = 0
             tbUser.nIdleManpower = tbUser.nIdleManpower + manpower
+            szReturnMsg = string.format("产品%s研发人员-%d", tbParam.GridName, manpower)
         end
     end
 
     tbUser.bStepDone = true
-    return "success", true
+    return szReturnMsg, true
 end
 
 -- 更新应收款 {FuncName = "DoOperate", OperateType = "UpdateReceivables"}
@@ -772,7 +797,8 @@ function tbFunc.Action.funcDoOperate.UpdateReceivables(tbParam)
     table.insert(tbUser.tbReceivables, 0)
     tbUser.nCash = tbUser.nCash + nCash
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = string.format("本季度更新应收款收入:%d", nCash)
+    return szReturnMsg, true
 end
 
 -- 订单收款 {FuncName = "DoOperate", OperateType = "GainMoney", ProductName="b2"}
@@ -811,7 +837,8 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
 
     tbProduct.done = true
     tbUser.bStepDone = true
-    return "success", true
+    local szReturnMsg = string.format("产品%s本季度成功营收:%d", tbParam.ProductName, nCashCount)
+    return szReturnMsg, true
 end
 
 -- 推进进度 {FuncName = "DoOperate", OperateType = "UpdateProductProgress", ProductName="b2"}
@@ -842,7 +869,9 @@ function tbFunc.Action.funcDoOperate.UpdateProductProgress(tbParam)
     end
     tbProduct.done = true
     tbUser.bStepDone = true
-    return "success", true
+    
+    local szReturnMsg = string.format("产品%s进度推进:%d/%d", tbParam.ProductName, tbProduct.progress, tbProduct.maxProgress)
+    return szReturnMsg, true
 end
 
 -- 追加市场 {FuncName = "DoOperate", OperateType = "AddMarket", ProductName="b2", tbMarket={1, 2, 3}}
@@ -889,7 +918,15 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
     tbUser.nCash = tbUser.nCash - nCost
     tbUser.nAppendMarketCost = tbUser.nAppendMarketCost + nCost
     tbUser.bStepDone = true
-    return "success", true
+
+    local szReturnMsg = "跳过追加市场"
+    if #tbParam.tbMarket > 0 then
+        szReturnMsg = string.format("%s产品成功追加市场：", tbParam.ProductName)
+        for _, v in ipairs(tbParam.tbMarket) do
+            szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
+        end
+    end
+    return szReturnMsg, true
 end
 
 -- 随机研发进度 {FuncName = "DoOperate", OperateType = "RollResearchPoint", ResearchName="d"}
@@ -911,7 +948,7 @@ function tbFunc.Action.funcDoOperate.RollResearchPoint(tbParam)
     end
     tbResearch.done = true
     tbUser.bStepDone = true
-    return string.format("success，%s产品roll点成功：%d", tbParam.ResearchName, nResearchPoint), true
+    return string.format("%s产品roll点成功：%d", tbParam.ResearchName, nResearchPoint), true
 end
 
 -- 发工资 {FuncName = "DoOperate", OperateType = "PayOffSalary"}
@@ -926,7 +963,7 @@ function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
     tbUser.nCash = tbUser.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
     tbUser.tbLaborCost[tbUser.nCurSeason] = nCost
     tbUser.bStepDone = true
-    return "success", true
+    return string.format("成功支付工资：%d", nCost), true
 end
 
 --------------------------------------------------------------------
