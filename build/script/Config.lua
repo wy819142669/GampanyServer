@@ -237,7 +237,9 @@ for _, tbYearOrder in pairs(tbConfig.tbOrder) do
     for _, tbProductOrder in pairs(tbYearOrder) do
         for marketIdx, tbOrderList in ipairs(tbProductOrder) do
             if marketIdx == 2 or marketIdx == 3 then
-                tbOrderList.delaySeason = 1
+                for _, tbOrder in ipairs(tbOrderList) do
+                    tbOrder.delaySeason = 1
+                end
             end
         end
     end
