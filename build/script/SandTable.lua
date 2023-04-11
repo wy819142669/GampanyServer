@@ -400,9 +400,9 @@ function tbFunc.enterAction.UndoneOrderPunish(tbUser)
 
     tbUser.nCash = tbUser.nCash - nPay
     if nPay == 0 then
-        tbUser.szTitle = "你已完成所有订单"
+        tbUser.szTitle = "你已完成所有用户"
     else
-        tbUser.szTitle = "因未完成订单扣除订单面值50%罚金。 扣除现金"..tostring(nPay)
+        tbUser.szTitle = "因未完成用户扣除用户面值50%罚金。 扣除现金"..tostring(nPay)
     end
 end
 
