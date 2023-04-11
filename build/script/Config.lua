@@ -247,3 +247,13 @@ end
 
 tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
 tbConfig.tbInitUserData.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
+
+for nYear, tbOrders in pairs(tbConfig.tbOrder) do
+    for szProductName, tbOrders2 in pairs(tbOrders) do
+        for nMarketIndex, tbOrders3 in pairs(tbOrders2) do
+            for nIndex, tbOrders4 in pairs(tbOrders3) do
+                assert(type(tbOrders4) == "table" and tbOrders4.n and tbOrders4.arpu, string.format("order's format is invalid!! year:%d,szProductName:%s,nMarketIndex:%d,nIndex:%d,orderstr:%s,parent:%s", nYear, szProductName, nMarketIndex, nIndex, type(tbOrders4) == "table" and JsonEncode(tbOrders4) or tostring(tbOrders4), JsonEncode(tbOrders3)))
+            end
+        end
+    end
+end
