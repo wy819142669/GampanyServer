@@ -6,3 +6,4 @@ SandTableClient/Temp/
 SandTableClient/obj/
 pidf.go
 *.pid
+build/SandTableServer.exe
