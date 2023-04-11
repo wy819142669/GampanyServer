@@ -371,6 +371,9 @@ function tbFunc.enterAction.FinancialReport(tbUser)
                                         - tbUser.tbYearReport.nFinancialExpenses
 
     tbUser.tbYearReport.nTax = math.floor(tbUser.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
+    if tbUser.tbYearReport.nTax < 0 then
+        tbUser.tbYearReport.nTax = 0
+    end
 
     tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax
                                         - tbUser.tbYearReport.nTax
@@ -503,7 +506,7 @@ function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
         end
     end
 
-    if nTotalCost > tbUser.nCash then
+    if nTotalCost ~= 0 and nTotalCost > tbUser.nCash then
         return "cash not enough", false
     end
 
@@ -540,7 +543,7 @@ function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
         end
     end
 
-    if nTotalCost > tbUser.nCash then
+    if nTotalCost ~= 0 and nTotalCost > tbUser.nCash then
         return "cash not enough", false
     end
 
