@@ -251,7 +251,7 @@ function tbFunc.finalAction.SettleOrder()
         for marketIndex, tbOrderList in ipairs(tbMarketOrder) do
             --print("----------------------------------------------------------")
             --print("marketIndex:" .. tostring(marketIndex))
-            
+
             local sortedUserList = {}
             local nExpenseCount = 0
             for userName, tbUser in pairs(tbRuntimeData.tbUser) do
@@ -260,7 +260,8 @@ function tbFunc.finalAction.SettleOrder()
                     local expense = tbUser.tbMarketingExpense[productName][marketIndex] or 0
                     table.insert(sortedUserList, {
                         user = userName,
-                        count = expense
+                        count = expense,
+                        rand = math.random(100),
                     })
 
                     if tbUser.tbMarketingExpense[productName][marketIndex] then
@@ -271,6 +272,10 @@ function tbFunc.finalAction.SettleOrder()
             end
 
             table.sort(sortedUserList, function (x, y)
+                if x.count == y.count then
+                    return x.rand > y.rand
+                end
+
                 return x.count > y.count
             end)
 
@@ -306,6 +311,7 @@ function tbFunc.finalAction.SettleOrder()
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbMarketingExpense = {}
+        tbUser.tbNewProduct = {}
     end
 end
 
@@ -523,16 +529,10 @@ function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
         end
 
         for i, v in ipairs(tbMarketingExpenseCurPrdt) do
-            if v ~= 0 and not table.contain_value(tbUser.tbProduct[productName].market, i) then
-                return "product not published in market"..tostring(i), false
-            end
-
-            local tbProductOrder = tbUser.tbOrder[productName]
-            if tbProductOrder then
-                for _, tbOrder in pairs(tbProductOrder) do
-                    if i == tbOrder.market then
-                        return "already has order", false
-                    end
+            local tbNewProduct = tbUser.tbNewProduct[productName]
+            if v ~= 0 then
+                if not tbNewProduct or not table.contain_value(tbNewProduct, i) then
+                    return "not new product or new market", false
                 end
             end
 
@@ -600,6 +600,7 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
         tbRuntimeData.tbCutdownProduct[productType.."1"] = true
     end
 
+    tbUser.tbNewProduct[tbParam.PublishProduct] = tbProduct.market
     tbProduct.published = true
     tbUser.bStepDone = true
     local szReturnMsg = string.format("成功发布产品:%s", tbParam.PublishProduct)
@@ -818,26 +819,35 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
     end
 
     local nCashCount = 0
+    local nTurnover = 0
     local tbOrderList = tbUser.tbOrder[tbParam.ProductName]
     if not tbOrderList then
         return string.format("not order %s", tbParam.ProductName), false
     end
     for _, tbOrder in ipairs(tbOrderList) do
+        local nCash
         if tbRuntimeData.tbCutdownProduct[tbParam.ProductName] then
-            nCashCount = nCashCount + math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu / 2 + 0.5)
+            nCash = math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu / 2 + 0.5)
         else
-            nCashCount = nCashCount + math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu + 0.5)
+            nCash = math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu + 0.5)
         end
+
+        if tbOrder.cfg.delaySeason and tbOrder.cfg.delaySeason > 0 then
+            tbUser.tbReceivables[tbOrder.cfg.delaySeason] = tbUser.tbReceivables[tbOrder.cfg.delaySeason] + nCash
+        else
+            nCashCount = nCashCount + nCash
+        end
+
+        nTurnover = nTurnover + nCash
         tbOrder.done = true
     end
 
-    -- todo：高品质产品对低品质的碾压， 需要大家同步推进季度？
-    tbUser.nCash = tbUser.nCash + nCashCount  -- todo: 还未定义收款期限
-    tbUser.tbYearReport.nTurnover = tbUser.tbYearReport.nTurnover + nCashCount
+    tbUser.nCash = tbUser.nCash + nCashCount
+    tbUser.tbYearReport.nTurnover = tbUser.tbYearReport.nTurnover + nTurnover
 
     tbProduct.done = true
     tbUser.bStepDone = true
-    local szReturnMsg = string.format("产品%s本季度成功营收:%d", tbParam.ProductName, nCashCount)
+    local szReturnMsg = string.format("产品%s本季度成功营收:%d", tbParam.ProductName, nTurnover)
     return szReturnMsg, true
 end
 
@@ -915,6 +925,12 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
     for _, v in ipairs(tbParam.tbMarket) do
         table.insert(tbProduct.market, v)
     end
+
+    tbUser.tbNewProduct[tbParam.ProductName] = tbUser.tbNewProduct[tbParam.ProductName] or {}
+    for _, v in ipairs(tbParam.tbMarket) do
+        table.insert(tbUser.tbNewProduct[tbParam.ProductName], v)
+    end
+
     tbUser.nCash = tbUser.nCash - nCost
     tbUser.nAppendMarketCost = tbUser.nAppendMarketCost + nCost
     tbUser.bStepDone = true
