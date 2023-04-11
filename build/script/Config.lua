@@ -80,6 +80,10 @@ tbConfig = {
         tbOrder = {
             --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
         },
+        -- 新品列表 （可参与季度竞标）
+        tbNewProduct = {
+            -- a1 = { 1, 2 }
+        },
         -- 待岗
         nIdleManpower = 0,
         -- 待收款
@@ -227,6 +231,16 @@ for i, v in ipairs(tbConfig.tbEndStepPerYear) do
     local tbEndStep = Lib.copyTab(v)
     tbEndStep.nCurSeasonStep = i
     table.insert(tbConfig.tbYearStep, tbEndStep)
+end
+
+for _, tbYearOrder in pairs(tbConfig.tbOrder) do
+    for _, tbProductOrder in pairs(tbYearOrder) do
+        for marketIdx, tbOrderList in ipairs(tbProductOrder) do
+            if marketIdx == 2 or marketIdx == 3 then
+                tbOrderList.delaySeason = 1
+            end
+        end
+    end
 end
 
 tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
