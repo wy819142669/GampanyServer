@@ -5,6 +5,10 @@ tbConfig = {
     nTempHireCost = 3, -- 临时招聘费用
     nFireCost = 3, -- 解雇 薪水*4
     nSalary = 1, -- 薪水
+    tbAdminCost = {  -- 行政管理费用
+        {step = 400, cost = 3, quickCalc = -1000 },  -- quickCalc 速算扣除数， 费用 = totalManpower * cost + quickCalc
+        {step = 300, cost = 2, quickCalc = -600 },
+    },
     fTaxRate = 0.1,
     tbEnableMarketPerYear = {{2}, {3}},
     tbBeginStepPerYear = {
@@ -218,6 +222,11 @@ for i = 1, 4 do
         local tbSeasonCfg = Lib.copyTab(v)
         tbSeasonCfg.nCurSeason = i
         tbSeasonCfg.nCurSeasonStep = j
+        if i == 1 and tbSeasonCfg == nStepUniqueId then --一季度跳过市场竞标
+            tbSeasonCfg.syncNextStep = false
+            tbSeasonCfg.enterAction = "SkipStep"
+        end
+
         table.insert(tbConfig.tbYearStep, tbSeasonCfg)
     end
 end

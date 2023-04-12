@@ -244,6 +244,7 @@ function tbFunc.finalAction.SettleOrder()
 
     ]]
 
+    local tbProductName = {}
     local tbOrderCfg = tbRuntimeData.tbOrder[tbRuntimeData.nCurYear]
     for productName, tbMarketOrder in pairs(tbOrderCfg) do
         --print("productName:" .. productName)
@@ -291,7 +292,7 @@ function tbFunc.finalAction.SettleOrder()
                     --nIndex = 1 -- 改成每个产品最多一个订单
                     break
                 end
-                --print("gain")
+                
                 local tbUser = tbRuntimeData.tbUser[sortedUserList[nIndex].user]
                 tbUser.tbOrder[productName] = tbUser.tbOrder[productName] or {}
                 table.insert(tbUser.tbOrder[productName], {
@@ -300,12 +301,21 @@ function tbFunc.finalAction.SettleOrder()
                     cfg = tbOrder,
                     done = false
                 })
+                tbProductName[productName] = true
 
                 nExpenseCount = nExpenseCount - 1
                 nIndex = nIndex + 1
 
                 table.remove(tbOrderList, 1)
             end
+        end
+    end
+
+    for productName, _ in pairs(tbProductName) do
+        local productType = string.sub(productName, 1, 1)
+        local productLevel = string.sub(productName, 2, 2)
+        if productLevel == "2" then
+            tbRuntimeData.tbCutdownProduct[productType.."1"] = true
         end
     end
 
@@ -403,6 +413,10 @@ function tbFunc.enterAction.UndoneOrderPunish(tbUser)
     else
         tbUser.szTitle = "因未完成用户扣除用户面值50%罚金。 扣除现金"..tostring(nPay)
     end
+end
+
+function tbFunc.enterAction.SkipStep(tbUser)
+    userNewStep(tbUser)
 end
 
 tbFunc.Action.funcDoOperate = {}
@@ -600,12 +614,6 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
 
         tbProduct.manpower = tbProduct.manpower - moveNum
         tbUser.nIdleManpower = tbUser.nIdleManpower + moveNum
-    end
-
-    local productType = string.sub(tbParam.PublishProduct, 1, 1)
-    local productLevel = string.sub(tbParam.PublishProduct, 2, 2)
-    if productLevel == "2" then
-        tbRuntimeData.tbCutdownProduct[productType.."1"] = true
     end
 
     tbProduct.published = true
@@ -981,6 +989,13 @@ function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
     end
     local nTens = math.floor(tbUser.nTotalManpower / 10 + 0.5)
     local nCost = nTens * tbConfig.nSalary
+
+    for _, tbAdminCost in ipairs(tbConfig.tbAdminCost) do
+        if tbUser.nTotalManpower > tbAdminCost.step then
+            nCost = nCost + (tbUser.nTotalManpower * tbAdminCost.cost + tbAdminCost.quickCalc)
+            break
+        end
+    end
 
     tbUser.nCash = tbUser.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
     tbUser.tbLaborCost[tbUser.nCurSeason] = nCost
