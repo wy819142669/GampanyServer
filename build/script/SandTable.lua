@@ -992,7 +992,7 @@ function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
 
     for _, tbAdminCost in ipairs(tbConfig.tbAdminCost) do
         if tbUser.nTotalManpower > tbAdminCost.step then
-            nCost = nCost + (tbUser.nTotalManpower * tbAdminCost.cost + tbAdminCost.quickCalc)
+            nCost = nCost + math.floor(tbUser.nTotalManpower * tbAdminCost.cost + tbAdminCost.quickCalc + 0.5)
             break
         end
     end

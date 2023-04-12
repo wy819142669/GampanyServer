@@ -222,7 +222,7 @@ for i = 1, 4 do
         local tbSeasonCfg = Lib.copyTab(v)
         tbSeasonCfg.nCurSeason = i
         tbSeasonCfg.nCurSeasonStep = j
-        if i == 1 and tbSeasonCfg == nStepUniqueId then --一季度跳过市场竞标
+        if i == 1 and tbSeasonCfg.nStepUniqueId == 111 then --一季度跳过市场竞标
             tbSeasonCfg.syncNextStep = false
             tbSeasonCfg.enterAction = "SkipStep"
         end
