@@ -8,13 +8,13 @@ tbConfig = {
     fTaxRate = 0.1,
     tbEnableMarketPerYear = {{2}, {3}},
     tbBeginStepPerYear = {
-        { desc = "支付税款", mustDone = true, syncNextStep = true, nStepUniqueId = 1},
+        { desc = "支付税款", mustDone = true, nStepUniqueId = 1},
         { desc = "追加额外市场，支付本地化费用", nStepUniqueId = 108},
         { desc = "市场竞标，抢用户", mustDone = true, syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 2},
         { desc = "招聘并支付费用", nStepUniqueId = 3},
     },
     tbStepPerSeason = {
-        { desc = "产品上线，把加倍进度的员工放到待岗区", syncNextStep = true, nStepUniqueId = 101},
+        { desc = "产品上线，把加倍进度的员工放到待岗区", nStepUniqueId = 101},
         { desc = "季度竞标市场用户", syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 111},
         { desc = "临时招聘，支付临时招聘费用", nStepUniqueId = 102},
         { desc = "解聘，支付解聘费用", nStepUniqueId = 112},
@@ -29,7 +29,6 @@ tbConfig = {
     tbEndStepPerYear = {
         { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket", nStepUniqueId = 201},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
         { desc = "海外市场自动开放", enterAction = "EnableMarketTip", nStepUniqueId = 202},
-      --  { desc = "结算已抢但未完成的用户罚款（50%用户金额）", enterAction = "UndoneOrderPunish", nStepUniqueId = 203},
         { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport", nStepUniqueId = 204},
         { desc = "排名总结", syncNextStep = true, finalAction = "NewYear", nStepUniqueId = 205}
     },
@@ -79,10 +78,6 @@ tbConfig = {
          -- 订单
         tbOrder = {
             --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
-        },
-        -- 新品列表 （可参与季度竞标）
-        tbNewProduct = {
-            -- a1 = { 1, 2 }
         },
         -- 待岗
         nIdleManpower = 0,

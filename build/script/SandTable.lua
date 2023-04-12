@@ -311,7 +311,6 @@ function tbFunc.finalAction.SettleOrder()
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbMarketingExpense = {}
-        tbUser.tbNewProduct = {}
     end
 end
 
@@ -532,10 +531,16 @@ function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
         end
 
         for i, v in ipairs(tbMarketingExpenseCurPrdt) do
-            local tbNewProduct = tbUser.tbNewProduct[productName]
-            if v ~= 0 then
-                if not tbNewProduct or not table.contain_value(tbNewProduct, i) then
-                    return "not new product or new market", false
+            if v ~= 0 and not table.contain_value(tbUser.tbProduct[productName].market, i) then
+                return "product not published in market"..tostring(i), false
+            end
+
+            local tbProductOrder = tbUser.tbOrder[productName]
+            if tbProductOrder then
+                for _, tbOrder in pairs(tbProductOrder) do
+                    if i == tbOrder.market then
+                        return "already has order", false
+                    end
                 end
             end
 
@@ -603,7 +608,6 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
         tbRuntimeData.tbCutdownProduct[productType.."1"] = true
     end
 
-    tbUser.tbNewProduct[tbParam.PublishProduct] = tbProduct.market
     tbProduct.published = true
     tbUser.bStepDone = true
     local szReturnMsg = string.format("成功发布产品:%s", tbParam.PublishProduct)
@@ -817,6 +821,10 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
         return "unpublished", false
     end
 
+    if tbProduct.manpower < tbConfig.tbProduct[tbParam.ProductName].minManpower then
+        return "need more manpower", false
+    end
+
     if tbProduct.done then
         return "already done", false
     end
@@ -927,11 +935,6 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
 
     for _, v in ipairs(tbParam.tbMarket) do
         table.insert(tbProduct.market, v)
-    end
-
-    tbUser.tbNewProduct[tbParam.ProductName] = tbUser.tbNewProduct[tbParam.ProductName] or {}
-    for _, v in ipairs(tbParam.tbMarket) do
-        table.insert(tbUser.tbNewProduct[tbParam.ProductName], v)
     end
 
     tbUser.nCash = tbUser.nCash - nCost
