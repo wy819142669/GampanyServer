@@ -1,13 +1,12 @@
 tbConfig = {
     nLuaVersion = 1,
-    tbAccount = { "李", "陈", "薛", "王", "张", "刘" },  -- 准备弃用，客户端可以输入自己的名字
     nNormalHireCost = 1, -- 招聘费用
     nTempHireCost = 3, -- 临时招聘费用
     nFireCost = 3, -- 解雇 薪水*4
     nSalary = 1, -- 薪水
     tbAdminCost = {  -- 行政管理费用
-        {step = 400, cost = 3, quickCalc = -1000 },  -- quickCalc 速算扣除数， 费用 = totalManpower * cost + quickCalc
-        {step = 300, cost = 2, quickCalc = -600 },
+        {step = 400, cost = 0.3, quickCalc = -100 },  -- quickCalc 速算扣除数， 费用 = totalManpower * cost + quickCalc
+        {step = 300, cost = 0.2, quickCalc = -60 },
     },
     fTaxRate = 0.1,
     tbEnableMarketPerYear = {{2}, {3}},
