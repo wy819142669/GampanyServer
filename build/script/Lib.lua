@@ -40,6 +40,10 @@ end
 Lib = Lib or {}
 --Table的拷贝
 function Lib.copyTab(st)
+	if type(st) ~= "table" then
+		return st
+	end
+
 	local tab = {}
 	for k, v in pairs(st or {}) do
 		if type(v) ~= "table" then

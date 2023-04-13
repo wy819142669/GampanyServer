@@ -191,21 +191,27 @@ function tbFunc.Action.Logout(tbParam)
     return "success", true
 end
 
--- 开始 {FuncName = "DoStart", tbAccount = { "王" }}
+-- 开始 {FuncName = "DoStart", Year=1}  -- Year = 1(教学) or 2(跳过教学)
 function tbFunc.Action.DoStart(tbParam)
     if tbRuntimeData.bPlaying then
         return "failed, already start", false
     end
 
+    tbParam.Year = tbParam.Year or 1
+
     for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
         tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
         tbRuntimeData.tbUser[userName].szAccount = userName
         tbRuntimeData.tbUser[userName].tbHistoryYearReport = {tbRuntimeData.tbUser[userName].tbYearReport}
+
+        for k, v in pairs(tbConfig.tbInitUserDataYearPath[tbParam.Year]) do
+            tbRuntimeData.tbUser[userName][k] = Lib.copyTab(v)
+        end
     end
 
     tbRuntimeData.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     tbRuntimeData.nDataVersion = 1
-    tbRuntimeData.nCurYear = 1
+    tbRuntimeData.nCurYear = tbParam.Year
     tbRuntimeData.nGameID = tbRuntimeData.nGameID + 1
     tbRuntimeData.bPlaying = true
     return "success", true
