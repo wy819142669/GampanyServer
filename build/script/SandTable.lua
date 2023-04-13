@@ -200,6 +200,7 @@ function tbFunc.Action.DoStart(tbParam)
     for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
         tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
         tbRuntimeData.tbUser[userName].szAccount = userName
+        tbRuntimeData.tbUser[userName].tbHistoryYearReport = {tbRuntimeData.tbUser[userName].tbYearReport}
     end
 
     tbRuntimeData.tbOrder = Lib.copyTab(tbConfig.tbOrder)
@@ -340,8 +341,6 @@ function tbFunc.finalAction.NewYear()
         tbUser.nSeverancePackage = 0
 
         -- 历年财报
-        tbUser.tbHistoryYearReport = tbUser.tbHistoryYearReport or {}
-        tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear - 1] = tbUser.tbYearReport
         -- 去年财报
         tbUser.tbLastYearReport = tbUser.tbYearReport
         -- 今年财报
