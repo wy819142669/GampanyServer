@@ -226,6 +226,7 @@ function tbFunc.Action.DoReset(tbParam)
     tbRuntimeData.tbLoginAccount = {}
     tbRuntimeData.tbCutdownProduct = {}
     tbRuntimeData.bPlaying = false
+    tbRuntimeData.tbMarket = {1}
     return "success", true
 end
 
