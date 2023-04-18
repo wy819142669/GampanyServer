@@ -119,6 +119,10 @@ tbConfig = {
             nTax = 0,
             -- 净利润
             nNetProfit = 0,
+            -- 权益
+            nEquity = 55,
+            -- 现金
+            nCash = 55, 
         },
         tbYearReport = {
         },

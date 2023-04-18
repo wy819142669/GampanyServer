@@ -399,6 +399,9 @@ function tbFunc.enterAction.FinancialReport(tbUser)
 
     tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax
                                         - tbUser.tbYearReport.nTax
+
+    tbUser.tbYearReport.nEquity = tbUser.tbLastYearReport.nEquity + tbUser.tbYearReport.nNetProfit
+    tbUser.tbYearReport.nCash = tbUser.nCash
 end
 
 function tbFunc.enterAction.Year1FixManpower(tbUser)
