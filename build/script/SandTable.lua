@@ -986,7 +986,7 @@ function tbFunc.Action.funcDoOperate.RollResearchPoint(tbParam)
         return "manpower not enough", false
     end
 
-    local nResearchPoint = math.random(1, 6)
+    local nResearchPoint = math.random(2, 5)
     tbResearch.leftPoint = tbResearch.leftPoint - nResearchPoint
     if tbResearch.leftPoint < 0 then
         tbResearch.leftPoint = 0
