@@ -130,7 +130,6 @@ tbConfig = {
             tbResearch = { d = { manpower = 0, leftPoint = 15 }, e = { manpower = 0, leftPoint = 20 } },
             -- 产品
             tbProduct = {
-                a1 = { manpower = 0, progress = 0, market = { 1 }, published = false, done = false },
             },
             -- 现金
             nCash = 20,
