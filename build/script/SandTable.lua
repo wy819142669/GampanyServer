@@ -394,6 +394,15 @@ function tbFunc.enterAction.FinancialReport(tbUser)
                                         - tbUser.tbYearReport.nTax
 end
 
+function tbFunc.enterAction.Year1FixManpower(tbUser)
+    if tbRuntimeData.nCurYear ~= 1 then
+        return
+    end
+
+    tbUser.nIdleManpower = tbUser.nIdleManpower + 70
+    tbUser.nTotalManpower = tbUser.nTotalManpower + 70
+end
+
 function tbFunc.enterAction.EnableMarketTip(tbUser)
     local tbEnableMarket = tbConfig.tbEnableMarketPerYear[tbRuntimeData.nCurYear]
     if tbEnableMarket and #tbEnableMarket > 0 then

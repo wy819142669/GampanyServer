@@ -33,7 +33,7 @@ tbConfig = {
         { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket", nStepUniqueId = 201},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
         { desc = "海外市场自动开放", enterAction = "EnableMarketTip", nStepUniqueId = 202},
         { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport", nStepUniqueId = 204},
-        { desc = "排名总结", syncNextStep = true, finalAction = "NewYear", nStepUniqueId = 205}
+        { desc = "排名总结", syncNextStep = true, finalAction = "NewYear", enterAction = "Year1FixManpower", nStepUniqueId = 205},
     },
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
@@ -87,7 +87,7 @@ tbConfig = {
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金
-        nCash = 60,
+        nCash = 55,
         -- 追加市场费
         nAppendMarketCost = 0,
         -- 税收
@@ -130,13 +130,12 @@ tbConfig = {
             tbResearch = { d = { manpower = 0, leftPoint = 15 }, e = { manpower = 0, leftPoint = 20 } },
             -- 产品
             tbProduct = {
-                a1 = { manpower = 20, progress = 0, market = { 1 }, published = false, done = false },
-                b1 = { manpower = 20, progress = 0, market = { 1 }, published = false, done = false },
+                a1 = { manpower = 0, progress = 0, market = { 1 }, published = false, done = false },
             },
             -- 现金
             nCash = 20,
             -- 总人力
-            nTotalManpower = 40,
+            nTotalManpower = 0,
         },
         [2] = {},
     },
@@ -161,17 +160,28 @@ tbConfig = {
         nNetProfit = 0,
     },
     tbOrder = { -- 订单
-        [1] = {}, -- Y2
+        [1] = {
+            a1={{{ n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}},{{ n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}},{{ n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}, { n =10, arpu =2}},},
+            a2={{{ n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}},{{ n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}},{{ n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}, { n =4.6, arpu =5}},},
+            b1={{{ n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}},{{ n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}},{{ n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}, { n =10.9, arpu =1.6}},},
+            b2={{{ n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}},{{ n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}},{{ n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}, { n =4.3, arpu =6.6}},},
+            d1={{{ n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}},{{ n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}},{{ n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}, { n =3.75, arpu =1.8}},},
+            d2={{{ n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}},{{ n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}},{{ n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}, { n =2.8, arpu =4.5}},},
+            e1={{{ n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}},{{ n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}},{{ n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}, { n =3.05, arpu =2.97}},},
+            e2={{{ n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}},{{ n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}},{{ n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}, { n =3.95, arpu =5.985}},},
+               
+
+        }, -- Y2
         [2] =  {  -- Y2
-        a1={{{ n =12.6, arpu =2.2}, { n =11.1, arpu =2.1}, { n =9.5, arpu =2}, { n =7.9, arpu =1.9}, { n =6.3, arpu =1.8}, { n =4.7, arpu =1.7}},{{ n =12.6, arpu =2.2}, { n =11.1, arpu =2.1}, { n =9.5, arpu =2}, { n =7.9, arpu =1.9}, { n =6.3, arpu =1.8}, { n =4.7, arpu =1.7}},{{ n =12.6, arpu =2.2}, { n =11.1, arpu =2.1}, { n =9.5, arpu =2}, { n =7.9, arpu =1.9}, { n =6.3, arpu =1.8}, { n =4.7, arpu =1.7}},},
-        a2={{{ n =6.6, arpu =5.5}, { n =5.8, arpu =5.3}, { n =5, arpu =5}, { n =4.2, arpu =4.8}, { n =3.3, arpu =4.5}, { n =2.5, arpu =4.3}},{{ n =6.6, arpu =5.5}, { n =5.8, arpu =5.3}, { n =5, arpu =5}, { n =4.2, arpu =4.8}, { n =3.3, arpu =4.5}, { n =2.5, arpu =4.3}},{{ n =6.6, arpu =5.5}, { n =5.8, arpu =5.3}, { n =5, arpu =5}, { n =4.2, arpu =4.8}, { n =3.3, arpu =4.5}, { n =2.5, arpu =4.3}},},
-        b1={{{ n =15.8, arpu =1.8}, { n =13.8, arpu =1.7}, { n =11.9, arpu =1.6}, { n =9.9, arpu =1.5}, { n =7.9, arpu =1.4}, { n =5.9, arpu =1.4}},{{ n =15.8, arpu =1.8}, { n =13.8, arpu =1.7}, { n =11.9, arpu =1.6}, { n =9.9, arpu =1.5}, { n =7.9, arpu =1.4}, { n =5.9, arpu =1.4}},{{ n =15.8, arpu =1.8}, { n =13.8, arpu =1.7}, { n =11.9, arpu =1.6}, { n =9.9, arpu =1.5}, { n =7.9, arpu =1.4}, { n =5.9, arpu =1.4}},},
-        b2={{{ n =6.3, arpu =7.3}, { n =5.5, arpu =6.9}, { n =4.7, arpu =6.6}, { n =3.9, arpu =6.3}, { n =3.1, arpu =5.9}, { n =2.4, arpu =5.6}},{{ n =6.3, arpu =7.3}, { n =5.5, arpu =6.9}, { n =4.7, arpu =6.6}, { n =3.9, arpu =6.3}, { n =3.1, arpu =5.9}, { n =2.4, arpu =5.6}},{{ n =6.3, arpu =7.3}, { n =5.5, arpu =6.9}, { n =4.7, arpu =6.6}, { n =3.9, arpu =6.3}, { n =3.1, arpu =5.9}, { n =2.4, arpu =5.6}},},
-        d1={{{ n =5.45, arpu =4.4}, { n =4.75, arpu =4.2}, { n =4.1, arpu =4}, { n =3.4, arpu =3.8}, { n =2.75, arpu =3.6}, { n =2.05, arpu =3.4}},{{ n =5.45, arpu =4.4}, { n =4.75, arpu =4.2}, { n =4.1, arpu =4}, { n =3.4, arpu =3.8}, { n =2.75, arpu =3.6}, { n =2.05, arpu =3.4}},{{ n =5.45, arpu =4.4}, { n =4.75, arpu =4.2}, { n =4.1, arpu =4}, { n =3.4, arpu =3.8}, { n =2.75, arpu =3.6}, { n =2.05, arpu =3.4}},},
-        d2={{{ n =4.1, arpu =11}, { n =3.6, arpu =10.5}, { n =3.05, arpu =10}, { n =2.55, arpu =9.5}, { n =2.05, arpu =9}, { n =1.55, arpu =8.5}},{{ n =4.1, arpu =11}, { n =3.6, arpu =10.5}, { n =3.05, arpu =10}, { n =2.55, arpu =9.5}, { n =2.05, arpu =9}, { n =1.55, arpu =8.5}},{{ n =4.1, arpu =11}, { n =3.6, arpu =10.5}, { n =3.05, arpu =10}, { n =2.55, arpu =9.5}, { n =2.05, arpu =9}, { n =1.55, arpu =8.5}},},
-        e1={{{ n =4.45, arpu =7.3}, { n =3.85, arpu =6.9}, { n =3.3, arpu =6.6}, { n =2.75, arpu =6.3}, { n =2.2, arpu =5.9}, { n =1.65, arpu =5.6}},{{ n =4.45, arpu =7.3}, { n =3.85, arpu =6.9}, { n =3.3, arpu =6.6}, { n =2.75, arpu =6.3}, { n =2.2, arpu =5.9}, { n =1.65, arpu =5.6}},{{ n =4.45, arpu =7.3}, { n =3.85, arpu =6.9}, { n =3.3, arpu =6.6}, { n =2.75, arpu =6.3}, { n =2.2, arpu =5.9}, { n =1.65, arpu =5.6}},},
-        e2={{{ n =5.75, arpu =14.6}, { n =5.05, arpu =14}, { n =4.3, arpu =13.3}, { n =3.6, arpu =12.6}, { n =2.9, arpu =12}, { n =2.15, arpu =11.3}},{{ n =5.75, arpu =14.6}, { n =5.05, arpu =14}, { n =4.3, arpu =13.3}, { n =3.6, arpu =12.6}, { n =2.9, arpu =12}, { n =2.15, arpu =11.3}},{{ n =5.75, arpu =14.6}, { n =5.05, arpu =14}, { n =4.3, arpu =13.3}, { n =3.6, arpu =12.6}, { n =2.9, arpu =12}, { n =2.15, arpu =11.3}},},
-        
+        a1={{{ n =11.34, arpu =1.98}, { n =9.99, arpu =1.89}, { n =8.55, arpu =1.8}, { n =7.11, arpu =1.71}, { n =5.67, arpu =1.62}, { n =4.23, arpu =1.53}},{{ n =11.34, arpu =1.98}, { n =9.99, arpu =1.89}, { n =8.55, arpu =1.8}, { n =7.11, arpu =1.71}, { n =5.67, arpu =1.62}, { n =4.23, arpu =1.53}},{{ n =11.34, arpu =1.98}, { n =9.99, arpu =1.89}, { n =8.55, arpu =1.8}, { n =7.11, arpu =1.71}, { n =5.67, arpu =1.62}, { n =4.23, arpu =1.53}},},
+        a2={{{ n =5.94, arpu =4.95}, { n =5.22, arpu =4.77}, { n =4.5, arpu =4.5}, { n =3.78, arpu =4.32}, { n =2.97, arpu =4.05}, { n =2.25, arpu =3.87}},{{ n =5.94, arpu =4.95}, { n =5.22, arpu =4.77}, { n =4.5, arpu =4.5}, { n =3.78, arpu =4.32}, { n =2.97, arpu =4.05}, { n =2.25, arpu =3.87}},{{ n =5.94, arpu =4.95}, { n =5.22, arpu =4.77}, { n =4.5, arpu =4.5}, { n =3.78, arpu =4.32}, { n =2.97, arpu =4.05}, { n =2.25, arpu =3.87}},},
+        b1={{{ n =14.22, arpu =1.62}, { n =12.42, arpu =1.53}, { n =10.71, arpu =1.44}, { n =8.91, arpu =1.35}, { n =7.11, arpu =1.26}, { n =5.31, arpu =1.26}},{{ n =14.22, arpu =1.62}, { n =12.42, arpu =1.53}, { n =10.71, arpu =1.44}, { n =8.91, arpu =1.35}, { n =7.11, arpu =1.26}, { n =5.31, arpu =1.26}},{{ n =14.22, arpu =1.62}, { n =12.42, arpu =1.53}, { n =10.71, arpu =1.44}, { n =8.91, arpu =1.35}, { n =7.11, arpu =1.26}, { n =5.31, arpu =1.26}},},
+        b2={{{ n =5.67, arpu =6.57}, { n =4.95, arpu =6.21}, { n =4.23, arpu =5.94}, { n =3.51, arpu =5.67}, { n =2.79, arpu =5.31}, { n =2.16, arpu =5.04}},{{ n =5.67, arpu =6.57}, { n =4.95, arpu =6.21}, { n =4.23, arpu =5.94}, { n =3.51, arpu =5.67}, { n =2.79, arpu =5.31}, { n =2.16, arpu =5.04}},{{ n =5.67, arpu =6.57}, { n =4.95, arpu =6.21}, { n =4.23, arpu =5.94}, { n =3.51, arpu =5.67}, { n =2.79, arpu =5.31}, { n =2.16, arpu =5.04}},},
+        d1={{{ n =5.45, arpu =3.96}, { n =4.75, arpu =3.78}, { n =4.1, arpu =3.6}, { n =3.4, arpu =3.42}, { n =2.75, arpu =3.24}, { n =2.05, arpu =3.06}},{{ n =5.45, arpu =3.96}, { n =4.75, arpu =3.78}, { n =4.1, arpu =3.6}, { n =3.4, arpu =3.42}, { n =2.75, arpu =3.24}, { n =2.05, arpu =3.06}},{{ n =5.45, arpu =3.96}, { n =4.75, arpu =3.78}, { n =4.1, arpu =3.6}, { n =3.4, arpu =3.42}, { n =2.75, arpu =3.24}, { n =2.05, arpu =3.06}},},
+        d2={{{ n =4.1, arpu =9.9}, { n =3.6, arpu =9.45}, { n =3.05, arpu =9}, { n =2.55, arpu =8.55}, { n =2.05, arpu =8.1}, { n =1.55, arpu =7.65}},{{ n =4.1, arpu =9.9}, { n =3.6, arpu =9.45}, { n =3.05, arpu =9}, { n =2.55, arpu =8.55}, { n =2.05, arpu =8.1}, { n =1.55, arpu =7.65}},{{ n =4.1, arpu =9.9}, { n =3.6, arpu =9.45}, { n =3.05, arpu =9}, { n =2.55, arpu =8.55}, { n =2.05, arpu =8.1}, { n =1.55, arpu =7.65}},},
+        e1={{{ n =4.45, arpu =6.57}, { n =3.85, arpu =6.21}, { n =3.3, arpu =5.94}, { n =2.75, arpu =5.67}, { n =2.2, arpu =5.31}, { n =1.65, arpu =5.04}},{{ n =4.45, arpu =6.57}, { n =3.85, arpu =6.21}, { n =3.3, arpu =5.94}, { n =2.75, arpu =5.67}, { n =2.2, arpu =5.31}, { n =1.65, arpu =5.04}},{{ n =4.45, arpu =6.57}, { n =3.85, arpu =6.21}, { n =3.3, arpu =5.94}, { n =2.75, arpu =5.67}, { n =2.2, arpu =5.31}, { n =1.65, arpu =5.04}},},
+        e2={{{ n =5.75, arpu =13.14}, { n =5.05, arpu =12.6}, { n =4.3, arpu =11.97}, { n =3.6, arpu =11.34}, { n =2.9, arpu =10.8}, { n =2.15, arpu =10.17}},{{ n =5.75, arpu =13.14}, { n =5.05, arpu =12.6}, { n =4.3, arpu =11.97}, { n =3.6, arpu =11.34}, { n =2.9, arpu =10.8}, { n =2.15, arpu =10.17}},{{ n =5.75, arpu =13.14}, { n =5.05, arpu =12.6}, { n =4.3, arpu =11.97}, { n =3.6, arpu =11.34}, { n =2.9, arpu =10.8}, { n =2.15, arpu =10.17}},},
+           
          
         },
 
