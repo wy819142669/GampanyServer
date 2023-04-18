@@ -87,7 +87,7 @@ tbConfig = {
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金
-        nCash = 55,
+        nCash = 60,
         -- 追加市场费
         nAppendMarketCost = 0,
         -- 税收
@@ -132,7 +132,7 @@ tbConfig = {
             tbProduct = {
             },
             -- 现金
-            nCash = 20,
+            nCash = 55,
             -- 总人力
             nTotalManpower = 0,
         },
