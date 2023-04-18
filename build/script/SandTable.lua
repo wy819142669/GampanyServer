@@ -202,7 +202,14 @@ function tbFunc.Action.DoStart(tbParam)
     for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
         tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
         tbRuntimeData.tbUser[userName].szAccount = userName
-        tbRuntimeData.tbUser[userName].tbHistoryYearReport = {tbRuntimeData.tbUser[userName].tbYearReport}
+        tbRuntimeData.tbUser[userName].tbHistoryYearReport = {}
+        if tbParam.Year == 1 then
+            tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = tbRuntimeData.tbUser[userName].tbYearReport
+        else
+            tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = Lib.copyTab(tbRuntimeData.tbUser[userName].tbYearReport)
+            tbRuntimeData.tbUser[userName].tbHistoryYearReport[2] = tbRuntimeData.tbUser[userName].tbYearReport
+        end
+
 
         for k, v in pairs(tbConfig.tbInitUserDataYearPath[tbParam.Year]) do
             tbRuntimeData.tbUser[userName][k] = Lib.copyTab(v)
