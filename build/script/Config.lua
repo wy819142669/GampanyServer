@@ -5,8 +5,7 @@ tbConfig = {
     nFireCost = 3, -- 解雇 薪水*4
     nSalary = 1, -- 薪水
     tbAdminCost = {  -- 行政管理费用
-        {step = 400, cost = 0.3, quickCalc = -100 },  -- quickCalc 速算扣除数， 费用 = totalManpower * cost + quickCalc
-        {step = 300, cost = 0.2, quickCalc = -60 },
+        {step = 300, cost = 0.1, quickCalc = -30 }, -- quickCalc 速算扣除数， 费用 = totalManpower * cost + quickCalc
     },
     fTaxRate = 0.1,
     tbEnableMarketPerYear = { {}, {2}, {3}},
