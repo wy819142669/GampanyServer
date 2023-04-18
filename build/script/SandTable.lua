@@ -574,7 +574,7 @@ function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
             local tbProductOrder = tbUser.tbOrder[productName]
             if tbProductOrder then
                 for _, tbOrder in pairs(tbProductOrder) do
-                    if i == tbOrder.market then
+                    if v ~= 0 and i == tbOrder.market then
                         return "already has order", false
                     end
                 end
