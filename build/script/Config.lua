@@ -120,9 +120,9 @@ tbConfig = {
             -- 净利润
             nNetProfit = 0,
             -- 权益
-            nEquity = 55,
+            nEquity = 60,
             -- 现金
-            nCash = 55, 
+            nCash = 60,
         },
         tbYearReport = {
         },
@@ -138,6 +138,31 @@ tbConfig = {
             nCash = 55,
             -- 总人力
             nTotalManpower = 0,
+            -- 上一年财报
+            tbLastYearReport = {
+                -- 收入
+                nTurnover = 0,
+                -- 人力费用
+                nLaborCosts = 0,
+                -- 销售费用
+                nMarketingExpense = 0,
+                -- 行政+本地化费用
+                nSGA = 0,
+                -- 营业利润
+                nGrossProfit = 0,
+                -- 财务费用
+                nFinancialExpenses = 0,
+                -- 利润
+                nProfitBeforeTax = 0,
+                -- 需要缴纳税款
+                nTax = 0,
+                -- 净利润
+                nNetProfit = 0,
+                -- 权益
+                nEquity = 55,
+                -- 现金
+                nCash = 55,
+            },
         },
         [2] = {},
     },
@@ -160,6 +185,10 @@ tbConfig = {
         nTax = 0,
         -- 净利润
         nNetProfit = 0,
+        -- 权益
+        nEquity = 0,
+        -- 现金
+        nCash = 0,
     },
     tbOrder = { -- 订单
         [1] = {

@@ -570,20 +570,22 @@ function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
         end
 
         for i, v in ipairs(tbMarketingExpenseCurPrdt) do
-            if v ~= 0 and not table.contain_value(tbUser.tbProduct[productName].market, i) then
-                return "product not published in market"..tostring(i), false
-            end
+            if v ~= 0 then
+                if  not table.contain_value(tbUser.tbProduct[productName].market, i) then
+                    return "product not published in market"..tostring(i), false
+                end
 
-            local tbProductOrder = tbUser.tbOrder[productName]
-            if tbProductOrder then
-                for _, tbOrder in pairs(tbProductOrder) do
-                    if v ~= 0 and i == tbOrder.market then
-                        return "already has order", false
+                local tbProductOrder = tbUser.tbOrder[productName]
+                if tbProductOrder then
+                    for _, tbOrder in pairs(tbProductOrder) do
+                        if i == tbOrder.market then
+                            return "already has order", false
+                        end
                     end
                 end
-            end
 
-            nTotalCost = nTotalCost + v
+                nTotalCost = nTotalCost + v
+            end
         end
     end
 
@@ -774,6 +776,7 @@ function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
 
     tbUser.tbProduct[tbParam.ProductName] = { manpower = 0, progress = 0, market = tbParam.tbMarket, published = false, done = false }
     tbUser.nCash = tbUser.nCash - nCost
+    tbUser.nAppendMarketCost = tbUser.nAppendMarketCost + nCost
     tbUser.bStepDone = true
     local szReturnMsg = string.format("成功立项：%s，初始市场：", tbParam.ProductName)
     for _, v in ipairs(tbParam.tbMarket) do
