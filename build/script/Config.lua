@@ -160,6 +160,10 @@ tbConfig = {
         nTax = 0,
         -- 净利润
         nNetProfit = 0,
+        -- 权益
+        nEquity = 0,
+        -- 现金
+        nCash = 0, 
     },
     tbOrder = { -- 订单
         [1] = {
