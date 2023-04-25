@@ -197,6 +197,8 @@ function tbFunc.Action.DoStart(tbParam)
         return "failed, already start", false
     end
 
+    math.randomseed(os.time())
+
     tbParam.Year = tbParam.Year or 1
 
     for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
