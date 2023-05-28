@@ -84,7 +84,7 @@ tbConfig = {
         tbMarketingExpense = {},
         -- 产品
         tbProduct = {
-            a1 = { manpower = {10, 5, 4, 1, 0, 0, 0, 0, 0, 0}, progress = 3, published = true, done = false },
+            a1 = { manpower = 20, tbManpower = {10, 5, 4, 1, 0, 0, 0, 0, 0, 0}, progress = 3, published = true, done = false },
         },
          -- 订单
         tbOrder = {
