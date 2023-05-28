@@ -9,12 +9,15 @@ require("Config")
 local tbRuntimeData = {
     nDataVersion = 1,
     nGameID = 0,
+    nTimeLimitToNextSyncStep = 0,
+    nSkipDestNextSyncStep = 0,
     bPlaying = false,
     tbMarket = { 1 },
     tbLoginAccount = {
         -- "王" = 4151234,
     }, -- 已登录账号
     nReadyNextStepCount = 0,
+    nCurSyncStep = 0,
     -- 当前年份
     nCurYear = 1,
     tbCutdownProduct = {
@@ -108,9 +111,11 @@ function OnReloadFinish(jsonParam)
 end
 
 function Action(jsonParam)
+    CheckTimeLimit()
+
     local tbParam = JsonDecode(jsonParam)
     local func = tbFunc.Action[tbParam.FuncName]
-    local szMsg = ""
+    local szMsg
     local bRet = false
     if func then
         szMsg, bRet, tbCustomData = func(tbParam)
@@ -135,9 +140,11 @@ function Action(jsonParam)
 end
 
 function Query(jsonParam)
+    CheckTimeLimit()
+
     local tbParam = JsonDecode(jsonParam)
     local func = tbFunc["Query"][tbParam.FuncName]
-    local resultText = ""
+    local resultText
     local isUpdateRuntimeData = true
     local responseParam = nil
     if func then
@@ -164,6 +171,25 @@ function QueryTest(tbParam)
     return "success"
 end
 
+function CheckTimeLimit()
+    if tbRuntimeData.nTimeLimitToNextSyncStep == 0 or os.time() < tbRuntimeData.nTimeLimitToNextSyncStep then
+        return
+    end
+
+    tbRuntimeData.nTimeLimitToNextSyncStep = 0
+
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        while tbUser.nCurYearStep < tbRuntimeData.nSkipDestNextSyncStep do
+            local tbStep = tbConfig.tbYearStep[tbUser.nCurYearStep]
+            if tbStep.timeLimitAction then
+                tbFunc.timeLimitAction[tbStep.timeLimitAction](tbUser)
+            end
+
+            userNewStep(tbUser)
+        end
+    end
+end
+
 --------------------接口实现---------------------------------------
 tbFunc.Action = {}
 function tbFunc.Action.GetLuaFile(tbParam)
@@ -176,11 +202,15 @@ end
 
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)
-    if tbRuntimeData.bPlaying then
-        return "failed, already start", false
+    local bAdmin = table.contain_value(tbConfig.tbAdminAccount, tbParam.Account)
+
+    if tbRuntimeData.bPlaying then -- 已经开始后，非管理员不能再进入
+        if not bAdmin then
+            return "failed, already start", false
+        end
     end
     
-    tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
+    tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = not bAdmin}
     return "success", true
 end
 
@@ -191,30 +221,44 @@ function tbFunc.Action.Logout(tbParam)
     return "success", true
 end
 
+-- 该系统账号是否也参与游戏 {FuncName = "AdminJoinGame", Join = false}
+function tbFunc.Action.AdminJoinGame(tbParam)
+    if tbRuntimeData.tbLoginAccount[tbParam.Account].admin then
+        tbRuntimeData.tbLoginAccount[tbParam.Account].joinGame = tbParam.Join
+    end
+    return "success", true
+end
+
 -- 开始 {FuncName = "DoStart", Year=1}  -- Year = 1(教学) or 2(跳过教学)
 function tbFunc.Action.DoStart(tbParam)
     if tbRuntimeData.bPlaying then
         return "failed, already start", false
     end
 
+    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
+        return "failed, only admin can start", false
+    end
+
     math.randomseed(os.time())
 
     tbParam.Year = tbParam.Year or 1
 
-    for userName, _ in pairs(tbRuntimeData.tbLoginAccount) do
-        tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
-        tbRuntimeData.tbUser[userName].szAccount = userName
-        tbRuntimeData.tbUser[userName].tbHistoryYearReport = {}
-        if tbParam.Year == 1 then
-            tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = tbRuntimeData.tbUser[userName].tbYearReport
-        else
-            tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = Lib.copyTab(tbRuntimeData.tbUser[userName].tbYearReport)
-            tbRuntimeData.tbUser[userName].tbHistoryYearReport[2] = tbRuntimeData.tbUser[userName].tbYearReport
-        end
+    for userName, tbLoginAccountInfo in pairs(tbRuntimeData.tbLoginAccount) do
+        if tbLoginAccountInfo.joinGame then
+            tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
+            tbRuntimeData.tbUser[userName].szAccount = userName
+            tbRuntimeData.tbUser[userName].tbHistoryYearReport = {}
+            if tbParam.Year == 1 then
+                tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = tbRuntimeData.tbUser[userName].tbYearReport
+            else
+                tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = Lib.copyTab(tbRuntimeData.tbUser[userName].tbYearReport)
+                tbRuntimeData.tbUser[userName].tbHistoryYearReport[2] = tbRuntimeData.tbUser[userName].tbYearReport
+            end
 
 
-        for k, v in pairs(tbConfig.tbInitUserDataYearPath[tbParam.Year]) do
-            tbRuntimeData.tbUser[userName][k] = Lib.copyTab(v)
+            for k, v in pairs(tbConfig.tbInitUserDataYearPath[tbParam.Year]) do
+                tbRuntimeData.tbUser[userName][k] = Lib.copyTab(v)
+            end
         end
     end
 
@@ -228,6 +272,10 @@ end
 
 -- 重置 {FuncName = "DoReset"}
 function tbFunc.Action.DoReset(tbParam)
+    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
+        return "failed, only admin can reset", false
+    end
+
     tbRuntimeData.nDataVersion = 0
     tbRuntimeData.nCurYear = 1
     tbRuntimeData.tbUser = {}
@@ -236,6 +284,32 @@ function tbFunc.Action.DoReset(tbParam)
     tbRuntimeData.tbCutdownProduct = {}
     tbRuntimeData.bPlaying = false
     tbRuntimeData.tbMarket = {1}
+    tbRuntimeData.nTimeLimitToNextSyncStep = 0
+    tbRuntimeData.nSkipDestNextSyncStep = 0
+    tbRuntimeData.nCurSyncStep = 0
+    return "success", true
+end
+
+-- 限时 {FuncName = "TimeLimitToNextSyncStep", TimeLimit = 0}  --TimeLimit 单位秒， 自动快进到下一个同步步骤的限时。0为取消限时
+function tbFunc.Action.TimeLimitToNextSyncStep(tbParam)
+    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
+        return "failed, only admin can setTimeLimit", false
+    end
+
+    if tbParam.TimeLimit == 0 then
+        tbRuntimeData.nTimeLimitToNextSyncStep = 0
+    else
+        tbRuntimeData.nTimeLimitToNextSyncStep = os.time() + tbParam.TimeLimit
+
+
+        for i = tbRuntimeData.nCurSyncStep + 1, #tbConfig.tbYearStep do
+            local tbStep = tbConfig.tbYearStep[i]
+            if tbStep.syncNextStep then
+                tbRuntimeData.nSkipDestNextSyncStep = i
+                break
+            end
+        end
+    end
     return "success", true
 end
 
@@ -344,6 +418,7 @@ end
 function tbFunc.finalAction.NewYear()
     print("new year")
     tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
+    tbRuntimeData.nCurSyncStep = 0
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.nCurYearStep = 0
@@ -402,7 +477,12 @@ function tbFunc.enterAction.FinancialReport(tbUser)
     tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax
                                         - tbUser.tbYearReport.nTax
 
-    tbUser.tbYearReport.nEquity = tbUser.tbLastYearReport.nEquity + tbUser.tbYearReport.nNetProfit
+    tbUser.tbYearReport.nEquity = tbUser.tbLastYearReport.nEquity
+                                + tbUser.tbYearReport.nNetProfit
+                                + tbUser.tbYearReport.nFinance
+
+    tbUser.tbYearReport.nFounderEquity = math.floor(tbUser.tbYearReport.nEquity * tbUser.fEquityRatio + 0.5)
+
     tbUser.tbYearReport.nCash = tbUser.nCash
 end
 
@@ -446,6 +526,14 @@ function tbFunc.enterAction.SkipStep(tbUser)
     userNewStep(tbUser)
 end
 
+tbFunc.timeLimitAction = {}
+function tbFunc.timeLimitAction.PayOffSalary(tbUser)
+    if tbUser.bStepDone then
+        return
+    end
+    DoPayOffSalary(tbUser)
+end
+
 tbFunc.Action.funcDoOperate = {}
 -- 下一步 推进进度 {FuncName = "DoOperate", OperateType = "NextStep"}   -- 考虑校验当前Step，防止点了2次Step
 function tbFunc.Action.funcDoOperate.NextStep(tbParam)
@@ -473,7 +561,7 @@ function tbFunc.Action.funcDoOperate.NextStep(tbParam)
 end
 
 function checkAllNextStep(tbStepCfg)
-    if tbRuntimeData.nReadyNextStepCount ~= table.get_len(tbRuntimeData.tbLoginAccount) then
+    if tbRuntimeData.nReadyNextStepCount ~= table.get_len(tbRuntimeData.tbUser) then
         return
     end
     tbRuntimeData.nReadyNextStepCount = 0
@@ -506,6 +594,15 @@ function userNewStep(tbUser)
     if tbNewStepCfg.enterAction then
         tbFunc.enterAction[tbNewStepCfg.enterAction](tbUser)
     end
+
+    if tbNewStepCfg.syncNextStep then
+        tbRuntimeData.nCurSyncStep = tbUser.nCurYearStep
+    end
+
+    if tbRuntimeData.nTimeLimitToNextSyncStep ~= 0 and tbUser.nCurYearStep > tbRuntimeData.nSkipDestNextSyncStep then
+        tbRuntimeData.nTimeLimitToNextSyncStep = 0
+        tbRuntimeData.nSkipDestNextSyncStep = 0
+    end
 end
 
 -- 交税{FuncName = "DoOperate", OperateType = "Tax"}
@@ -521,6 +618,20 @@ function tbFunc.Action.funcDoOperate.Tax(tbParam)
     end
     tbUser.bStepDone = true
     local szReturnMsg = string.format("成功交税，花费：%d", tbUser.tbLastYearReport and tbUser.tbLastYearReport.nTax or 0)
+    return szReturnMsg, true
+end
+
+-- RaiseSalary 调薪 {FuncName = "DoOperate", OperateType = "RaiseSalary"}
+function tbFunc.Action.funcDoOperate.RaiseSalary(tbParam)
+    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    if tbUser.bStepDone then
+        return "已经完成操作", false
+    end
+
+    tbUser.nSalaryLevel = tbUser.nSalaryLevel + 1
+    tbUser.bStepDone = true
+
+    local szReturnMsg = string.format("薪水等级提升至%d级", tbUser.nSalaryLevel)
     return szReturnMsg, true
 end
 
@@ -782,7 +893,7 @@ function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
     tbUser.bStepDone = true
     local szReturnMsg = string.format("成功立项：%s，初始市场：", tbParam.ProductName)
     for _, v in ipairs(tbParam.tbMarket) do
-        szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
+       -- szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
     end
     return szReturnMsg, true
 end
@@ -881,11 +992,11 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
             nCash = math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu + 0.5)
         end
 
-        if tbOrder.cfg.delaySeason and tbOrder.cfg.delaySeason > 0 then
-            tbUser.tbReceivables[tbOrder.cfg.delaySeason] = tbUser.tbReceivables[tbOrder.cfg.delaySeason] + nCash
-        else
+        -- if tbOrder.cfg.delaySeason and tbOrder.cfg.delaySeason > 0 then
+        --     tbUser.tbReceivables[tbOrder.cfg.delaySeason] = tbUser.tbReceivables[tbOrder.cfg.delaySeason] + nCash
+        -- else
             nCashCount = nCashCount + nCash
-        end
+       -- end
 
         nTurnover = nTurnover + nCash
         tbOrder.done = true
@@ -983,32 +1094,10 @@ function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
     if #tbParam.tbMarket > 0 then
         szReturnMsg = string.format("%s产品成功追加市场：", tbParam.ProductName)
         for _, v in ipairs(tbParam.tbMarket) do
-            szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
+         --   szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
         end
     end
     return szReturnMsg, true
-end
-
--- 随机研发进度 {FuncName = "DoOperate", OperateType = "RollResearchPoint", ResearchName="d"}
-function tbFunc.Action.funcDoOperate.RollResearchPoint(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local tbResearch = tbUser.tbResearch[tbParam.ResearchName]
-    if tbResearch.done then
-        return "already done", false
-    end
-
-    if tbResearch.manpower < tbConfig.tbResearch[tbParam.ResearchName].manpower then
-        return "manpower not enough", false
-    end
-
-    local nResearchPoint = math.random(2, 5)
-    tbResearch.leftPoint = tbResearch.leftPoint - nResearchPoint
-    if tbResearch.leftPoint < 0 then
-        tbResearch.leftPoint = 0
-    end
-    tbResearch.done = true
-    tbUser.bStepDone = true
-    return string.format("%s产品roll点成功：%d", tbParam.ResearchName, nResearchPoint), true
 end
 
 -- 发工资 {FuncName = "DoOperate", OperateType = "PayOffSalary"}
@@ -1017,6 +1106,11 @@ function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
     if tbUser.bStepDone then
         return "already done", false
     end
+    DoPayOffSalary(tbUser)
+    return string.format("成功支付工资：%d", nCost), true
+end
+
+function DoPayOffSalary(tbUser)
     local nTens = math.floor(tbUser.nTotalManpower / 10 + 0.5)
     local nCost = nTens * tbConfig.nSalary
 
@@ -1030,9 +1124,17 @@ function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
     tbUser.nCash = tbUser.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
     tbUser.tbLaborCost[tbUser.nCurSeason] = nCost
     tbUser.bStepDone = true
-    return string.format("成功支付工资：%d", nCost), true
 end
 
+-- 融资 { FuncName = "DoOperate", OperateType = "Finance"}
+function tbFunc.Action.funcDoOperate.Finance(tbParam)
+    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    local nFinance = tbUser.tbLastYearReport.nTurnover
+
+    tbUser.tbYearReport.nFinance = tbUser.tbYearReport.nFinance + nFinance
+    tbUser.nCash = tbUser.nCash + nFinance
+    tbUser.fEquityRatio = tbUser.fEquityRatio / 2
+end
 --------------------------------------------------------------------
 
 print("load success")
