@@ -29,7 +29,7 @@ tbConfig = {
         { desc = "选择目标公司挖人、支付挖人费用", nStepUniqueId = 10 },
         { desc = "设置培训员工、支付培训费用", nStepUniqueId = 11 },
         { desc = "研发分配人力", nStepUniqueId = 12 },
-        { desc = "推进要发进度", nStepUniqueId = 13 },
+        { desc = "推进研发进度", nStepUniqueId = 13 },
         { desc = "获取市场收益", nStepUniqueId = 14 },
         { desc = "支付薪水", mustDone = true, nStepUniqueId = 15, timeLimitAction = "PayOffSalary" },
         -- { desc = "产品上线，把加倍进度的员工放到待岗区", nStepUniqueId = 101},
