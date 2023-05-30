@@ -5,9 +5,7 @@ tbConfig = {
     nTempHireCost = 3, -- 临时招聘费用
     nFireCost = 3, -- 解雇 薪水*3
     nSalary = 1, -- 薪水
-    tbAdminCost = {  -- 行政管理费用
-        {step = 300, cost = 0.1, quickCalc = -30 }, -- quickCalc 速算扣除数， 费用 = totalManpower * cost + quickCalc
-    },
+    fSalaryRatioPerLevel = 0.2,  -- 每薪水等级薪水涨幅
     fTaxRate = 0.1,
     tbEnableMarketPerYear = { {}, {2}, {3}},
     tbBeginStepPerYear = {

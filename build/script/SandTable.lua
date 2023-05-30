@@ -1115,15 +1115,7 @@ function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
 end
 
 function DoPayOffSalary(tbUser)
-    local nTens = math.floor(tbUser.nTotalManpower / 10 + 0.5)
-    local nCost = nTens * tbConfig.nSalary
-
-    for _, tbAdminCost in ipairs(tbConfig.tbAdminCost) do
-        if tbUser.nTotalManpower > tbAdminCost.step then
-            nCost = nCost + math.floor(tbUser.nTotalManpower * tbAdminCost.cost + tbAdminCost.quickCalc + 0.5)
-            break
-        end
-    end
+    local nCost = tbUser.nTotalManpower * tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
 
     tbUser.nCash = tbUser.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
     tbUser.tbLaborCost[tbUser.nCurSeason] = nCost
