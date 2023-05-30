@@ -18,7 +18,7 @@ tbConfig = {
        -- { desc = "招聘并支付费用", nStepUniqueId = 3},
     },
     tbStepPerSeason = {
-        { desc = "产品上线", nStepUniqueId = 2 },
+        { desc = "产品上线、下线", nStepUniqueId = 2 },
         { desc = "更新产品品质", nStepUniqueId = 3 },
         { desc = "市场竞标", syncNextStep = true, nStepUniqueId = 4 },
         { desc = "办理离职（交付流失员工）",  mustDone = true, enterAction = "AutoDoneIfNoLoss", nStepUniqueId = 5 },

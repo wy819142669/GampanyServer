@@ -202,6 +202,10 @@ end
 
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)
+    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
+        table.insert(tbConfig.tbAdminAccount, tbParam.Account)
+    end
+
     local bAdmin = table.contain_value(tbConfig.tbAdminAccount, tbParam.Account)
 
     if tbRuntimeData.bPlaying then -- 已经开始后，非管理员不能再进入
