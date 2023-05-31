@@ -170,6 +170,15 @@ tbConfig = {
         nCash = 0,
     },
     tbOrder = { -- 订单
+    },
+
+    -- 产品状态
+    tbProductState = {
+        nBuilding = 1,       -- 研发中
+        nEnabled = 2,        -- 可上线
+        nPublished = 3,      -- 发布
+        nRenovating = 4,     -- 翻新
+        nClosed = 5,         -- 关闭
     }
 }
 

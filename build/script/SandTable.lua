@@ -5,6 +5,7 @@ package.path = "./script/?.lua;" .. package.path
 require("Json")
 require("Lib")
 require("Config")
+require("Production")
 
 local tbRuntimeData = {
     nDataVersion = 1,
@@ -91,20 +92,10 @@ local tbRuntimeData = {
     }
 }
 
-local tbFunc = {}
-
-function Reload(jsonParam)
-    print("[lua] reload")
-
-    print(jsonParam)
-    --jsonParam = '{"x":1, "y":2}'
-    local tbParam = JsonDecode(jsonParam)
-    print(type(tbParam))
-    tbParam = tbParam or {}
-    tbParam.result = "reload success!"
-    print(JsonEncode(tbParam))
-    return JsonEncode(tbParam)
-end
+local tbFunc = {
+    Action = {},
+    Query = {},
+}
 
 function OnReloadFinish(jsonParam)
     tbConfig.nLuaVersion = tbConfig.nLuaVersion + 1
@@ -191,7 +182,6 @@ function CheckTimeLimit()
 end
 
 --------------------接口实现---------------------------------------
-tbFunc.Action = {}
 function tbFunc.Action.GetLuaFile(tbParam)
     return "success", true,  { tbConfig = tbConfig }
 end
