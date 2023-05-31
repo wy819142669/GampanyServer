@@ -24,6 +24,9 @@ local tbRuntimeData = {
         -- a1 = true,
         -- b1 = true,
     },
+    tbManpower = { -- 人才市场各等级人数
+        0, 0, 0, 0, 0
+    },
     tbUser = {
         --[[default = {
             -- 当前年步骤
@@ -44,8 +47,6 @@ local tbRuntimeData = {
                 a2 = { 5, 3, 3},
                 b1 = { 20, 40, 3},
             }
-            -- 预研
-            tbResearch = { d = { manpower = 20, leftPoint = 20, done = false }, e = { manpower = 30, leftPoint = 30 } },
             -- 产品
             tbProduct = {
                 a1 = { manpower = 20, progress = 4, market = { 1, 2, 3 }, published = true, done = false },
@@ -419,6 +420,113 @@ function tbFunc.finalAction.SettleOrder()
     end
 end
 
+function tbFunc.finalAction.SettleHire()
+    --[[
+    tbManpower = { -- 人才市场各等级人数
+        0, 0, 0, 0, 0
+    },
+    tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数
+        {61, 26, 12, 1, 0},
+        {66, 39, 21, 4, 0},
+        {77, 54, 38, 11, 0},
+        {76, 65, 50, 19, 0},
+        {53, 54, 41, 19, 3},
+        {43, 43, 45, 21, 8},
+        {32, 36, 38, 24, 10},
+        {25, 29, 30, 24, 12},
+        {20, 23, 29, 26, 12},
+        {21, 20, 30, 31, 18},
+    },
+    fSeason1NewManpowerRatio = 0.3,  -- 一季度新进人数占全年人数比例， 剩下的三季度新进
+
+    tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
+    ]]
+
+    -- 计算权重
+    local nCurSeason
+    local tbUserHireInfo = {}
+    local nTotalWeight = 0
+    local nTotalNeed = 0
+    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
+        nCurSeason = nCurSeason or tbUser.nCurSeason
+        if tbUser.tbHire and tbUser.tbHire.nNum and tbUser.tbHire.nNum  > 0 then
+            local nWeight = math.floor(tbUser.tbHire.nExpense / tbUser.tbHire.nNum * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fHireWeightRatioPerLevel) * 1000 + 0.5)
+            table.insert(tbUserHireInfo, {
+                userName = userName,
+                nNum = tbUser.tbHire.nNum,
+                nWeight = nWeight,
+                tbNewManpower = {0, 0, 0, 0, 0}
+            })
+
+            nTotalWeight = nTotalWeight + nWeight
+            nTotalNeed = nTotalNeed + tbUser.tbHire.nNum
+        end
+    end
+
+    -- 市场新进人才
+    if tbRuntimeData.nCurYear <= #tbConfig.tbNewManpowerPerYear then
+        local tbNewManpower = tbConfig.tbNewManpowerPerYear[tbRuntimeData.nCurYear]
+        for i = 1, #tbRuntimeData.tbManpower do
+            local nNew = 0
+            if nCurSeason == 1 then
+                nNew = math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
+            elseif nCurSeason == 3 then
+                nNew = tbNewManpower[i] - math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
+            end
+
+            tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + nNew
+        end
+    end
+
+    -- 开始随机发派人才
+    local nTopLevel = #tbRuntimeData.tbManpower
+    while nTotalNeed > 0 do
+        while nTopLevel > 0 and tbRuntimeData.tbManpower[nTopLevel] == 0 do
+            nTopLevel = nTopLevel - 1
+        end
+
+        if nTopLevel == 0 then
+            break
+        end
+
+        local nRand = math.random(nTotalWeight)
+        for _, tbHireInfo in ipairs(tbUserHireInfo) do
+            if tbHireInfo.nNum > 0 then
+                if nRand <= tbHireInfo.nWeight then
+                    tbRuntimeData.tbManpower[nTopLevel] = tbRuntimeData.tbManpower[nTopLevel] - 1
+
+                    tbHireInfo.nNum = tbHireInfo.nNum - 1
+                    tbHireInfo.tbNewManpower[nTopLevel] = tbHireInfo.tbNewManpower[nTopLevel] + 1
+
+                    nTotalNeed = nTotalNeed - 1
+                    if tbHireInfo.nNum == 0 then
+                        nTotalWeight = nTotalWeight - tbHireInfo.nWeight
+                    end
+                    break
+                else
+                    nRand = nRand - tbHireInfo.nWeight
+                end
+            end
+        end
+    end
+
+    -- 竞标结果更新到人力
+    for _, tbHire in ipairs(tbUserHireInfo) do
+        local tbUser = tbRuntimeData.tbUser[tbHire.userName]
+        for i = 1, #tbUser.tbIdleManpower do
+            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] + tbHire.tbNewManpower[i]
+            tbUser.nTotalManpower = tbUser.nTotalManpower + tbHire.tbNewManpower[i]
+        end
+    end
+
+    -- TODO: tbUserHireInfo 里的数据存一下
+
+    -- 清除招聘投标数据
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        tbUser.tbHire = { nNum = 0 }
+    end
+end
+
 function tbFunc.finalAction.NewYear()
     print("new year")
     tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
@@ -530,6 +638,14 @@ function tbFunc.enterAction.SkipStep(tbUser)
     userNewStep(tbUser)
 end
 
+function tbFunc.enterAction.AutoDoneIfNoLoss(tbUser)
+    tbUser.bStepDone = true
+end
+
+function tbFunc.enterAction.AutoDoneIfNoInflow(tbUser)
+    tbUser.bStepDone = true
+end
+
 tbFunc.timeLimitAction = {}
 function tbFunc.timeLimitAction.PayOffSalary(tbUser)
     if tbUser.bStepDone then
@@ -587,9 +703,6 @@ function userNewStep(tbUser)
     tbUser.nCurSeasonStep = tbNewStepCfg.nCurSeasonStep or tbUser.nCurSeasonStep
 
     for _, v in pairs(tbUser.tbProduct) do
-        v.done = false
-    end
-    for _, v in pairs(tbUser.tbResearch) do
         v.done = false
     end
     tbUser.bStepDone = false
@@ -717,22 +830,23 @@ function tbFunc.Action.funcDoOperate.SeasonCommitMarket(tbParam)
     return "success", true
 end
 
--- 年初招聘 {FuncName = "DoOperate", OperateType = "CommitNormalHire", nNum = 20}
-function tbFunc.Action.funcDoOperate.CommitNormalHire(tbParam)
+-- 招聘 {FuncName = "DoOperate", OperateType = "CommitHire", nNum = 20, nExpense = 60}
+function tbFunc.Action.funcDoOperate.CommitHire(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local nTens = math.floor(tbParam.nNum / 10)
-    local nCost = nTens * tbConfig.nNormalHireCost
-
-    if nCost > tbUser.nCash then
-        return "cash not enough", false
+    if tbParam.nNum == 0 then
+        return "招聘人数至少1人", false
     end
 
-    tbUser.nCash = tbUser.nCash - nCost
-    tbUser.nSeverancePackage = tbUser.nSeverancePackage + nCost
-    tbUser.nIdleManpower = tbUser.nIdleManpower + nTens * 10
-    tbUser.nTotalManpower = tbUser.nTotalManpower + nTens * 10
+    if tbParam.nExpense > tbUser.nCash then
+        return "资金不足", false
+    end
+
+    tbUser.nCash = tbUser.nCash - tbParam.nExpense
+    tbUser.nSeverancePackage = tbUser.nSeverancePackage + tbParam.nExpense
+    tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
+
     tbUser.bStepDone = true
-    local szReturnMsg = string.format("成功招聘人员：%d，花费：%d", nTens * 10, nCost)
+    local szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
     return szReturnMsg, true
 end
 
@@ -766,84 +880,22 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
     return szReturnMsg, true
 end
 
--- 临时招聘 {FuncName = "DoOperate", OperateType = "CommitTempHire", nNum = 20}
-function tbFunc.Action.funcDoOperate.CommitTempHire(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local nTens = math.floor(tbParam.nNum / 10)
-    local nCost = nTens * tbConfig.nTempHireCost
-
-    if nCost > tbUser.nCash then
-        return "cash not enough", false
-    end
-
-    tbUser.nCash = tbUser.nCash - nCost
-    tbUser.nSeverancePackage = tbUser.nSeverancePackage + nCost
-    tbUser.nIdleManpower = tbUser.nIdleManpower + nTens * 10
-    tbUser.nTotalManpower = tbUser.nTotalManpower + nTens * 10
-    tbUser.bStepDone = true
-    local szReturnMsg = "跳过临时招聘"
-    if nTens > 0 then
-        szReturnMsg = string.format("成功临时招聘人员%d, 花费：%d", nTens * 10, nCost)
-    end
-    return szReturnMsg, true
-end
-
--- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", GridType = "idle", GridName = "", nNum = 20} -- GridType:[research\product\idle], GridName:[d\e\a1\b2\""]
+-- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", nLevel = 1, nNum = 2}
 function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local nTens = math.floor(tbParam.nNum / 10)
-    local nCost = nTens * tbConfig.nFireCost
-    local checkFunc, doUpdateManpowerFunc
-    local szReturnMsg = "跳过解聘"
-    if tbParam.GridType == "research" then
-        checkFunc = function ()
-            if not tbUser.tbResearch[tbParam.GridName] or tbUser.tbResearch[tbParam.GridName].manpower < nTens * 10 then
-                return "manpower not enough", false
-            end
-            return "success", true
-        end
 
-        doUpdateManpowerFunc = function ()
-            tbUser.tbResearch[tbParam.GridName].manpower = tbUser.tbResearch[tbParam.GridName].manpower - nTens * 10
-            szReturnMsg = string.format("成功解雇产品%s预研人员%d", tbParam.GridName, nTens * 10)
-        end
-    elseif tbParam.GridType == "product" then
-        checkFunc = function ()
-            if not tbUser.tbProduct[tbParam.GridName] or tbUser.tbProduct[tbParam.GridName].manpower < nTens * 10 then
-                return "manpower not enough", false
-            end
-            return "success", true
-        end
-
-        doUpdateManpowerFunc = function ()
-            tbUser.tbProduct[tbParam.GridName].manpower = tbUser.tbProduct[tbParam.GridName].manpower - nTens * 10
-            szReturnMsg = string.format("成功解雇产品%s研发人员%d", tbParam.GridName, nTens * 10)
-        end
-    elseif tbParam.GridType == "idle" then
-        checkFunc = function ()
-            if tbUser.nIdleManpower < nTens * 10 then
-                return "manpower not enough", false
-            end
-            return "success", true
-        end
-
-        doUpdateManpowerFunc = function ()
-            tbUser.nIdleManpower = tbUser.nIdleManpower - nTens * 10
-            szReturnMsg = string.format("成功解雇待岗人员%d", nTens * 10)
-        end
+    if tbParam.nNum < 0 then
+        return "解雇人数不能是"..tbParam.nNum, false
     end
 
-    local result, bOk = checkFunc()
-    if not bOk then
-        return result, false
+    if tbUser.tbIdleManpower[tbParam.nLevel] < tbParam.nNum then
+        return "人数不足", false
     end
 
-    tbUser.nCash = tbUser.nCash - nCost
-    tbUser.nSeverancePackage = tbUser.nSeverancePackage + nCost
-    doUpdateManpowerFunc()
-    tbUser.nTotalManpower = tbUser.nTotalManpower - nTens * 10
+    tbUser.tbIdleManpower[tbParam.nLevel] = tbUser.tbIdleManpower[tbParam.nLevel] - tbParam.nNum
+    tbUser.nTotalManpower = tbUser.nTotalManpower - tbParam.nNum
     tbUser.bStepDone = true
-    return szReturnMsg, true
+    return string.format("成功解雇%d人", tbParam.nNum), true
 end
 
 -- 立项 {FuncName = "DoOperate", OperateType = "CreateProduct", ProductName="b2", tbMarket = {1,2,3}}
@@ -876,11 +928,6 @@ function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
         end
     end
 
-    local productType = string.sub(tbParam.ProductName, 1, 1)
-    if tbUser.tbResearch[productType] and tbUser.tbResearch[productType].leftPoint ~= 0 then
-        return "need research ready", false
-    end
-
     local nCost = 0
     if #tbParam.tbMarket > 1 then
         local addMarketCost = tbConfig.tbProduct[tbParam.ProductName].addMarketCost
@@ -907,19 +954,7 @@ function tbFunc.Action.funcDoOperate.Turnover(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local szReturnMsg = "success"
 
-    if tbParam.GridType == "research" then
-        local manpower = tbUser.tbResearch[tbParam.GridName].manpower
-        local manpowerCfg = tbConfig.tbResearch[tbParam.GridName].manpower
-        if manpower < manpowerCfg and manpower + tbUser.nIdleManpower >= manpowerCfg then
-            tbUser.tbResearch[tbParam.GridName].manpower = manpowerCfg
-            tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - manpowerCfg
-            szReturnMsg = string.format("产品%s预研人员+%d", tbParam.GridName, manpowerCfg)
-        else
-            tbUser.tbResearch[tbParam.GridName].manpower = 0
-            tbUser.nIdleManpower = tbUser.nIdleManpower + manpower
-            szReturnMsg = string.format("产品%s预研人员-%d", tbParam.GridName, manpowerCfg)
-        end
-    elseif tbParam.GridType == "product" then
+    if tbParam.GridType == "product" then
         local tbProduct = tbUser.tbProduct[tbParam.GridName]
         if not tbProduct then
             return "not product "..tbParam.GridName, false

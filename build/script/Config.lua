@@ -1,11 +1,9 @@
 tbConfig = {
     nLuaVersion = 1,
     tbAdminAccount = {"sys01", "sys02", "sys03" },
-    nNormalHireCost = 1, -- 招聘费用
-    nTempHireCost = 3, -- 临时招聘费用
-    nFireCost = 3, -- 解雇 薪水*3
     nSalary = 1, -- 薪水
     fSalaryRatioPerLevel = 0.2,  -- 每薪水等级薪水涨幅
+    fHireWeightRatioPerLevel = 0.5,  -- 每薪水等级增加招聘权重系数
     fTaxRate = 0.1,
     tbEnableMarketPerYear = { {}, {2}, {3}},
     tbBeginStepPerYear = {
@@ -22,7 +20,7 @@ tbConfig = {
         { desc = "办理离职（交付流失员工）",  mustDone = true, enterAction = "AutoDoneIfNoLoss", nStepUniqueId = 5 },
         { desc = "培训中的员工升级", nStepUniqueId = 6 },
         { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "AutoDoneIfNoInflow", nStepUniqueId = 7 },
-        { desc = "人才市场招募", syncNextStep = true, nStepUniqueId = 8 },
+        { desc = "人才市场招募", syncNextStep = true, nStepUniqueId = 8, finalAction = "SettleHire" },
         { desc = "解雇待岗员工", nStepUniqueId = 9 },
         { desc = "选择目标公司挖人、支付挖人费用", nStepUniqueId = 10 },
         { desc = "设置培训员工、支付培训费用", nStepUniqueId = 11 },
@@ -82,14 +80,14 @@ tbConfig = {
         tbMarketingExpense = {},
         -- 产品
         tbProduct = {
-            a1 = { manpower = 20, tbManpower = {10, 5, 4, 1, 0, 0, 0, 0, 0, 0}, progress = 3, published = true, done = false },
+            a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false },
         },
          -- 订单
         tbOrder = {
             --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
         },
         -- 待岗
-        nIdleManpower = { 10, 5, 4, 1, 0, 0, 0, 0, 0, 0 },
+        tbIdleManpower = { 10, 5, 4, 1, 0 },
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金
@@ -170,7 +168,20 @@ tbConfig = {
         nCash = 0,
     },
     tbOrder = { -- 订单
-    }
+    },
+    tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数
+        {61, 26, 12, 1, 0},
+        {66, 39, 21, 4, 0},
+        {77, 54, 38, 11, 0},
+        {76, 65, 50, 19, 0},
+        {53, 54, 41, 19, 3},
+        {43, 43, 45, 21, 8},
+        {32, 36, 38, 24, 10},
+        {25, 29, 30, 24, 12},
+        {20, 23, 29, 26, 12},
+        {21, 20, 30, 31, 18},
+    },
+    fSeason1NewManpowerRatio = 0.3,  -- 一季度新进人数占全年人数比例， 剩下的三季度新进
 }
 
 for i, v in ipairs(tbConfig.tbBeginStepPerYear) do
