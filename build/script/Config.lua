@@ -20,7 +20,7 @@ tbConfig = {
         { desc = "办理离职（交付流失员工）",  mustDone = true, enterAction = "AutoDoneIfNoLoss", nStepUniqueId = 5 },
         { desc = "培训中的员工升级", nStepUniqueId = 6 },
         { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "AutoDoneIfNoInflow", nStepUniqueId = 7 },
-        { desc = "人才市场招募", syncNextStep = true, nStepUniqueId = 8, finalAction = "SettleHire" },
+        { desc = "人才市场招募", syncNextStep = true, nStepUniqueId = 8, finalAction = "SettleHire", enterAction = "AddNewManpower", },
         { desc = "解雇待岗员工", nStepUniqueId = 9 },
         { desc = "选择目标公司挖人、支付挖人费用", nStepUniqueId = 10 },
         { desc = "设置培训员工、支付培训费用", nStepUniqueId = 11 },

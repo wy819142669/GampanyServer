@@ -25,6 +25,7 @@ local tbRuntimeData = {
         -- a1 = true,
         -- b1 = true,
     },
+    tbAddNewManpower = { false, false, false, false },
     tbManpower = { -- 人才市场各等级人数
         0, 0, 0, 0, 0
     },
@@ -433,12 +434,10 @@ function tbFunc.finalAction.SettleHire()
     ]]
 
     -- 计算权重
-    local nCurSeason
     local tbUserHireInfo = {}
     local nTotalWeight = 0
     local nTotalNeed = 0
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        nCurSeason = nCurSeason or tbUser.nCurSeason
         if tbUser.tbHire and tbUser.tbHire.nNum and tbUser.tbHire.nNum  > 0 then
             local nWeight = math.floor(tbUser.tbHire.nExpense / tbUser.tbHire.nNum * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fHireWeightRatioPerLevel) * 1000 + 0.5)
             table.insert(tbUserHireInfo, {
@@ -450,21 +449,6 @@ function tbFunc.finalAction.SettleHire()
 
             nTotalWeight = nTotalWeight + nWeight
             nTotalNeed = nTotalNeed + tbUser.tbHire.nNum
-        end
-    end
-
-    -- 市场新进人才
-    if tbRuntimeData.nCurYear <= #tbConfig.tbNewManpowerPerYear then
-        local tbNewManpower = tbConfig.tbNewManpowerPerYear[tbRuntimeData.nCurYear]
-        for i = 1, #tbRuntimeData.tbManpower do
-            local nNew = 0
-            if nCurSeason == 1 then
-                nNew = math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
-            elseif nCurSeason == 3 then
-                nNew = tbNewManpower[i] - math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
-            end
-
-            tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + nNew
         end
     end
 
@@ -521,6 +505,7 @@ function tbFunc.finalAction.NewYear()
     print("new year")
     tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
     tbRuntimeData.nCurSyncStep = 0
+    tbRuntimeData.tbAddNewManpower = { false, false, false, false }
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.nCurYearStep = 0
@@ -634,6 +619,31 @@ end
 
 function tbFunc.enterAction.AutoDoneIfNoInflow(tbUser)
     tbUser.bStepDone = true
+end
+
+function tbFunc.enterAction.AddNewManpower(tbUser)
+    local nCurSeason = tbUser.nCurSeason
+
+    -- 第一个进入该步骤的玩家，触发人才市场补充人才
+    if tbRuntimeData.tbAddNewManpower[nCurSeason] then
+        return
+    end
+
+    if tbRuntimeData.nCurYear <= #tbConfig.tbNewManpowerPerYear then
+        local tbNewManpower = tbConfig.tbNewManpowerPerYear[tbRuntimeData.nCurYear]
+        for i = 1, #tbRuntimeData.tbManpower do
+            local nNew = 0
+            if nCurSeason == 1 then
+                nNew = math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
+            elseif nCurSeason == 3 then
+                nNew = tbNewManpower[i] - math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
+            end
+
+            tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + nNew
+        end
+    end
+
+    tbRuntimeData.tbAddNewManpower[nCurSeason] = true
 end
 
 tbFunc.timeLimitAction = {}
