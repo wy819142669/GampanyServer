@@ -1,39 +1,97 @@
-local ProductState = tbConfig.tbProductState
+local tbConfig = tbConfig
+local tbProductState = tbConfig.tbProductState
+
 ---@class ProductMeta
 local ProductMeta = {}
 
-function ProductMeta:Init(tbParams)
-
+local function GetRuntiimeTable(szCompany, nId)
+    local tbRuntimeData = GetTableRuntime()
+    local tbUser = tbRuntimeData.tbUser[szCompany]
+    return tbUser and tbUser.tbProduct[nId]
 end
 
+local function SetMetaData(self, key, value)
+    self._value[key] = value
+    -- 通过szCompany和nId获取到tbRuntimeData中的具体对象。
+    local tbData = GetRuntiimeTable(self.szCompany, self.nId)
+    if tbData then
+        tbData[key] = value
+    end
+end
 
--- 更新人力
-function ProductMeta:UpdatePeaple()
+local function GetMetaData(self, key)
+    if ProductMeta[key] then
+        return ProductMeta[key]
+    end
+    return self._value[key]
+end
 
+-- 创建项目时执行的初始化操作
+function ProductMeta:Init()
+    local productValue = {
+        nState = tbProductState.nBuilding,  -- 当前状态
+        nTotalSeason = 0,                   -- 总季度
+        nPublishSeason = 0,                 -- 上线季度
+        tbPeoples = {},                     -- 人员table, key为等级, value为数量
+        nQuality = 0,
+    }
+
+    self._value = productValue
 end
 
 -- 更新品质
 function ProductMeta:UpdateQuality()
-    -- 获取当前人数
+    local nQuality = self.nQuality
+    for nLevel, nCount in pairs(self:GetPeaple()) do
+        if nLevel > 0 and nCount > 0 then
+            nQuality = nQuality + nLevel * nCount
+        end
+    end
+
+    self.nQuality = nQuality
 end
 
 -- 季度更新
 function ProductMeta:UpdateSeason()
+    self.nTotalSeason = self.nTotalSeason + 1
+    if self.nState > tbProductState.nEnabled then
+        self.nPublishSeason = self.nPublishSeason + 1
+    end
     self:UpdateQuality()
 end
 
 -- 上线
-function ProductMeta:Publish()
+function ProductMeta:Publish(tbParams)
     -- TODO 检查各种
 
-    -- TODO 设置各种
-
-    self.nState = ProductState.nPublished
+    -- 设置状态
+    self.nState = tbProductState.nPublished
     return true
 end
 
+-- 设置员工
+function ProductMeta:SetPeaple(tbParams)
+    self.tbPeoples = Lib.copyTab(tbParams.tbPeaples) or {}
+end
+
+-- 获取员工
+function ProductMeta:GetPeaple()
+    return self.tbPeaples
+end
+
+-- 是否可上线
+function ProductMeta:CanPublish()
+    return self.nState == tbProductState.nEnabled
+end
+
+-- 设置状态变更
 function ProductMeta:SetState(nState)
     self.nState = nState
+end
+
+-- 获取品质 = 总质量 / 总季度
+function ProductMeta:GetQuality()
+    return self.nQuality / self.nTotalSeason
 end
 
 ----------------------------------------------------------
@@ -109,28 +167,56 @@ function ProductionMgr:Create(tbParams, nSpecifiedId)
         nId = nId,                          -- 产品Id
         szCompany = tbParams.szCompany,     -- 公司名字
         szType = tbParams.szType,           -- 产品类型
-        nState = ProductState.nBuilding,    -- 当前状态
-        nTotalSeason = 0,                   -- 总季度
-        nRunningSeason = 0,                 -- 上线季度
-        tbPeoples = {}                      -- 人员table, key为等级, value为数量
+        _value = {},
     }
 
     if not nSpecifiedId then
         self.nId = self.nId + 1
     end
     
-    local tbObj = setmetatable(tbContext, {__index = ProductMeta})
-    self.tbProducts[nId] = tbObj
+    local tbProduct = setmetatable(tbContext, {__index = GetMetaData, __newindex = SetMetaData})
+    self.tbProducts[nId] = tbProduct
 
     -- 产品初始化
-    tbObj:Init(tbParams)
+    tbProduct:Init(tbParams)
 
     -- 返回产品id
     return nId
 end
 
+-- 是否可以上线
+function ProductionMgr:CanPublish(nId)
+    local tbProduct = self:GetOne(nId)
+    if not tbProduct then
+        return false
+    end
+
+    return tbProduct:CanPublish()
+end
+
 -- 设置上线
 function ProductionMgr:Publish(tbParams)
-    local tbObj = self:GetOne(tbParams.nId)
-    return tbObj and tbObj:Publish()
+    local tbProduct = self:GetOne(tbParams.nId)
+    return tbProduct and tbProduct:Publish(tbParams)
+end
+
+-- 设置员工
+function ProductionMgr:SetPeaple(tbParams)
+    local tbProduct = self:GetOne(tbParams.nId)
+    return tbProduct and tbProduct:SetPeaple(tbParams)
+end
+
+-- 获取指定等级员工数量
+function ProductionMgr:GetPeapleCountByLevel(tbParams)
+
+end
+
+-- 扣除指定等级的员工
+function ProductionMgr:ReducePeapleByLevel(tbParams)
+
+end
+
+-- 增加指定等级的员工
+function ProductionMgr:AddPeapleByLevel(tbParams)
+    -- 判断是否总人数超出上限
 end

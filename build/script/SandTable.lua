@@ -183,6 +183,10 @@ function CheckTimeLimit()
     end
 end
 
+function GetTableRuntime()
+    return tbRuntimeData
+end
+
 --------------------接口实现---------------------------------------
 function tbFunc.Action.GetLuaFile(tbParam)
     return "success", true,  { tbConfig = tbConfig }
