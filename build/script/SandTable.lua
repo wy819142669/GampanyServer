@@ -1172,4 +1172,4 @@ function tbFunc.Action.funcDoOperate.Finance(tbParam)
 end
 --------------------------------------------------------------------
 
-print("load success")
+print("load SandTable.lua success")
