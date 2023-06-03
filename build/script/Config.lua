@@ -88,6 +88,8 @@ tbConfig = {
         },
         -- 待岗
         tbIdleManpower = { 10, 5, 4, 1, 0 },
+        -- 解雇员工
+        tbFireManpower = { 0, 0, 0, 0, 0},
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金

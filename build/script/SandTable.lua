@@ -896,8 +896,11 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
         return "人数不足", false
     end
 
+   -- tbRuntimeData.tbManpower[tbParam.nLevel] = tbRuntimeData.tbManpower[tbParam.nLevel] + tbParam.nNum
+
+    tbUser.tbFireManpower[tbParam.nLevel] = tbUser.tbFireManpower[tbParam.nLevel] + tbParam.nNum
     tbUser.tbIdleManpower[tbParam.nLevel] = tbUser.tbIdleManpower[tbParam.nLevel] - tbParam.nNum
-    tbUser.nTotalManpower = tbUser.nTotalManpower - tbParam.nNum
+    --tbUser.nTotalManpower = tbUser.nTotalManpower - tbParam.nNum
     tbUser.bStepDone = true
     return string.format("成功解雇%d人", tbParam.nNum), true
 end
