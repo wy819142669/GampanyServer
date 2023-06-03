@@ -501,7 +501,8 @@ function tbFunc.finalAction.SettleHire()
 
     -- 清除招聘投标数据
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.tbHire = { nNum = 0 }
+        tbUser.tbHire = { nNum = 0 , nExpense = 0}
+        tbUser.bManpowerMarketDone = false
     end
 end
 
@@ -648,6 +649,17 @@ function tbFunc.enterAction.AddNewManpower(tbUser)
     end
 
     tbRuntimeData.tbAddNewManpower[nCurSeason] = true
+end
+
+function tbFunc.enterAction.SettleFire(tbUser)
+    for i = 1, #tbUser.tbFireManpower do
+        tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + tbUser.tbFireManpower[i]
+
+        tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
+        tbUser.tbFireManpower[i] = 0
+    end
+
+    userNewStep(tbUser)
 end
 
 tbFunc.timeLimitAction = {}
@@ -837,6 +849,10 @@ end
 -- 招聘 {FuncName = "DoOperate", OperateType = "CommitHire", nNum = 20, nExpense = 60}
 function tbFunc.Action.funcDoOperate.CommitHire(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    if tbUser.bManpowerMarketDone then
+        return "已经设置过招聘计划", false
+    end
+    
     if tbParam.nNum == 0 then
         return "招聘人数至少1人", false
     end
@@ -849,7 +865,7 @@ function tbFunc.Action.funcDoOperate.CommitHire(tbParam)
     tbUser.nSeverancePackage = tbUser.nSeverancePackage + tbParam.nExpense
     tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
 
-    tbUser.bStepDone = true
+    tbUser.bManpowerMarketDone = true
     local szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
     return szReturnMsg, true
 end
@@ -896,13 +912,9 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
         return "人数不足", false
     end
 
-   -- tbRuntimeData.tbManpower[tbParam.nLevel] = tbRuntimeData.tbManpower[tbParam.nLevel] + tbParam.nNum
-
     tbUser.tbFireManpower[tbParam.nLevel] = tbUser.tbFireManpower[tbParam.nLevel] + tbParam.nNum
     tbUser.tbIdleManpower[tbParam.nLevel] = tbUser.tbIdleManpower[tbParam.nLevel] - tbParam.nNum
-    --tbUser.nTotalManpower = tbUser.nTotalManpower - tbParam.nNum
-    tbUser.bStepDone = true
-    return string.format("成功解雇%d人", tbParam.nNum), true
+    return string.format("成功解雇%d人,季度末将离开公司", tbParam.nNum), true
 end
 
 -- 立项 {FuncName = "DoOperate", OperateType = "CreateProduct", ProductName="b2", tbMarket = {1,2,3}}
