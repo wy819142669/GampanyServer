@@ -37,8 +37,10 @@ func LoadLua()  {
 	g_L = lua.NewState()
 	//defer L.Close()
 
-
 	if err := g_L.DoFile(getSandTableScriptPath()); err != nil {
+		panic(err)
+	}
+	if err := g_L.DoFile(getAdminScriptPath()); err != nil {
 		panic(err)
 	}
 }
@@ -99,6 +101,10 @@ func getSriptPath()string {
 
 func getSandTableScriptPath() string {
 	return  path.Join(getSriptPath(), "SandTable.lua")
+}
+
+func getAdminScriptPath() string {
+	return  path.Join(getSriptPath(), "Admin.lua")
 }
 
 func waitQuit() {

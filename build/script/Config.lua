@@ -1,6 +1,7 @@
 tbConfig = {
     nLuaVersion = 1,
     tbAdminAccount = {"sys01", "sys02", "sys03" },
+    szAdminPassword = "",
     nSalary = 1, -- 薪水
     fSalaryRatioPerLevel = 0.2,  -- 每薪水等级薪水涨幅
     fHireWeightRatioPerLevel = 0.5,  -- 每薪水等级增加招聘权重系数
