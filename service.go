@@ -17,7 +17,7 @@ type service struct {
 }
 
 func Start(port int32) error {
-	http.HandleFunc("/reload", doReload)
+	// http.HandleFunc("/reload", doReload)  --没有用到，先注释掉
 	http.HandleFunc("/query", doQuery)
 	http.HandleFunc("/action", doAction)
 	http.HandleFunc("/admin", doAdmin)

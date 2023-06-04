@@ -6,6 +6,8 @@ require("Json")
 require("Lib")
 require("Config")
 require("Production")
+require("Admin")
+require("DataSync")
 
 local tbRuntimeData = {
     nDataVersion = 1,
@@ -131,7 +133,7 @@ function Action(jsonParam)
     -- tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
     return JsonEncode(tbResult)
 end
-
+--[[ 被越子注释掉。之前没被用到，之后Query的处理统一放到DataSync中
 function Query(jsonParam)
     CheckTimeLimit()
 
@@ -158,6 +160,7 @@ function Query(jsonParam)
 
     return JsonEncode(tbResult)
 end
+--]]
 
 function QueryTest(tbParam)
 
@@ -188,10 +191,6 @@ function GetTableRuntime()
 end
 
 --------------------接口实现---------------------------------------
-function tbFunc.Action.GetLuaFile(tbParam)
-    return "success", true,  { tbConfig = tbConfig }
-end
-
 function tbFunc.Action.QueryRunTimeData(tbParam)
     return "success", true
 end
