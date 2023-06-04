@@ -210,7 +210,8 @@ function tbFunc.Action.Login(tbParam)
         end
     end
     
-    tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = not bAdmin}
+   -- tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = not bAdmin}
+    tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = true}
     return "success", true
 end
 
@@ -662,6 +663,27 @@ function tbFunc.enterAction.SettleFire(tbUser)
     userNewStep(tbUser)
 end
 
+function tbFunc.enterAction.SettleTrain(tbUser)
+    for i = 5 - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
+        for _, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
+            if tbProduct.tbManpower[i] > 0 then
+                local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
+                
+                tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
+                tbProduct.tbManpower[i] = tbProduct.tbManpower[i] - nLevelUpCount
+                tbProduct.tbManpower[i + 1] = tbProduct.tbManpower[i + 1] + nLevelUpCount
+            end
+        end
+
+        local nLevelUpCount = math.min(tbUser.tbIdleManpower[i], tbUser.tbTrainManpower[i])
+        tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
+        tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nLevelUpCount
+        tbUser.tbIdleManpower[i + 1] = tbUser.tbIdleManpower[i + 1] + nLevelUpCount
+    end
+
+    tbUser.bCommitTrainDone = false
+end
+
 tbFunc.timeLimitAction = {}
 function tbFunc.timeLimitAction.PayOffSalary(tbUser)
     if tbUser.bStepDone then
@@ -915,6 +937,50 @@ function tbFunc.Action.funcDoOperate.CommitFire(tbParam)
     tbUser.tbFireManpower[tbParam.nLevel] = tbUser.tbFireManpower[tbParam.nLevel] + tbParam.nNum
     tbUser.tbIdleManpower[tbParam.nLevel] = tbUser.tbIdleManpower[tbParam.nLevel] - tbParam.nNum
     return string.format("成功解雇%d人,季度末将离开公司", tbParam.nNum), true
+end
+
+-- 培训 {FuncName = "DoOperate", OperateType = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
+function tbFunc.Action.funcDoOperate.CommitTrain(tbParam)
+    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    if tbUser.bCommitTrainDone then
+        return "本季度已经设置过培训计划", false
+    end
+
+    local tbMax = Lib.copyTab(tbUser.tbIdleManpower)
+    for i = 1, 5 do
+        tbMax[i] = tbMax[i] + tbUser.tbFireManpower[i]
+    end
+    for _, tbProductInfo in pairs(tbUser.tbProduct) do
+        for i = 1, 5 do
+            tbMax[i] = tbMax[i] + tbProductInfo.tbManpower[i]
+        end
+    end
+
+    for i = 1, 5 do
+        tbMax[i] = math.max(1, math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel))
+    end
+
+    tbMax[5] = 0
+
+    local nTotalNum = 0
+    for i = 1, 5 do
+        nTotalNum = nTotalNum + tbParam.tbTrain[i]
+        if tbParam.tbTrain[i] > tbMax[i] then
+            return string.format("%d级员工最多只能培训%d个", i, tbMax[i]), false
+        end
+    end
+
+    local nMaxTotalNum = math.floor(tbUser.nTotalManpower * tbConfig.fTrainMaxRatioTotal)
+    if nTotalNum > nMaxTotalNum then
+        return string.format("最多只能培训%d人", nMaxTotalNum), false
+    end
+
+    local nCost = nTotalNum * tbConfig.nSalary
+
+    tbUser.nCash = tbUser.nCash - nCost
+    tbUser.tbTrainManpower = tbParam.tbTrain
+    tbUser.bCommitTrainDone = true
+    return "成功设置培训", true
 end
 
 -- 立项 {FuncName = "DoOperate", OperateType = "CreateProduct", ProductName="b2", tbMarket = {1,2,3}}

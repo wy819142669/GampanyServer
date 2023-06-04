@@ -5,6 +5,8 @@ tbConfig = {
     nSalary = 1, -- 薪水
     fSalaryRatioPerLevel = 0.2,  -- 每薪水等级薪水涨幅
     fHireWeightRatioPerLevel = 0.5,  -- 每薪水等级增加招聘权重系数
+    fTrainMaxRatioPerLevel = 0.2,
+    fTrainMaxRatioTotal = 0.1,
     fTaxRate = 0.1,
     tbEnableMarketPerYear = { {}, {2}, {3}},
     tbBeginStepPerYear = {
@@ -16,19 +18,22 @@ tbConfig = {
     },
     tbStepPerSeason = {
         { desc = "产品上线、下线", nStepUniqueId = 2 },
-        { desc = "更新产品品质", nStepUniqueId = 3 },
+        { desc = "更新产品品质", nStepUniqueId = 3 },  -- 更新品质要在员工升级之前
         { desc = "市场竞标", syncNextStep = true, nStepUniqueId = 4 },
         { desc = "办理离职（交付流失员工）",  mustDone = true, enterAction = "AutoDoneIfNoLoss", nStepUniqueId = 5 },
-        { desc = "培训中的员工升级", nStepUniqueId = 6 },
+        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 15, enterAction = "SettleFire" },
+        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain" },
         { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "AutoDoneIfNoInflow", nStepUniqueId = 7 },
         { desc = "人才市场招募", syncNextStep = true, nStepUniqueId = 8, finalAction = "SettleHire", enterAction = "AddNewManpower", },
         { desc = "解雇待岗员工", nStepUniqueId = 9 },
         { desc = "选择目标公司挖人、支付挖人费用", nStepUniqueId = 10 },
         { desc = "设置培训员工、支付培训费用", nStepUniqueId = 11 },
         { desc = "研发分配人力", nStepUniqueId = 12 },
-        { desc = "推进研发进度", nStepUniqueId = 13 },
         { desc = "获取市场收益", nStepUniqueId = 14 },
+        --------------------------------
+        { desc = "推进研发进度", nStepUniqueId = 13 },
         { desc = "支付薪水", mustDone = true, nStepUniqueId = 15, timeLimitAction = "PayOffSalary" },
+ 
         -- { desc = "产品上线，把加倍进度的员工放到待岗区", nStepUniqueId = 101},
         -- { desc = "季度竞标市场用户", syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 111},
         -- { desc = "临时招聘，支付临时招聘费用", nStepUniqueId = 102},
@@ -91,6 +96,8 @@ tbConfig = {
         tbIdleManpower = { 10, 5, 4, 1, 0 },
         -- 解雇员工
         tbFireManpower = { 0, 0, 0, 0, 0},
+        -- 培训员工
+        tbTrainManpower = { 0, 0, 0, 0, 0},
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金
@@ -102,7 +109,7 @@ tbConfig = {
         -- 市场营销费
         nMarketingExpense = 0,
         -- 总人力
-        nTotalManpower = 130,
+        nTotalManpower = 40,
         -- 招聘、解雇费用
         nSeverancePackage = 0,
         -- 薪水
