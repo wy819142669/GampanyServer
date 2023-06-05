@@ -115,7 +115,7 @@ function Action(jsonParam)
     if func then
         szMsg, bRet, tbCustomData = func(tbParam)
     else
-        szMsg = "invalid FuncName"
+        szMsg = "invalid action FuncName"
     end
     local tbResult = {
         code = bRet and 0 or -1,
@@ -191,10 +191,6 @@ function GetTableRuntime()
 end
 
 --------------------接口实现---------------------------------------
-function tbFunc.Action.QueryRunTimeData(tbParam)
-    return "success", true
-end
-
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)
     if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
