@@ -16,6 +16,7 @@ local tbRuntimeData = {
     nSkipDestNextSyncStep = 0,
     bPlaying = false,
     tbMarket = { 1 },
+    nGamerCount = 0,
     tbLoginAccount = {
         -- "王" = 4151234,
     }, -- 已登录账号
@@ -115,7 +116,7 @@ function Action(jsonParam)
     if func then
         szMsg, bRet, tbCustomData = func(tbParam)
     else
-        szMsg = "invalid FuncName"
+        szMsg = "invalid action FuncName"
     end
     local tbResult = {
         code = bRet and 0 or -1,
@@ -191,12 +192,14 @@ function GetTableRuntime()
 end
 
 --------------------接口实现---------------------------------------
-function tbFunc.Action.QueryRunTimeData(tbParam)
-    return "success", true
-end
-
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)
+    local exist = table.contain_key(tbRuntimeData.tbLoginAccount, tbParam.Account)
+    if tbRuntimeData.nGamerCount >= tbConfig.nMaxGamerCount and not exist then
+        print("Login : failed, too much gamers")
+        return "failed, too much gamers", false
+    end
+
     if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
         table.insert(tbConfig.tbAdminAccount, tbParam.Account)
     end
@@ -208,9 +211,12 @@ function tbFunc.Action.Login(tbParam)
             return "failed, already start", false
         end
     end
-    
+
    -- tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = not bAdmin}
     tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = true}
+    if not exist then
+        tbRuntimeData.nGamerCount = tbRuntimeData.nGamerCount + 1
+    end
     return "success", true
 end
 
@@ -218,6 +224,7 @@ end
 function tbFunc.Action.Logout(tbParam)
     tbRuntimeData.tbLoginAccount[tbParam.Account] = nil
     tbRuntimeData.tbUser[tbParam.Account] = nil
+    tbRuntimeData.nGamerCount = tbRuntimeData.nGamerCount - 1
     return "success", true
 end
 

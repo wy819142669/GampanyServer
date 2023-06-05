@@ -2,9 +2,6 @@ require("Json")
 require("Lib")
 require("Config")
 
-local tbRuntimeData = {
-}
-
 local tbFunc = {}
 
 function Admin(jsonParam)
@@ -15,12 +12,11 @@ function Admin(jsonParam)
     if func then
         szMsg, bRet, tbCustomData = func(tbParam)
     else
-        szMsg = "invalid FuncName"
+        szMsg = "invalid admin FuncName"
     end
     local tbResult = {
         code = bRet and 0 or -1,
         msg = szMsg,
-        tbRuntimeData = tbRuntimeData
     }
 
     if tbCustomData then
@@ -34,10 +30,6 @@ end
 
 --------------------接口实现---------------------------------------
 tbFunc.Admin = {}
-
-function tbFunc.Admin.QueryRunTimeData(tbParam)
-    return "success", true
-end
 
 -- 登录 {FuncName = "Login"}
 function tbFunc.Admin.Login(tbParam)

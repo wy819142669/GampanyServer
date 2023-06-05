@@ -12,7 +12,7 @@ function Query(jsonParam)
     if func then
         szMsg, bRet, tbCustomData = func(tbParam)
     else
-        szMsg = "invalid FuncName"
+        szMsg = "invalid query FuncName"
     end
     local tbResult = {
         code = bRet and 0 or -1,
@@ -29,4 +29,8 @@ end
 --------------------接口实现---------------------------------------
 function tbFunc.GetLuaFile(tbParam)
     return "success", true,  { tbConfig = tbConfig }
+end
+
+function tbFunc.GetRunTimeData(tbParam)
+    return "success", true, { tbRuntimeData = GetTableRuntime() }
 end
