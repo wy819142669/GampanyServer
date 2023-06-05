@@ -650,11 +650,12 @@ function tbFunc.enterAction.SettleDepart(tbUser)
 end
 
 function tbFunc.enterAction.SettlePoach(tbUser)
-    if tbUser.tbPoach.bSuccess then
+    if tbUser.tbPoach and tbUser.tbPoach.bSuccess then
         tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] = tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] + 1
         tbUser.nTotalManpower = tbUser.nTotalManpower + 1
     end
 
+    tbUser.tbPoach = nil
     tbUser.bPoachDone = false
 
     userNewStep(tbUser)
