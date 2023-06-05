@@ -9,6 +9,9 @@ tbConfig = {
     fTrainMaxRatioPerLevel = 0.2,  -- 每级可培训人数比例
     fTrainMaxRatioTotal = 0.1,   -- 总可培训人数比例
     tbPoachExpenseRatio = { 2, 4, 8, 12, 16},  -- 挖掘人才可选薪水倍数
+    fPoachSalaryLevelRatio = 1.2, -- 挖掘时薪水等级系数
+    nPoachSalaryWeight = 1, -- 挖掘时薪水等级部分的权重， 此参数越高，挖掘费用效果越不明显
+    fPoachFailedReturnExpenseRatio = 0.8, -- 挖掘人才失败时候返还费用比例
     fTaxRate = 0.1,
     tbEnableMarketPerYear = { {}, {2}, {3}},
     tbBeginStepPerYear = {
@@ -22,10 +25,10 @@ tbConfig = {
         { desc = "产品上线、下线", nStepUniqueId = 2 },
         { desc = "更新产品品质", nStepUniqueId = 3 },  -- 更新品质要在员工升级之前
         { desc = "市场竞标", syncNextStep = true, nStepUniqueId = 4 },
-        { desc = "办理离职（交付流失员工）",  mustDone = true, enterAction = "AutoDoneIfNoLoss", nStepUniqueId = 5 },
+        { desc = "办理离职（交付流失员工）",  mustDone = true, enterAction = "SettleDepart", nStepUniqueId = 5 },
         { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 15, enterAction = "SettleFire" },
         { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain" },
-        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "AutoDoneIfNoInflow", nStepUniqueId = 7 },
+        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7 },
         { desc = "人才市场招募", syncNextStep = true, nStepUniqueId = 8, finalAction = "SettleHire", enterAction = "AddNewManpower", },
         { desc = "解雇待岗员工", nStepUniqueId = 9 },
         { desc = "选择目标公司挖人、支付挖人费用", nStepUniqueId = 10 },
@@ -100,6 +103,8 @@ tbConfig = {
         tbFireManpower = { 0, 0, 0, 0, 0},
         -- 培训员工
         tbTrainManpower = { 0, 0, 0, 0, 0},
+        -- 即将离职员工
+        tbManpowerDepart = {0, 0, 0, 0, 0},
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金

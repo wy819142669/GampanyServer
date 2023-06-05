@@ -625,12 +625,39 @@ function tbFunc.enterAction.SkipStep(tbUser)
     userNewStep(tbUser)
 end
 
-function tbFunc.enterAction.AutoDoneIfNoLoss(tbUser)
-    tbUser.bStepDone = true
+function tbFunc.enterAction.SettleDepart(tbUser)
+    for i = 1, #tbUser.tbDepartManpower do
+        local nNum = tbUser.tbDepartManpower[i]
+        
+        if nNum > 0 then
+            for _, tbProductInfo in pairs(tbUser.tbProduct) do
+                local nCount = math.min(nNum, tbProductInfo.tbManpower[i])
+                nNum = nNum - nCount
+                tbProductInfo.tbManpower[i] = tbProductInfo.tbManpower[i] - nCount
+
+                if nNum == 0 then
+                    break
+                end
+            end
+
+            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nNum
+        end
+        tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbDepartManpower[i]
+        tbUser.tbDepartManpower[i] = 0
+    end
+
+    userNewStep(tbUser)
 end
 
-function tbFunc.enterAction.AutoDoneIfNoInflow(tbUser)
-    tbUser.bStepDone = true
+function tbFunc.enterAction.SettlePoach(tbUser)
+    if tbUser.tbPoach.bSuccess then
+        tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] = tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] + 1
+        tbUser.nTotalManpower = tbUser.nTotalManpower + 1
+    end
+
+    tbUser.bPoachDone = false
+
+    userNewStep(tbUser)
 end
 
 function tbFunc.enterAction.AddNewManpower(tbUser)
@@ -660,9 +687,12 @@ end
 
 function tbFunc.enterAction.SettleFire(tbUser)
     for i = 1, #tbUser.tbFireManpower do
-        tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + tbUser.tbFireManpower[i]
+        if tbUser.tbIdleManpower[i] >= tbUser.tbFireManpower[i] then
+            tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + tbUser.tbFireManpower[i]
 
-        tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
+            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - tbUser.tbFireManpower[i]
+            tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
+        end
         tbUser.tbFireManpower[i] = 0
     end
 
@@ -987,6 +1017,73 @@ function tbFunc.Action.funcDoOperate.CommitTrain(tbParam)
     tbUser.tbTrainManpower = tbParam.tbTrain
     tbUser.bCommitTrainDone = true
     return "成功设置培训", true
+end
+
+-- 挖掘人才 {FuncName = "DoOperate", OperateType = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
+function tbFunc.Action.funcDoOperate.Poach(tbParam)
+    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    if tbUser.bPoachDone then
+        return "本季度已经执行过挖掘", false
+    end
+
+    local tbTargetUser = tbRuntimeData.tbUser[tbParam.TargetUser]
+    if not tbTargetUser then
+        return "目标公司不存在", false
+    end
+
+    if not tbParam.nLevel or tbParam.nLevel < 1 then
+        return "需要人才等级无效", false
+    end
+
+    if not tbParam.nExpense or tbParam.nExpense < tbConfig.tbPoachExpenseRatio[1] * tbConfig.nSalary then
+        return "投入费用无效", false
+    end
+
+    local szResult = ""
+    local bSuccess = false
+    local hasTargetLevelManpower = (tbTargetUser.tbIdleManpower[tbParam.nLevel] ~= 0)
+    if not hasTargetLevelManpower then
+        for _, tbProductInfo in pairs(tbTargetUser.tbProduct) do
+            if tbProductInfo.tbManpower[tbParam.nLevel] ~= 0 then
+                hasTargetLevelManpower = true
+                break
+            end
+        end
+    end
+
+    if not hasTargetLevelManpower then
+        szResult = "目标公司并没有你需要的人才"
+    else
+        local nSuccessWeight = tbParam.nExpense * 5 / tbParam.nLevel + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
+        local nFailedWeight =  tbConfig.nSalary * (1 + (tbTargetUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
+        if nSuccessWeight < nFailedWeight then
+            szResult = "对于你提出的方案，对方坚决拒绝"
+        elseif math.random() > nSuccessWeight / (nSuccessWeight + nFailedWeight) then
+            szResult = "对于你提出的方案，对方犹豫了好一会儿"
+        else
+            szResult = "对方同意加入你"
+            bSuccess = true
+        end
+    end
+
+    local nCost
+    if bSuccess then
+        nCost = tbParam.nExpense
+        tbTargetUser.tbManpowerDepart[tbParam.nLevel] = tbTargetUser.tbManpowerDepart[tbParam.nLevel] + 1
+    else
+        nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
+    end
+
+    tbUser.nCash = tbUser.nCash - nCost
+    tbUser.tbPoach = {
+        TargetUser = tbParam.TargetUser,
+        nLevel = tbParam.nLevel,
+        nExpense = tbParam.nExpense,
+        szResult = szResult,
+        bSuccess = bSuccess
+    }
+    tbUser.bPoachDone = true
+    return szResult, true
 end
 
 -- 立项 {FuncName = "DoOperate", OperateType = "CreateProduct", ProductName="b2", tbMarket = {1,2,3}}
