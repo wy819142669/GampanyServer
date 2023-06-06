@@ -22,8 +22,11 @@ local tbRuntimeData = {
     }, -- 已登录账号
     nReadyNextStepCount = 0,
     nCurSyncStep = 0,
-    -- 当前年份
-    nCurYear = 1,
+
+    nCurYear = 1,       -- 当前年份
+    nCurSeason = 0,     -- 当前季度
+    sCurrentStep = "",  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
+
     tbCutdownProduct = {
         -- a1 = true,
         -- b1 = true,
@@ -225,6 +228,13 @@ function tbFunc.Action.Logout(tbParam)
     tbRuntimeData.tbLoginAccount[tbParam.Account] = nil
     tbRuntimeData.tbUser[tbParam.Account] = nil
     tbRuntimeData.nGamerCount = tbRuntimeData.nGamerCount - 1
+    return "success", true
+end
+
+function tbFunc.Action.StepDone(tbParam)
+    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    tbUser.bStepDone = true
+    NextStepIfAllGamersDone(false)
     return "success", true
 end
 
@@ -776,12 +786,9 @@ end
 function tbFunc.Action.funcDoOperate.RaiseSalary(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bStepDone then
-        return "已经完成操作", false
+        return "该步骤已结束", false
     end
-
     tbUser.nSalaryLevel = tbUser.nSalaryLevel + 1
-    tbUser.bStepDone = true
-
     local szReturnMsg = string.format("薪水等级提升至%d级", tbUser.nSalaryLevel)
     return szReturnMsg, true
 end
@@ -1315,5 +1322,44 @@ function tbFunc.Action.funcDoOperate.Finance(tbParam)
     tbUser.fEquityRatio = tbUser.fEquityRatio / 2
 end
 --------------------------------------------------------------------
+function NextStepIfAllGamersDone(forceAllDone)
+    local bAllDone = true
+    if not forceAllDone then
+        for szAccount, tbUser in pairs(tbRuntimeData.tbUser) do
+            if not tbUser.bStepDone then
+                bAllDone = false
+                break
+            end
+	    end
+    end
+    if not bAllDone then
+        return
+    end
+   
+    -- 切换到下一步骤
+    if tbRuntimeData.sCurrentStep == "PreYear" then
+        tbRuntimeData.nCurSeason = 1
+        tbRuntimeData.sCurrentStep = "PreSeason"
+    elseif tbRuntimeData.sCurrentStep == "PostYear" then
+        tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
+        tbRuntimeData.nCurSeason = 0
+        tbRuntimeData.sCurrentStep = "PreYear"
+    elseif tbRuntimeData.sCurrentStep == "PreSeason" then
+        tbRuntimeData.sCurrentStep = "Season"
+    elseif tbRuntimeData.sCurrentStep == "Season" then
+        tbRuntimeData.sCurrentStep = "PostSeason"
+    elseif tbRuntimeData.sCurrentStep == "PostSeason" then
+        if tbRuntimeData.nCurSeason < 4 then
+            tbRuntimeData.nCurSeason = tbRuntimeData.nCurSeason +1
+            tbRuntimeData.sCurrentStep = "PreSeason"
+        else
+            tbRuntimeData.sCurrentStep = "PostYear"
+        end
+    end
+    -- 重置步骤完成标记
+    for szAccount, tbUser in pairs(tbRuntimeData.tbUser) do
+        tbUser.bStepDone = false
+	end
+end
 
 print("load SandTable.lua success")

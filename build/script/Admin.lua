@@ -72,6 +72,8 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.nDataVersion = 1
     runtime.nCurYear = tbParam.Year
+    runtime.nCurSeason = 0
+    runtime.sCurrentStep = "PreYear"
     runtime.nGameID = runtime.nGameID + 1
     runtime.bPlaying = true
     return "success", true
