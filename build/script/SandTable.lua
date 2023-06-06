@@ -25,7 +25,7 @@ local tbRuntimeData = {
 
     nCurYear = 1,       -- 当前年份
     nCurSeason = 0,     -- 当前季度
-    sCurrentStep = "",  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
+    sCurrentStep = "PreYear",  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
 
     tbCutdownProduct = {
         -- a1 = true,
@@ -391,7 +391,7 @@ function tbFunc.finalAction.SettleOrder()
     end
 end
 
-function tbFunc.finalAction.SettleHire()
+function SettleHire()
     --[[
     tbManpower = { -- 人才市场各等级人数
         0, 0, 0, 0, 0
@@ -572,72 +572,56 @@ function tbFunc.enterAction.EnableMarketTip(tbUser)
     end
 end
 
-function tbFunc.enterAction.UndoneOrderPunish(tbUser)
-    local nPay = 0
-    for _, tbProductOrder in pairs(tbUser.tbOrder) do
-        for _, tbOrder in pairs(tbProductOrder) do
-            if not tbOrder.done then
-                nPay = nPay + math.floor(tbOrder.cfg.n * tbOrder.cfg.arpu / 2 + 0.5)
-            end
-        end
-    end
-
-    tbUser.nCash = tbUser.nCash - nPay
-    if nPay == 0 then
-        tbUser.szTitle = "你已完成所有用户"
-    else
-        tbUser.szTitle = "因未完成用户扣除用户面值50%罚金。 扣除现金"..tostring(nPay)
-    end
-end
-
 function tbFunc.enterAction.SkipStep(tbUser)
     userNewStep(tbUser)
 end
 
-function tbFunc.enterAction.SettleDepart(tbUser)
-    for i = 1, #tbUser.tbDepartManpower do
-        local nNum = tbUser.tbDepartManpower[i]
-        
-        if nNum > 0 then
-            for _, tbProductInfo in pairs(tbUser.tbProduct) do
-                local nCount = math.min(nNum, tbProductInfo.tbManpower[i])
-                nNum = nNum - nCount
-                tbProductInfo.tbManpower[i] = tbProductInfo.tbManpower[i] - nCount
+function SettleDepart()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        for i = 1, #tbUser.tbDepartManpower do
+            local nNum = tbUser.tbDepartManpower[i]
 
-                if nNum == 0 then
-                    break
+            if nNum > 0 then
+                for _, tbProductInfo in pairs(tbUser.tbProduct) do
+                    local nCount = math.min(nNum, tbProductInfo.tbManpower[i])
+                    nNum = nNum - nCount
+                    tbProductInfo.tbManpower[i] = tbProductInfo.tbManpower[i] - nCount
+
+                    if nNum == 0 then
+                        break
+                    end
                 end
+
+                local nCount = math.min(nNum, tbUser.tbIdleManpower[i])
+                nNum = nNum - nCount
+                tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nCount
+
+                nCount = math.min(nNum, tbUser.tbFireManpower[i])
+                nNum = nNum - nCount
+                tbUser.tbFireManpower[i] = tbUser.tbFireManpower[i] - nCount
+
+                assert(nNum == 0)
             end
-
-            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nNum
+            tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbDepartManpower[i]
+            tbUser.tbDepartManpower[i] = 0
         end
-        tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbDepartManpower[i]
-        tbUser.tbDepartManpower[i] = 0
     end
-
-    userNewStep(tbUser)
 end
 
-function tbFunc.enterAction.SettlePoach(tbUser)
-    if tbUser.tbPoach and tbUser.tbPoach.bSuccess then
-        tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] = tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] + 1
-        tbUser.nTotalManpower = tbUser.nTotalManpower + 1
+function SettlePoach()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        if tbUser.tbPoach and tbUser.tbPoach.bSuccess then
+            tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] = tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] + 1
+            tbUser.nTotalManpower = tbUser.nTotalManpower + 1
+        end
+
+        tbUser.tbPoach = nil
+        tbUser.bPoachDone = false
     end
-
-    tbUser.tbPoach = nil
-    tbUser.bPoachDone = false
-
-    userNewStep(tbUser)
 end
 
-function tbFunc.enterAction.AddNewManpower(tbUser)
-    local nCurSeason = tbUser.nCurSeason
-
-    -- 第一个进入该步骤的玩家，触发人才市场补充人才
-    if tbRuntimeData.tbAddNewManpower[nCurSeason] then
-        return
-    end
-
+function AddNewManpower()
+    local nCurSeason = tbRuntimeData.nCurSeason
     if tbRuntimeData.nCurYear <= #tbConfig.tbNewManpowerPerYear then
         local tbNewManpower = tbConfig.tbNewManpowerPerYear[tbRuntimeData.nCurYear]
         for i = 1, #tbRuntimeData.tbManpower do
@@ -651,43 +635,41 @@ function tbFunc.enterAction.AddNewManpower(tbUser)
             tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + nNew
         end
     end
-
-    tbRuntimeData.tbAddNewManpower[nCurSeason] = true
 end
 
-function tbFunc.enterAction.SettleFire(tbUser)
-    for i = 1, #tbUser.tbFireManpower do
-        if tbUser.tbIdleManpower[i] >= tbUser.tbFireManpower[i] then
-            tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + tbUser.tbFireManpower[i]
-
-            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - tbUser.tbFireManpower[i]
-            tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
-        end
-        tbUser.tbFireManpower[i] = 0
-    end
-
-    userNewStep(tbUser)
-end
-
-function tbFunc.enterAction.SettleTrain(tbUser)
-    for i = 5 - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
-        for _, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
-            if tbProduct.tbManpower[i] > 0 then
-                local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
-                
-                tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
-                tbProduct.tbManpower[i] = tbProduct.tbManpower[i] - nLevelUpCount
-                tbProduct.tbManpower[i + 1] = tbProduct.tbManpower[i + 1] + nLevelUpCount
+function SettleFire()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        for i = 1, #tbUser.tbFireManpower do
+            if tbUser.tbFireManpower[i] ~= 0 then
+                tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + tbUser.tbFireManpower[i]
+                tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
+                tbUser.tbFireManpower[i] = 0
             end
         end
-
-        local nLevelUpCount = math.min(tbUser.tbIdleManpower[i], tbUser.tbTrainManpower[i])
-        tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
-        tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nLevelUpCount
-        tbUser.tbIdleManpower[i + 1] = tbUser.tbIdleManpower[i + 1] + nLevelUpCount
     end
+end
 
-    tbUser.bCommitTrainDone = false
+function SettleTrain()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        for i = 5 - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
+            for _, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
+                if tbProduct.tbManpower[i] > 0 then
+                    local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
+
+                    tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
+                    tbProduct.tbManpower[i] = tbProduct.tbManpower[i] - nLevelUpCount
+                    tbProduct.tbManpower[i + 1] = tbProduct.tbManpower[i + 1] + nLevelUpCount
+                end
+            end
+
+            local nLevelUpCount = math.min(tbUser.tbIdleManpower[i], tbUser.tbTrainManpower[i])
+            tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
+            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nLevelUpCount
+            tbUser.tbIdleManpower[i + 1] = tbUser.tbIdleManpower[i + 1] + nLevelUpCount
+        end
+
+        tbUser.bCommitTrainDone = false
+    end
 end
 
 tbFunc.timeLimitAction = {}
@@ -790,40 +772,6 @@ function tbFunc.Action.funcDoOperate.RaiseSalary(tbParam)
     end
     tbUser.nSalaryLevel = tbUser.nSalaryLevel + 1
     local szReturnMsg = string.format("薪水等级提升至%d级", tbUser.nSalaryLevel)
-    return szReturnMsg, true
-end
-
--- 提交市场预算 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a1 = { 2, 1, 1}, a2 = { 5, 3, 3}, b1 = { 20, 40, 3}}}
-function tbFunc.Action.funcDoOperate.CommitMarket(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bStepDone then
-        return "already done", false
-    end
-
-    local nTotalCost = 0
-    for productName, tbMarketingExpenseCurPrdt in pairs(tbParam.tbMarketingExpense) do
-        if not tbUser.tbProduct[productName] or tbUser.tbProduct[productName].progress ~= tbConfig.tbProduct[productName].maxProgress then
-            return "need develpment max progress", false
-        end
-
-        for i, v in ipairs(tbMarketingExpenseCurPrdt) do
-            if v ~= 0 and not table.contain_value(tbUser.tbProduct[productName].market, i) then
-                return "product not published in market"..tostring(i), false
-            end
-
-            nTotalCost = nTotalCost + v
-        end
-    end
-
-    if nTotalCost ~= 0 and nTotalCost > tbUser.nCash then
-        return "cash not enough", false
-    end
-
-    tbUser.nCash = tbUser.nCash - nTotalCost
-    tbUser.tbMarketingExpense = tbParam.tbMarketingExpense
-    tbUser.nMarketingExpense = tbUser.nMarketingExpense + nTotalCost
-    tbUser.bStepDone = true
-    local szReturnMsg = string.format("成功提交市场营销预算，共花费：%d", nTotalCost)
     return szReturnMsg, true
 end
 
@@ -1036,7 +984,7 @@ function tbFunc.Action.funcDoOperate.Poach(tbParam)
     local nCost
     if bSuccess then
         nCost = tbParam.nExpense
-        tbTargetUser.tbManpowerDepart[tbParam.nLevel] = tbTargetUser.tbManpowerDepart[tbParam.nLevel] + 1
+        tbTargetUser.tbDepartManpower[tbParam.nLevel] = tbTargetUser.tbDepartManpower[tbParam.nLevel] + 1
     else
         nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
     end
@@ -1051,57 +999,6 @@ function tbFunc.Action.funcDoOperate.Poach(tbParam)
     }
     tbUser.bPoachDone = true
     return szResult, true
-end
-
--- 立项 {FuncName = "DoOperate", OperateType = "CreateProduct", ProductName="b2", tbMarket = {1,2,3}}
-function tbFunc.Action.funcDoOperate.CreateProduct(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if not table.contain_key(tbConfig.tbProduct, tbParam.ProductName) then
-        return "invalid product name", false
-    end
-
-    if table.contain_key(tbUser.tbProduct, tbParam.ProductName) then
-        return "product already exist", false
-    end
-
-    local productType = string.sub(tbParam.ProductName, 1, 1)
-    local productLevel = string.sub(tbParam.ProductName, 2, 2)
-    if productLevel == "2" then
-        local lowProductName = productType.."1"
-        if not tbUser.tbProduct[lowProductName] or not tbUser.tbProduct[lowProductName].published then
-            return "need product "..productType.."1 published", false
-        end
-    end
-
-    if #tbParam.tbMarket < 1 then
-        return "at least on market", false
-    end
-
-    for _, v in ipairs(tbParam.tbMarket) do
-        if not table.contain_value(tbRuntimeData.tbMarket, v) then
-            return "invalid market:" .. tostring(v), false
-        end
-    end
-
-    local nCost = 0
-    if #tbParam.tbMarket > 1 then
-        local addMarketCost = tbConfig.tbProduct[tbParam.ProductName].addMarketCost
-        nCost = math.floor(addMarketCost / 2 + 0.5) * (#tbParam.tbMarket - 1)
-
-        if tbUser.nCash < nCost then
-            return "cash not enough", false
-        end
-    end
-
-    tbUser.tbProduct[tbParam.ProductName] = { manpower = 0, progress = 0, market = tbParam.tbMarket, published = false, done = false }
-    tbUser.nCash = tbUser.nCash - nCost
-    tbUser.nAppendMarketCost = tbUser.nAppendMarketCost + nCost
-    tbUser.bStepDone = true
-    local szReturnMsg = string.format("成功立项：%s，初始市场：", tbParam.ProductName)
-    for _, v in ipairs(tbParam.tbMarket) do
-       -- szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
-    end
-    return szReturnMsg, true
 end
 
 -- 人员调整 {FuncName = "DoOperate", OperateType = "Turnover", GridType="product", GridName="b2"}
@@ -1133,22 +1030,6 @@ function tbFunc.Action.funcDoOperate.Turnover(tbParam)
     end
 
     tbUser.bStepDone = true
-    return szReturnMsg, true
-end
-
--- 更新应收款 {FuncName = "DoOperate", OperateType = "UpdateReceivables"}
-function tbFunc.Action.funcDoOperate.UpdateReceivables(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bStepDone then
-        return "already done", false
-    end
-
-    local nCash = tbUser.tbReceivables[1]
-    table.remove(tbUser.tbReceivables, 1)
-    table.insert(tbUser.tbReceivables, 0)
-    tbUser.nCash = tbUser.nCash + nCash
-    tbUser.bStepDone = true
-    local szReturnMsg = string.format("本季度更新应收款收入:%d", nCash)
     return szReturnMsg, true
 end
 
@@ -1238,78 +1119,13 @@ function tbFunc.Action.funcDoOperate.UpdateProductProgress(tbParam)
     return szReturnMsg, true
 end
 
--- 追加市场 {FuncName = "DoOperate", OperateType = "AddMarket", ProductName="b2", tbMarket={1, 2, 3}}
-function tbFunc.Action.funcDoOperate.AddMarket(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if not table.contain_key(tbConfig.tbProduct, tbParam.ProductName) then
-        return "invalid product name", false
+function PayOffSalary()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        local nCost = tbUser.nTotalManpower * tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
+
+        tbUser.nCash = tbUser.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
+        tbUser.tbLaborCost[tbRuntimeData.nCurSeason] = nCost
     end
-
-    local tbProduct = tbUser.tbProduct[tbParam.ProductName]
-    if not tbProduct then
-        return "product not exist", false
-    end
-
-    if tbProduct.progress ~= tbConfig.tbProduct[tbParam.ProductName].maxProgress then
-        return "need develpment max progress", false
-    end
-
-    for _, v in ipairs(tbParam.tbMarket) do
-        if not table.contain_value(tbRuntimeData.tbMarket, v) then
-            return "invalid market:" .. tostring(v), false
-        end
-    end
-
-    for _, v in ipairs(tbProduct.market) do
-        if table.contain_value(tbParam.tbMarket, v) then
-            return "can not select market:" .. tostring(v), false
-        end
-    end
-
-    local nCost = 0
-    if #tbParam.tbMarket > 0 then
-        local addMarketCost = tbConfig.tbProduct[tbParam.ProductName].addMarketCost
-        nCost = math.floor(addMarketCost + 0.5) * #tbParam.tbMarket
-
-        if tbUser.nCash < nCost then
-            return "cash not enough", false
-        end
-    end
-
-    for _, v in ipairs(tbParam.tbMarket) do
-        table.insert(tbProduct.market, v)
-    end
-
-    tbUser.nCash = tbUser.nCash - nCost
-    tbUser.nAppendMarketCost = tbUser.nAppendMarketCost + nCost
-    tbUser.bStepDone = true
-
-    local szReturnMsg = "跳过追加市场"
-    if #tbParam.tbMarket > 0 then
-        szReturnMsg = string.format("%s产品成功追加市场：", tbParam.ProductName)
-        for _, v in ipairs(tbParam.tbMarket) do
-         --   szReturnMsg = string.format("%s %s", szReturnMsg, tbConfig.tbMarketName[v])
-        end
-    end
-    return szReturnMsg, true
-end
-
--- 发工资 {FuncName = "DoOperate", OperateType = "PayOffSalary"}
-function tbFunc.Action.funcDoOperate.PayOffSalary(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bStepDone then
-        return "already done", false
-    end
-    DoPayOffSalary(tbUser)
-    return string.format("成功支付工资：%d", nCost), true
-end
-
-function DoPayOffSalary(tbUser)
-    local nCost = tbUser.nTotalManpower * tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
-
-    tbUser.nCash = tbUser.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
-    tbUser.tbLaborCost[tbUser.nCurSeason] = nCost
-    tbUser.bStepDone = true
 end
 
 -- 融资 { FuncName = "DoOperate", OperateType = "Finance"}
@@ -1340,6 +1156,7 @@ function NextStepIfAllGamersDone(forceAllDone)
     if tbRuntimeData.sCurrentStep == "PreYear" then
         tbRuntimeData.nCurSeason = 1
         tbRuntimeData.sCurrentStep = "PreSeason"
+        DoPerSeason()
     elseif tbRuntimeData.sCurrentStep == "PostYear" then
         tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
         tbRuntimeData.nCurSeason = 0
@@ -1348,10 +1165,12 @@ function NextStepIfAllGamersDone(forceAllDone)
         tbRuntimeData.sCurrentStep = "Season"
     elseif tbRuntimeData.sCurrentStep == "Season" then
         tbRuntimeData.sCurrentStep = "PostSeason"
+        DoPostSeason()
     elseif tbRuntimeData.sCurrentStep == "PostSeason" then
         if tbRuntimeData.nCurSeason < 4 then
             tbRuntimeData.nCurSeason = tbRuntimeData.nCurSeason +1
             tbRuntimeData.sCurrentStep = "PreSeason"
+            DoPerSeason()
         else
             tbRuntimeData.sCurrentStep = "PostYear"
         end
@@ -1360,6 +1179,32 @@ function NextStepIfAllGamersDone(forceAllDone)
     for szAccount, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.bStepDone = false
 	end
+
+    print("nCurSeason:", tbRuntimeData.nCurSeason, "sCurrentStep:", tbRuntimeData.sCurrentStep)
+end
+
+function DoPerSeason()
+    --[[{ desc = "获取上个季度市场收益", nStepUniqueId = 14, step = STEP.PreSeason },
+        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5, step = STEP.PreSeason },
+        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire", step = STEP.PreSeason },
+        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain", step = STEP.PreSeason },
+        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7, step = STEP.PreSeason },
+        { desc = "市场份额刷新", nStepUniqueId = 17, step = STEP.PreSeason },
+        { desc = "更新产品品质", nStepUniqueId = 3, step = STEP.PreSeason },]]
+
+    AddNewManpower()  -- 新人才进入人才市场
+    SettleDepart()  --办理离职（交付流失员工）
+    SettleFire()  -- 解雇人员离职
+    SettleTrain()  -- 培训中的员工升级
+    SettlePoach()  -- 成功挖掘的人才入职
+    SettleHire()   -- 人才市场招聘结果
+end
+
+function DoPostSeason()
+    --[[{ desc = "推进研发进度", nStepUniqueId = 13, step = STEP.PostSeason },
+    { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary", step = STEP.PostSeason },    ]]
+
+    PayOffSalary()
 end
 
 print("load SandTable.lua success")

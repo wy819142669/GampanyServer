@@ -22,22 +22,19 @@ tbConfig = {
        -- { desc = "招聘并支付费用", nStepUniqueId = 3},
     },
     tbStepPerSeason = {
-        { desc = "产品上线、下线", nStepUniqueId = 2 },
-        { desc = "更新产品品质", nStepUniqueId = 3 },  -- 更新品质要在员工升级之前
-        { desc = "市场竞标", syncNextStep = true, nStepUniqueId = 4 },
-        { desc = "办理离职（交付流失员工）",  mustDone = true, enterAction = "SettleDepart", nStepUniqueId = 5 },
-        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 15, enterAction = "SettleFire" },
-        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain" },
-        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7 },
-        { desc = "人才市场招募", syncNextStep = true, nStepUniqueId = 8, finalAction = "SettleHire", enterAction = "AddNewManpower", },
-        { desc = "解雇待岗员工", nStepUniqueId = 9 },
-        { desc = "选择目标公司挖人、支付挖人费用", nStepUniqueId = 10 },
-        { desc = "设置培训员工、支付培训费用", nStepUniqueId = 11 },
-        { desc = "研发分配人力", nStepUniqueId = 12 },
-        { desc = "获取市场收益", nStepUniqueId = 14 },
-        --------------------------------
-        { desc = "推进研发进度", nStepUniqueId = 13 },
-        { desc = "支付薪水", mustDone = true, nStepUniqueId = 15, timeLimitAction = "PayOffSalary" },
+        --[[进入季度初自动流程]]
+        { desc = "获取上个季度市场收益", nStepUniqueId = 14, step = STEP.PreSeason },
+        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5, step = STEP.PreSeason },
+        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire", step = STEP.PreSeason },
+        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain", step = STEP.PreSeason },
+        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7, step = STEP.PreSeason },
+        { desc = "市场份额刷新", nStepUniqueId = 17, step = STEP.PreSeason },
+        { desc = "更新产品品质", nStepUniqueId = 3, step = STEP.PreSeason },
+        --[[自由操作阶段]]
+        { desc = "推盘阶段：产品上线、市场竞标、人才市场竞标、解雇/挖人/培训、研发分配人力", nStepUniqueId = 2, step = STEP.Season },
+        --[[进入季度末自动流程]]
+        { desc = "推进研发进度", nStepUniqueId = 13, step = STEP.PostSeason },
+        { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary", step = STEP.PostSeason },
  
         -- { desc = "产品上线，把加倍进度的员工放到待岗区", nStepUniqueId = 101},
         -- { desc = "季度竞标市场用户", syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 111},
@@ -104,7 +101,7 @@ tbConfig = {
         -- 培训员工
         tbTrainManpower = { 0, 0, 0, 0, 0},
         -- 即将离职员工
-        tbManpowerDepart = {0, 0, 0, 0, 0},
+        tbDepartManpower = {0, 0, 0, 0, 0},
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金
@@ -222,11 +219,6 @@ for i = 1, 4 do
         local tbSeasonCfg = Lib.copyTab(v)
         tbSeasonCfg.nCurSeason = i
         tbSeasonCfg.nCurSeasonStep = j
-        if (i == 2 or i == 4) and tbSeasonCfg.nStepUniqueId == 8 then --2、4季度跳过人才市场竞标
-            tbSeasonCfg.syncNextStep = false
-            tbSeasonCfg.enterAction = "SkipStep"
-        end
-
         table.insert(tbConfig.tbYearStep, tbSeasonCfg)
     end
 end
@@ -239,3 +231,4 @@ end
 
 tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
 tbConfig.tbInitUserData.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
+
