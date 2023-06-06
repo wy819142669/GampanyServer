@@ -236,14 +236,6 @@ function tbFunc.Action.AdminJoinGame(tbParam)
     return "success", true
 end
 
--- 开始 {FuncName = "DoStart", Year=1}  -- Year = 1(教学) or 2(跳过教学)
-function tbFunc.Action.DoStart(tbParam)
-    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
-        return "failed, only admin can start", false
-    end
-    return tbAdminFunc.DoStart(tbParam)
-end
-
 -- 重置 {FuncName = "DoReset"}
 function tbFunc.Action.DoReset(tbParam)
     if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
