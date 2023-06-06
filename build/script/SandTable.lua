@@ -238,43 +238,10 @@ end
 
 -- 开始 {FuncName = "DoStart", Year=1}  -- Year = 1(教学) or 2(跳过教学)
 function tbFunc.Action.DoStart(tbParam)
-    if tbRuntimeData.bPlaying then
-        return "failed, already start", false
-    end
-
     if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
         return "failed, only admin can start", false
     end
-
-    math.randomseed(os.time())
-
-    tbParam.Year = tbParam.Year or 1
-
-    for userName, tbLoginAccountInfo in pairs(tbRuntimeData.tbLoginAccount) do
-        if tbLoginAccountInfo.joinGame then
-            tbRuntimeData.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
-            tbRuntimeData.tbUser[userName].szAccount = userName
-            tbRuntimeData.tbUser[userName].tbHistoryYearReport = {}
-            if tbParam.Year == 1 then
-                tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = tbRuntimeData.tbUser[userName].tbYearReport
-            else
-                tbRuntimeData.tbUser[userName].tbHistoryYearReport[1] = Lib.copyTab(tbRuntimeData.tbUser[userName].tbYearReport)
-                tbRuntimeData.tbUser[userName].tbHistoryYearReport[2] = tbRuntimeData.tbUser[userName].tbYearReport
-            end
-
-
-            for k, v in pairs(tbConfig.tbInitUserDataYearPath[tbParam.Year]) do
-                tbRuntimeData.tbUser[userName][k] = Lib.copyTab(v)
-            end
-        end
-    end
-
-    tbRuntimeData.tbOrder = Lib.copyTab(tbConfig.tbOrder)
-    tbRuntimeData.nDataVersion = 1
-    tbRuntimeData.nCurYear = tbParam.Year
-    tbRuntimeData.nGameID = tbRuntimeData.nGameID + 1
-    tbRuntimeData.bPlaying = true
-    return "success", true
+    return tbAdminFunc.DoStart(tbParam)
 end
 
 -- 重置 {FuncName = "DoReset"}
