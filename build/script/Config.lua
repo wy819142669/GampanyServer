@@ -1,10 +1,4 @@
-STEP = {
-    PreYear = 1,
-    PreSeason = 2,
-    Season = 3,
-    PostSeason = 4,
-    PostYear = 5,
-}
+STEP = { PreYear = "PreYear", PostYear="PostYear", PreSeason="PreSeason", PostSeason="PostSeason", Season="Season"}
 
 tbConfig = {
     nLuaVersion = 1,

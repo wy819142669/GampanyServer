@@ -42,10 +42,32 @@ function tbAdminFunc.Logout(tbParam)
     return "success", true
 end
 
+-- 重置 {FuncName = "DoReset"}
+function tbAdminFunc.DoReset(tbParam)
+    local runtime = GetTableRuntime()
+    runtime.nDataVersion = 0
+    runtime.nCurYear = 1
+    runtime.nCurSeason = 1
+    runtime.sCurrentStep = STEP.PreSeason
+    runtime.tbUser = {}
+    runtime.nReadyNextStepCount = 0
+    runtime.tbLoginAccount = {}
+    runtime.tbCutdownProduct = {}
+    runtime.bPlaying = false
+    runtime.tbMarket = {1}
+    runtime.nTimeLimitToNextSyncStep = 0
+    runtime.nSkipDestNextSyncStep = 0
+    runtime.nCurSyncStep = 0
+    return "success", true
+end
+
 function tbAdminFunc.DoStart(tbParam)
     local runtime = GetTableRuntime()
     if runtime.bPlaying then
         return "failed, already started", false
+    end
+    if runtime.nGamerCount < 1 then
+        return "failed, no gamer", false
     end
 
     math.randomseed(os.time())
@@ -72,9 +94,17 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.nDataVersion = 1
     runtime.nCurYear = tbParam.Year
-    runtime.nCurSeason = 0
-    runtime.sCurrentStep = "PreYear"
+    runtime.nCurSeason = 1
+    runtime.sCurrentStep = STEP.PreSeason
     runtime.nGameID = runtime.nGameID + 1
     runtime.bPlaying = true
+    return "success", true
+end
+
+function tbAdminFunc.NextStep(tbParam)
+    if tbParam.CurStep ~= GetTableRuntime().sCurrentStep then
+        return "failed, step mismatch", false    --避免在收到请求时，服务端已经刚刚变过步骤了
+    end
+    NextStepIfAllGamersDone(true)
     return "success", true
 end
