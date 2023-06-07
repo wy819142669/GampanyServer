@@ -237,6 +237,10 @@ function tbFunc.Action.TimeLimitToNextSyncStep(tbParam)
 end
 
 function tbFunc.Action.DoOperate(tbParam)
+    if tbRuntimeData.sCurrentStep ~= STEP.PreYear and tbRuntimeData.sCurrentStep ~= STEP.Season then
+        return "此阶段不能操作", false
+    end
+
     return tbFunc.Action.funcDoOperate[tbParam.OperateType](tbParam)
 end
 
@@ -773,6 +777,10 @@ function tbFunc.Action.funcDoOperate.CommitHire(tbParam)
         return "已经设置过招聘计划", false
     end
     
+    if tbRuntimeData.nCurSeason == 2 or tbRuntimeData.nCurSeason == 4 then
+        return "只有1、3季度才可以招聘", false
+    end
+
     if tbParam.nNum == 0 then
         return "招聘人数至少1人", false
     end
@@ -916,11 +924,13 @@ function tbFunc.Action.funcDoOperate.Poach(tbParam)
     if not hasTargetLevelManpower then
         szResult = "目标公司并没有你需要的人才"
     else
+        local rand = math.random()
         local nSuccessWeight = tbParam.nExpense * 5 / tbParam.nLevel + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         local nFailedWeight =  tbConfig.nSalary * (1 + (tbTargetUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
+        print("poach - success:", nSuccessWeight, "failed:", nFailedWeight, "rand:", rand, "sueecss ratio:", nSuccessWeight / (nSuccessWeight + nFailedWeight))
         if nSuccessWeight < nFailedWeight then
             szResult = "对于你提出的方案，对方坚决拒绝"
-        elseif math.random() > nSuccessWeight / (nSuccessWeight + nFailedWeight) then
+        elseif rand > nSuccessWeight / (nSuccessWeight + nFailedWeight) then
             szResult = "对于你提出的方案，对方犹豫了好一会儿"
         else
             szResult = "对方同意加入你"
