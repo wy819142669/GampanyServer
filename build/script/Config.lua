@@ -90,7 +90,7 @@ tbConfig = {
         tbMarketingExpense = {},
         -- 产品
         tbProduct = {
-            a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false },
+           -- a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false },
         },
          -- 订单
         tbOrder = {
@@ -107,7 +107,7 @@ tbConfig = {
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金
-        nCash = 60,
+        nCash = 1000,
         -- 追加市场费
         nAppendMarketCost = 0,
         -- 税收
@@ -115,7 +115,7 @@ tbConfig = {
         -- 市场营销费
         nMarketingExpense = 0,
         -- 总人力
-        nTotalManpower = 40,
+        nTotalManpower = 20,
         -- 招聘、解雇费用
         nSeverancePackage = 0,
         -- 薪水
