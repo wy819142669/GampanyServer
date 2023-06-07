@@ -47,8 +47,8 @@ function tbAdminFunc.DoReset(tbParam)
     local runtime = GetTableRuntime()
     runtime.nDataVersion = 0
     runtime.nCurYear = 1
-    runtime.nCurSeason = 0
-    runtime.sCurrentStep = STEP.PreYear
+    runtime.nCurSeason = 1
+    runtime.sCurrentStep = STEP.PreSeason
     runtime.tbUser = {}
     runtime.nReadyNextStepCount = 0
     runtime.tbLoginAccount = {}
@@ -94,8 +94,8 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.nDataVersion = 1
     runtime.nCurYear = tbParam.Year
-    runtime.nCurSeason = 0
-    runtime.sCurrentStep = STEP.PreYear
+    runtime.nCurSeason = 1
+    runtime.sCurrentStep = STEP.PreSeason
     runtime.nGameID = runtime.nGameID + 1
     runtime.bPlaying = true
     return "success", true

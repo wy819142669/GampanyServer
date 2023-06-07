@@ -24,8 +24,8 @@ local tbRuntimeData = {
     nCurSyncStep = 0,
 
     nCurYear = 1,       -- 当前年份
-    nCurSeason = 0,     -- 当前季度
-    sCurrentStep = STEP.PreYear,  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
+    nCurSeason = 1,     -- 当前季度
+    sCurrentStep = STEP.PreSeason,  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
 
     tbCutdownProduct = {
         -- a1 = true,
@@ -1119,7 +1119,11 @@ function NextStepIfAllGamersDone(forceAllDone)
             tbRuntimeData.sCurrentStep = STEP.PreSeason
             DoPerSeason()
         else
-            tbRuntimeData.sCurrentStep = STEP.PostYear
+            --tbRuntimeData.sCurrentStep = STEP.PostYear
+            --暂时忽略与跳过PostYear阶段
+            tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
+            tbRuntimeData.nCurSeason = 0
+            tbRuntimeData.sCurrentStep = STEP.PreYear
         end
     end
     -- 重置步骤完成标记
