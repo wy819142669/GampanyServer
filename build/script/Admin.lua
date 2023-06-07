@@ -55,6 +55,7 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.tbCutdownProduct = {}
     runtime.bPlaying = false
     runtime.tbMarket = {1}
+    runtime.tbManpower = {0, 0, 0, 0, 0}
     runtime.nTimeLimitToNextSyncStep = 0
     runtime.nSkipDestNextSyncStep = 0
     runtime.nCurSyncStep = 0
