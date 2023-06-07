@@ -1126,8 +1126,7 @@ function NextStepIfAllGamersDone(forceAllDone)
     for szAccount, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.bStepDone = false
 	end
-
-    print("nCurSeason:", tbRuntimeData.nCurSeason, "sCurrentStep:", tbRuntimeData.sCurrentStep)
+    print("=============== Year:".. tbRuntimeData.nCurYear .. " Season:" .. tbRuntimeData.nCurSeason .. " Step:" .. tbRuntimeData.sCurrentStep .. "  ===============")
 end
 
 function DoPerSeason()

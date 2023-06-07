@@ -66,6 +66,9 @@ function tbAdminFunc.DoStart(tbParam)
     if runtime.bPlaying then
         return "failed, already started", false
     end
+    if runtime.nGamerCount < 1 then
+        return "failed, no gamer", false
+    end
 
     math.randomseed(os.time())
     tbParam.Year = tbParam.Year or 1
@@ -98,3 +101,10 @@ function tbAdminFunc.DoStart(tbParam)
     return "success", true
 end
 
+function tbAdminFunc.NextStep(tbParam)
+    if tbParam.CurStep ~= GetTableRuntime().sCurrentStep then
+        return "failed, step mismatch", false    --避免在收到请求时，服务端已经刚刚变过步骤了
+    end
+    NextStepIfAllGamersDone(true)
+    return "success", true
+end
