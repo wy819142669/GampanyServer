@@ -25,7 +25,7 @@ local tbRuntimeData = {
 
     nCurYear = 1,       -- 当前年份
     nCurSeason = 0,     -- 当前季度
-    sCurrentStep = "PreYear",  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
+    sCurrentStep = STEP.PreYear,  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
 
     tbCutdownProduct = {
         -- a1 = true,
@@ -137,39 +137,6 @@ function Action(jsonParam)
     -- tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
     return JsonEncode(tbResult)
 end
---[[ 被越子注释掉。之前没被用到，之后Query的处理统一放到DataSync中
-function Query(jsonParam)
-    CheckTimeLimit()
-
-    local tbParam = JsonDecode(jsonParam)
-    local func = tbFunc["Query"][tbParam.FuncName]
-    local resultText
-    local isUpdateRuntimeData = true
-    local responseParam = nil
-    if func then
-        resultText, isUpdateRuntimeData, responseParam = func(tbParam)
-    else
-        resultText = "invalid FuncName"
-    end
-    local tbResult = {
-        szResult = resultText,
-        tbRuntimeData = isUpdateRuntimeData and tbRuntimeData or nil
-    }
-
-    if responseParam then
-        for k, v in pairs(responseParam) do
-            tbResult[k] = v
-        end
-    end
-
-    return JsonEncode(tbResult)
-end
---]]
-
-function QueryTest(tbParam)
-
-    return "success"
-end
 
 function CheckTimeLimit()
     if tbRuntimeData.nTimeLimitToNextSyncStep == 0 or os.time() < tbRuntimeData.nTimeLimitToNextSyncStep then
@@ -243,26 +210,6 @@ function tbFunc.Action.AdminJoinGame(tbParam)
     if tbRuntimeData.tbLoginAccount[tbParam.Account].admin then
         tbRuntimeData.tbLoginAccount[tbParam.Account].joinGame = tbParam.Join
     end
-    return "success", true
-end
-
--- 重置 {FuncName = "DoReset"}
-function tbFunc.Action.DoReset(tbParam)
-    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
-        return "failed, only admin can reset", false
-    end
-
-    tbRuntimeData.nDataVersion = 0
-    tbRuntimeData.nCurYear = 1
-    tbRuntimeData.tbUser = {}
-    tbRuntimeData.nReadyNextStepCount = 0
-    tbRuntimeData.tbLoginAccount = {}
-    tbRuntimeData.tbCutdownProduct = {}
-    tbRuntimeData.bPlaying = false
-    tbRuntimeData.tbMarket = {1}
-    tbRuntimeData.nTimeLimitToNextSyncStep = 0
-    tbRuntimeData.nSkipDestNextSyncStep = 0
-    tbRuntimeData.nCurSyncStep = 0
     return "success", true
 end
 
@@ -1153,26 +1100,26 @@ function NextStepIfAllGamersDone(forceAllDone)
     end
    
     -- 切换到下一步骤
-    if tbRuntimeData.sCurrentStep == "PreYear" then
+    if tbRuntimeData.sCurrentStep == STEP.PreYear then
         tbRuntimeData.nCurSeason = 1
-        tbRuntimeData.sCurrentStep = "PreSeason"
+        tbRuntimeData.sCurrentStep = STEP.PreSeason
         DoPerSeason()
-    elseif tbRuntimeData.sCurrentStep == "PostYear" then
+    elseif tbRuntimeData.sCurrentStep == STEP.PostYear then
         tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
         tbRuntimeData.nCurSeason = 0
-        tbRuntimeData.sCurrentStep = "PreYear"
-    elseif tbRuntimeData.sCurrentStep == "PreSeason" then
-        tbRuntimeData.sCurrentStep = "Season"
-    elseif tbRuntimeData.sCurrentStep == "Season" then
-        tbRuntimeData.sCurrentStep = "PostSeason"
+        tbRuntimeData.sCurrentStep = STEP.PreYear
+    elseif tbRuntimeData.sCurrentStep == STEP.PreSeason then
+        tbRuntimeData.sCurrentStep = STEP.Season
+    elseif tbRuntimeData.sCurrentStep == STEP.Season then
+        tbRuntimeData.sCurrentStep = STEP.PostSeason
         DoPostSeason()
-    elseif tbRuntimeData.sCurrentStep == "PostSeason" then
+    elseif tbRuntimeData.sCurrentStep == STEP.PostSeason then
         if tbRuntimeData.nCurSeason < 4 then
             tbRuntimeData.nCurSeason = tbRuntimeData.nCurSeason +1
-            tbRuntimeData.sCurrentStep = "PreSeason"
+            tbRuntimeData.sCurrentStep = STEP.PreSeason
             DoPerSeason()
         else
-            tbRuntimeData.sCurrentStep = "PostYear"
+            tbRuntimeData.sCurrentStep = STEP.PostYear
         end
     end
     -- 重置步骤完成标记

@@ -42,6 +42,25 @@ function tbAdminFunc.Logout(tbParam)
     return "success", true
 end
 
+-- 重置 {FuncName = "DoReset"}
+function tbAdminFunc.DoReset(tbParam)
+    local runtime = GetTableRuntime()
+    runtime.nDataVersion = 0
+    runtime.nCurYear = 1
+    runtime.nCurSeason = 0
+    runtime.sCurrentStep = STEP.PreYear
+    runtime.tbUser = {}
+    runtime.nReadyNextStepCount = 0
+    runtime.tbLoginAccount = {}
+    runtime.tbCutdownProduct = {}
+    runtime.bPlaying = false
+    runtime.tbMarket = {1}
+    runtime.nTimeLimitToNextSyncStep = 0
+    runtime.nSkipDestNextSyncStep = 0
+    runtime.nCurSyncStep = 0
+    return "success", true
+end
+
 function tbAdminFunc.DoStart(tbParam)
     local runtime = GetTableRuntime()
     if runtime.bPlaying then
@@ -73,8 +92,9 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.nDataVersion = 1
     runtime.nCurYear = tbParam.Year
     runtime.nCurSeason = 0
-    runtime.sCurrentStep = "PreYear"
+    runtime.sCurrentStep = STEP.PreYear
     runtime.nGameID = runtime.nGameID + 1
     runtime.bPlaying = true
     return "success", true
 end
+

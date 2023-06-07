@@ -1,3 +1,5 @@
+STEP = { PreYear = "PreYear", PostYear="PostYear", PreSeason="PreSeason", PostSeason="PostSeason", Season="Season"}
+
 tbConfig = {
     nLuaVersion = 1,
     nMaxGamerCount = 9, --最多允许容纳的玩家的数目，因为界面没有做灵活适配，所以限制数目上限
