@@ -1,5 +1,3 @@
-STEP = { PreYear = "PreYear", PostYear="PostYear", PreSeason="PreSeason", PostSeason="PostSeason", Season="Season"}
-
 tbConfig = {
     --[[未实际启用，暂时注释掉
     nLuaVersion = 1,
@@ -22,27 +20,27 @@ tbConfig = {
     fPoachFailedReturnExpenseRatio = 0.8, -- 挖掘人才失败时候返还费用比例
     fTaxRate = 0.1,
     tbEnableMarketPerYear = { {}, {2}, {3}},
-    tbBeginStepPerYear = {
-        { desc = "调整薪资", nStepUniqueId = 1},
+    ---tbBeginStepPerYear = {
+    --    { desc = "调整薪资", nStepUniqueId = 1},
         --{ desc = "支付税款", mustDone = true, nStepUniqueId = 1},
         --{ desc = "追加额外市场，支付本地化费用", nStepUniqueId = 108},
        -- { desc = "市场竞标，抢用户", mustDone = true, syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 2},
        -- { desc = "招聘并支付费用", nStepUniqueId = 3},
-    },
+    --},
     tbStepPerSeason = {
         --[[进入季度初自动流程]]
-        { desc = "获取上个季度市场收益", nStepUniqueId = 14, step = STEP.PreSeason },
-        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5, step = STEP.PreSeason },
-        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire", step = STEP.PreSeason },
-        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain", step = STEP.PreSeason },
-        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7, step = STEP.PreSeason },
-        { desc = "市场份额刷新", nStepUniqueId = 17, step = STEP.PreSeason },
-        { desc = "更新产品品质", nStepUniqueId = 3, step = STEP.PreSeason },
+        { desc = "获取上个季度市场收益", nStepUniqueId = 14},
+        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5},
+        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire"},
+        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain"},
+        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7},
+        { desc = "市场份额刷新", nStepUniqueId = 17},
+        { desc = "更新产品品质", nStepUniqueId = 3},
         --[[自由操作阶段]]
-        { desc = "推盘阶段：产品上线、市场竞标、人才市场竞标、解雇/挖人/培训、研发分配人力", nStepUniqueId = 2, step = STEP.Season },
+        { desc = "推盘阶段：产品上线、市场竞标、人才市场竞标、解雇/挖人/培训、研发分配人力", nStepUniqueId = 2},
         --[[进入季度末自动流程]]
-        { desc = "推进研发进度", nStepUniqueId = 13, step = STEP.PostSeason },
-        { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary", step = STEP.PostSeason },
+        { desc = "推进研发进度", nStepUniqueId = 13},
+        { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary"},
  
         -- { desc = "产品上线，把加倍进度的员工放到待岗区", nStepUniqueId = 101},
         -- { desc = "季度竞标市场用户", syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 111},
@@ -56,12 +54,12 @@ tbConfig = {
         -- { desc = "roll点扣除剩余点数，查看预研结果", nStepUniqueId = 109},
         -- { desc = "支付人员工资（总人力*工资）", mustDone = true, nStepUniqueId = 110, timeLimitAction = "PayOffSalary"},
     },
-    tbEndStepPerYear = {
+    --tbEndStepPerYear = {
         -- { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket", nStepUniqueId = 201},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
         -- { desc = "海外市场自动开放", enterAction = "EnableMarketTip", nStepUniqueId = 202},
         -- { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport", nStepUniqueId = 204},
         -- { desc = "排名总结", syncNextStep = true, finalAction = "NewYear", enterAction = "Year1FixManpower", nStepUniqueId = 205},
-    },
+    --},
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
         a2 = { minManpower = 40, maxManpower = 120, maxProgress = 4, addMarketCost = 8,},
@@ -223,13 +221,6 @@ tbConfig = {
     },
 }
 
-for i, v in ipairs(tbConfig.tbBeginStepPerYear) do
-    local tbBeginStep = Lib.copyTab(v)
-    tbBeginStep.nCurSeason = 0
-    tbBeginStep.nCurSeasonStep = i
-    table.insert(tbConfig.tbYearStep, tbBeginStep)
-end
-
 for i = 1, 4 do
     for j, v in ipairs(tbConfig.tbStepPerSeason) do
         local tbSeasonCfg = Lib.copyTab(v)
@@ -237,12 +228,6 @@ for i = 1, 4 do
         tbSeasonCfg.nCurSeasonStep = j
         table.insert(tbConfig.tbYearStep, tbSeasonCfg)
     end
-end
-
-for i, v in ipairs(tbConfig.tbEndStepPerYear) do
-    local tbEndStep = Lib.copyTab(v)
-    tbEndStep.nCurSeasonStep = i
-    table.insert(tbConfig.tbYearStep, tbEndStep)
 end
 
 tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)

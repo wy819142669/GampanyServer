@@ -10,11 +10,18 @@ require("Admin")
 require("DataSync")
 
 local tbRuntimeData = {
+    --[[未实际启用，暂时注释掉
     nDataVersion = 1,
     nGameID = 0,
+    --]]
+
+    --==== 游戏整体运行信息 ====
+    bPlaying = false,
+    nCurYear = 1,       -- 当前年份
+    nCurSeason = 1,     -- 当前季度, 取值未0~4, 0表示新年开始时且1季度开始前
+
     nTimeLimitToNextSyncStep = 0,
     nSkipDestNextSyncStep = 0,
-    bPlaying = false,
     tbMarket = {},
     nGamerCount = 0,
     tbLoginAccount = {
@@ -23,9 +30,6 @@ local tbRuntimeData = {
     nReadyNextStepCount = 0,
     nCurSyncStep = 0,
 
-    nCurYear = 1,       -- 当前年份
-    nCurSeason = 1,     -- 当前季度
-    sCurrentStep = STEP.PreSeason,  -- 当前步骤，取值及含义为："PreYear":每年开始前, "PostYear":每年结束后, "Season":季度中, "PreSeason":每季度开始前, "PostSeason":每季度结束后
 
     tbCutdownProduct = {
         -- a1 = true,
@@ -215,10 +219,6 @@ function tbFunc.Action.TimeLimitToNextSyncStep(tbParam)
 end
 
 function tbFunc.Action.DoOperate(tbParam)
-    if tbRuntimeData.sCurrentStep ~= STEP.PreYear and tbRuntimeData.sCurrentStep ~= STEP.Season then
-        return "此阶段不能操作", false
-    end
-
     return tbFunc.Action.funcDoOperate[tbParam.OperateType](tbParam)
 end
 
@@ -696,7 +696,7 @@ end
 -- RaiseSalary 调薪 {FuncName = "DoOperate", OperateType = "RaiseSalary"}
 function tbFunc.Action.funcDoOperate.RaiseSalary(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bStepDone then
+    if tbUser.bStepDone or tbRuntimeData.nCurSeason ~= 0 then
         return "该步骤已结束", false
     end
     tbUser.nSalaryLevel = tbUser.nSalaryLevel + 1
@@ -1088,47 +1088,36 @@ function NextStepIfAllGamersDone(forceAllDone)
     end
    
     -- 切换到下一步骤
-    if tbRuntimeData.sCurrentStep == STEP.PreYear then
+    if tbRuntimeData.nCurSeason == 0 then
         tbRuntimeData.nCurSeason = 1
-        tbRuntimeData.sCurrentStep = STEP.PreSeason
-        DoPerSeason()
-    elseif tbRuntimeData.sCurrentStep == STEP.PostYear then
-        tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
-        tbRuntimeData.nCurSeason = 0
-        tbRuntimeData.sCurrentStep = STEP.PreYear
-    elseif tbRuntimeData.sCurrentStep == STEP.PreSeason then
-        tbRuntimeData.sCurrentStep = STEP.Season
-    elseif tbRuntimeData.sCurrentStep == STEP.Season then
-        tbRuntimeData.sCurrentStep = STEP.PostSeason
+        DoPreSeason()
+    else
         DoPostSeason()
-    elseif tbRuntimeData.sCurrentStep == STEP.PostSeason then
         if tbRuntimeData.nCurSeason < 4 then
             tbRuntimeData.nCurSeason = tbRuntimeData.nCurSeason +1
-            tbRuntimeData.sCurrentStep = STEP.PreSeason
-            DoPerSeason()
+            DoPreSeason()
         else
-            --tbRuntimeData.sCurrentStep = STEP.PostYear
-            --暂时忽略与跳过PostYear阶段
+            DoPostYear()
             tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
             tbRuntimeData.nCurSeason = 0
-            tbRuntimeData.sCurrentStep = STEP.PreYear
         end
     end
     -- 重置步骤完成标记
     for szAccount, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.bStepDone = false
 	end
-    print("=============== Year:".. tbRuntimeData.nCurYear .. " Season:" .. tbRuntimeData.nCurSeason .. " Step:" .. tbRuntimeData.sCurrentStep .. "  ===============")
+    print("=============== Year:".. tbRuntimeData.nCurYear .. " Season:" .. tbRuntimeData.nCurSeason .. "  ===============")
 end
 
-function DoPerSeason()
-    --[[{ desc = "获取上个季度市场收益", nStepUniqueId = 14, step = STEP.PreSeason },
-        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5, step = STEP.PreSeason },
-        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire", step = STEP.PreSeason },
-        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain", step = STEP.PreSeason },
-        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7, step = STEP.PreSeason },
-        { desc = "市场份额刷新", nStepUniqueId = 17, step = STEP.PreSeason },
-        { desc = "更新产品品质", nStepUniqueId = 3, step = STEP.PreSeason },]]
+-- 每个季度开始前的自动处理
+function DoPreSeason()
+    --[[{ desc = "获取上个季度市场收益", nStepUniqueId = 14},
+        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5},
+        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire"},
+        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain"},
+        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7},
+        { desc = "市场份额刷新", nStepUniqueId = 17},
+        { desc = "更新产品品质", nStepUniqueId = 3},]]
 
     AddNewManpower()  -- 新人才进入人才市场
     SettleDepart()  --办理离职（交付流失员工）
@@ -1138,11 +1127,16 @@ function DoPerSeason()
     SettleHire()   -- 人才市场招聘结果
 end
 
+-- 每个季度结束后的自动处理
 function DoPostSeason()
-    --[[{ desc = "推进研发进度", nStepUniqueId = 13, step = STEP.PostSeason },
-    { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary", step = STEP.PostSeason },    ]]
+    --[[{ desc = "推进研发进度", nStepUniqueId = 13},
+    { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary"},    ]]
 
     PayOffSalary()
+end
+
+-- 每年结束后的自动处理
+function DoPostYear()
 end
 
 print("load SandTable.lua success")

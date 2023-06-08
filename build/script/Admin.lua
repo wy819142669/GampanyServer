@@ -45,10 +45,9 @@ end
 -- 重置 {FuncName = "DoReset"}
 function tbAdminFunc.DoReset(tbParam)
     local runtime = GetTableRuntime()
-    runtime.nDataVersion = 0
+    --runtime.nDataVersion = 0
     runtime.nCurYear = 1
     runtime.nCurSeason = 1
-    runtime.sCurrentStep = STEP.PreSeason
     runtime.tbUser = {}
     runtime.nReadyNextStepCount = 0
     runtime.tbLoginAccount = {}
@@ -92,18 +91,17 @@ function tbAdminFunc.DoStart(tbParam)
 
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.tbMarket = Lib.copyTab(tbConfig.tbMarket)
-    runtime.nDataVersion = 1
     runtime.nCurYear = tbParam.Year
     runtime.nCurSeason = 1
-    runtime.sCurrentStep = STEP.PreSeason
-    runtime.nGameID = runtime.nGameID + 1
+    --runtime.nDataVersion = 1
+    --runtime.nGameID = runtime.nGameID + 1
     runtime.bPlaying = true
     return "success", true
 end
 
 function tbAdminFunc.NextStep(tbParam)
     local runtime = GetTableRuntime()
-    if tbParam.CurStep ~= runtime.sCurrentStep or tbParam.CurSeason ~= runtime.nCurSeason then
+    if tbParam.CurSeason ~= runtime.nCurSeason or tbParam.CurYear ~= runtime.nCurYear then
         return "failed, step mismatch", false    --避免在收到请求时，服务端已经刚刚变过步骤了
     end
     NextStepIfAllGamersDone(true)
