@@ -19,40 +19,7 @@ tbConfig = {
     nPoachSalaryWeight = 1, -- 挖掘时薪水等级部分的权重， 此参数越高，挖掘费用效果越不明显
     fPoachFailedReturnExpenseRatio = 0.8, -- 挖掘人才失败时候返还费用比例
     fTaxRate = 0.1,
-    tbEnableMarketPerYear = { {}, {2}, {3}},
-    ---tbBeginStepPerYear = {
-    --    { desc = "调整薪资", nStepUniqueId = 1},
-        --{ desc = "支付税款", mustDone = true, nStepUniqueId = 1},
-        --{ desc = "追加额外市场，支付本地化费用", nStepUniqueId = 108},
-       -- { desc = "市场竞标，抢用户", mustDone = true, syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 2},
-       -- { desc = "招聘并支付费用", nStepUniqueId = 3},
-    --},
---    tbStepPerSeason = {
-        --[[进入季度初自动流程]]
---        { desc = "获取上个季度市场收益", nStepUniqueId = 14},
---        { desc = "市场份额刷新", nStepUniqueId = 17},
---        { desc = "更新产品品质", nStepUniqueId = 3},
-        --[[自由操作阶段]]
---        { desc = "推盘阶段：产品上线、市场竞标、人才市场竞标、解雇/挖人/培训、研发分配人力", nStepUniqueId = 2},
-        --[[进入季度末自动流程]]
---        { desc = "推进研发进度", nStepUniqueId = 13},
-        -- { desc = "产品上线，把加倍进度的员工放到待岗区", nStepUniqueId = 101},
-        -- { desc = "季度竞标市场用户", syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 111},
-        -- { desc = "临时招聘，支付临时招聘费用", nStepUniqueId = 102},
-        -- { desc = "解聘，支付解聘费用", nStepUniqueId = 112},
-        -- { desc = "选择初始市场，并立项", nStepUniqueId = 103},
-        -- { desc = "现有人力资源调整（产品线调整人力、预研人力投入）", nStepUniqueId = 104},
-        -- { desc = "更新应收款", nStepUniqueId = 105},
-        -- { desc = "本季收入结算—现结款收入、放置延期收款", nStepUniqueId = 106},
-        -- { desc = "研发推进", nStepUniqueId = 107},
-        -- { desc = "roll点扣除剩余点数，查看预研结果", nStepUniqueId = 109},
---    },
-    --tbEndStepPerYear = {
-        -- { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket", nStepUniqueId = 201},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
-        -- { desc = "海外市场自动开放", enterAction = "EnableMarketTip", nStepUniqueId = 202},
-        -- { desc = "结清账务（填损益表、负债表）", syncNextStep = true, enterAction = "FinancialReport", nStepUniqueId = 204},
-        -- { desc = "排名总结", syncNextStep = true, finalAction = "NewYear", enterAction = "Year1FixManpower", nStepUniqueId = 205},
-    --},
+
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
         a2 = { minManpower = 40, maxManpower = 120, maxProgress = 4, addMarketCost = 8,},
@@ -108,7 +75,7 @@ tbConfig = {
         -- 市场营销费
         nMarketingExpense = 0,
         -- 总人力
-        nTotalManpower = 20,
+        nTotalManpower = 40,
         -- 招聘、解雇费用
         nSeverancePackage = 0,
         -- 薪水
@@ -244,15 +211,5 @@ tbConfig = {
     },
 }
 
---[[for i = 1, 4 do
-    for j, v in ipairs(tbConfig.tbStepPerSeason) do
-        local tbSeasonCfg = Lib.copyTab(v)
-        tbSeasonCfg.nCurSeason = i
-        tbSeasonCfg.nCurSeasonStep = j
-        table.insert(tbConfig.tbYearStep, tbSeasonCfg)
-    end
-end--]]
-
 tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
 tbConfig.tbInitUserData.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
-
