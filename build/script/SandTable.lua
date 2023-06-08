@@ -20,16 +20,12 @@ local tbRuntimeData = {
     nCurYear = 1,       -- 当前年份
     nCurSeason = 1,     -- 当前季度, 取值未0~4, 0表示新年开始时且1季度开始前
 
-    nTimeLimitToNextSyncStep = 0,
-    nSkipDestNextSyncStep = 0,
     tbMarket = {},
     nGamerCount = 0,
     tbLoginAccount = {
         -- "王" = 4151234,
     }, -- 已登录账号
     nReadyNextStepCount = 0,
-    nCurSyncStep = 0,
-
 
     tbCutdownProduct = {
         -- a1 = true,
@@ -41,16 +37,12 @@ local tbRuntimeData = {
     },
     tbUser = {
         --[[default = {
-            -- 当前年步骤
-            nCurYearStep = 4,
             -- 当前季度
             nCurSeason = 1,
             -- 当前季度步骤
             nCurSeasonStep = 1,
             -- 当前步骤已经操作完，防止重复操作
             bStepDone = false,
-            -- 等待下一步
-            bReadyNextStep = false,
             -- 提示
             szTitle = "",
             -- 市场营销投入
@@ -110,8 +102,6 @@ local tbFunc = {
 }
 
 function Action(jsonParam)
-    CheckTimeLimit()
-
     local tbParam = JsonDecode(jsonParam)
     local func = tbFunc.Action[tbParam.FuncName]
     local szMsg
@@ -136,25 +126,6 @@ function Action(jsonParam)
     -- 客户端要用tbLoginAccount来判断登录状态
     -- tbRuntimeData.tbLoginAccount[tbParam.Account] = os.time()
     return JsonEncode(tbResult)
-end
-
-function CheckTimeLimit()
-    if tbRuntimeData.nTimeLimitToNextSyncStep == 0 or os.time() < tbRuntimeData.nTimeLimitToNextSyncStep then
-        return
-    end
-
-    tbRuntimeData.nTimeLimitToNextSyncStep = 0
-
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        while tbUser.nCurYearStep < tbRuntimeData.nSkipDestNextSyncStep do
-            local tbStep = tbConfig.tbYearStep[tbUser.nCurYearStep]
-            if tbStep.timeLimitAction then
-                tbFunc.timeLimitAction[tbStep.timeLimitAction](tbUser)
-            end
-
-            userNewStep(tbUser)
-        end
-    end
 end
 
 function GetTableRuntime()
@@ -195,33 +166,11 @@ function tbFunc.Action.StepDone(tbParam)
     return "success", true
 end
 
--- 限时 {FuncName = "TimeLimitToNextSyncStep", TimeLimit = 0}  --TimeLimit 单位秒， 自动快进到下一个同步步骤的限时。0为取消限时
-function tbFunc.Action.TimeLimitToNextSyncStep(tbParam)
-    if not tbConfig.bDebug then -- 调试模式，才允许玩家发出设置请求
-        return "failed, only admin can setTimeLimit", false
-    end
-
-    if tbParam.TimeLimit == 0 then
-        tbRuntimeData.nTimeLimitToNextSyncStep = 0
-    else
-        tbRuntimeData.nTimeLimitToNextSyncStep = os.time() + tbParam.TimeLimit
-
-
-        for i = tbRuntimeData.nCurSyncStep + 1, #tbConfig.tbYearStep do
-            local tbStep = tbConfig.tbYearStep[i]
-            if tbStep.syncNextStep then
-                tbRuntimeData.nSkipDestNextSyncStep = i
-                break
-            end
-        end
-    end
-    return "success", true
-end
-
 function tbFunc.Action.DoOperate(tbParam)
     return tbFunc.Action.funcDoOperate[tbParam.OperateType](tbParam)
 end
 
+--todo: to delete
 tbFunc.finalAction = {}
 
 function tbFunc.finalAction.SettleOrder()
@@ -475,11 +424,9 @@ end
 function tbFunc.finalAction.NewYear()
     print("new year")
     tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
-    tbRuntimeData.nCurSyncStep = 0
     tbRuntimeData.tbAddNewManpower = { false, false, false, false }
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.nCurYearStep = 0
         tbUser.nCurSeason = 0
         tbUser.nCurSeasonStep = 1
         tbUser.tbOrder = {}
@@ -509,6 +456,7 @@ function tbFunc.finalAction.EnableNextMarket()
     end
 end
 
+--todo: to delete
 tbFunc.enterAction = {}
 function tbFunc.enterAction.FinancialReport(tbUser)
     tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + tbUser.nSeverancePackage
@@ -560,10 +508,6 @@ function tbFunc.enterAction.EnableMarketTip(tbUser)
     else
         tbUser.szTitle = "无新开放市场"
     end
-end
-
-function tbFunc.enterAction.SkipStep(tbUser)
-    userNewStep(tbUser)
 end
 
 function SettleDepart()
@@ -662,81 +606,15 @@ function SettleTrain()
     end
 end
 
-tbFunc.timeLimitAction = {}
-function tbFunc.timeLimitAction.PayOffSalary(tbUser)
-    if tbUser.bStepDone then
-        return
-    end
-    DoPayOffSalary(tbUser)
-end
 
 tbFunc.Action.funcDoOperate = {}
--- 下一步 推进进度 {FuncName = "DoOperate", OperateType = "NextStep"}   -- 考虑校验当前Step，防止点了2次Step
-function tbFunc.Action.funcDoOperate.NextStep(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local tbStepCfg = tbConfig.tbYearStep[tbUser.nCurYearStep]
+--    tbUser.nCurSeason = tbNewStepCfg.nCurSeason or tbUser.nCurSeason
+--    tbUser.nCurSeasonStep = tbNewStepCfg.nCurSeasonStep or tbUser.nCurSeasonStep
 
-    if tbStepCfg.mustDone and not tbUser.bStepDone then
-        return "must done step", false
-    end
-
-    if tbUser.bReadyNextStep then
-        return "waitting others", true
-    end
-
-    if tbStepCfg.syncNextStep then
-        tbUser.bReadyNextStep = true
-        tbRuntimeData.nReadyNextStepCount = tbRuntimeData.nReadyNextStepCount + 1
-        checkAllNextStep(tbStepCfg)
-        return "success", true
-    else
-        userNewStep(tbUser)
-    end
-
-    return "success", true
-end
-
-function checkAllNextStep(tbStepCfg)
-    if tbRuntimeData.nReadyNextStepCount ~= table.get_len(tbRuntimeData.tbUser) then
-        return
-    end
-    tbRuntimeData.nReadyNextStepCount = 0
-
-    if tbStepCfg.finalAction then
-        tbFunc.finalAction[tbStepCfg.finalAction]()
-    end
-
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        userNewStep(tbUser)
-    end
-end
-
-function userNewStep(tbUser)
-    tbUser.nCurYearStep = tbUser.nCurYearStep + 1
-
-    local tbNewStepCfg = tbConfig.tbYearStep[tbUser.nCurYearStep]
-    tbUser.nCurSeason = tbNewStepCfg.nCurSeason or tbUser.nCurSeason
-    tbUser.nCurSeasonStep = tbNewStepCfg.nCurSeasonStep or tbUser.nCurSeasonStep
-
-    for _, v in pairs(tbUser.tbProduct) do
-        v.done = false
-    end
-    tbUser.bStepDone = false
-    tbUser.bReadyNextStep = false
-
-    if tbNewStepCfg.enterAction then
-        tbFunc.enterAction[tbNewStepCfg.enterAction](tbUser)
-    end
-
-    if tbNewStepCfg.syncNextStep then
-        tbRuntimeData.nCurSyncStep = tbUser.nCurYearStep
-    end
-
-    if tbRuntimeData.nTimeLimitToNextSyncStep ~= 0 and tbUser.nCurYearStep > tbRuntimeData.nSkipDestNextSyncStep then
-        tbRuntimeData.nTimeLimitToNextSyncStep = 0
-        tbRuntimeData.nSkipDestNextSyncStep = 0
-    end
-end
+--    for _, v in pairs(tbUser.tbProduct) do
+--        v.done = false
+--    end
+--    tbUser.bStepDone = false
 
 -- 交税{FuncName = "DoOperate", OperateType = "Tax"}
 function tbFunc.Action.funcDoOperate.Tax(tbParam)
@@ -1202,10 +1080,6 @@ end
 -- 每个季度开始前的自动处理
 function DoPreSeason()
     --[[{ desc = "获取上个季度市场收益", nStepUniqueId = 14},
-        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5},
-        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire"},
-        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain"},
-        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7},
         { desc = "市场份额刷新", nStepUniqueId = 17},
         { desc = "更新产品品质", nStepUniqueId = 3},]]
 
@@ -1219,9 +1093,7 @@ end
 
 -- 每个季度结束后的自动处理
 function DoPostSeason()
-    --[[{ desc = "推进研发进度", nStepUniqueId = 13},
-    { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary"},    ]]
-
+    --{ desc = "推进研发进度", nStepUniqueId = 13},
     SettleMarket();
     PayOffSalary()
 end

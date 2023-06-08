@@ -27,21 +27,15 @@ tbConfig = {
        -- { desc = "市场竞标，抢用户", mustDone = true, syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 2},
        -- { desc = "招聘并支付费用", nStepUniqueId = 3},
     --},
-    tbStepPerSeason = {
+--    tbStepPerSeason = {
         --[[进入季度初自动流程]]
-        { desc = "获取上个季度市场收益", nStepUniqueId = 14},
-        { desc = "办理离职（交付流失员工）", enterAction = "SettleDepart", nStepUniqueId = 5},
-        { desc = "解雇人员离职", mustDone = true, nStepUniqueId = 16, enterAction = "SettleFire"},
-        { desc = "培训中的员工升级", nStepUniqueId = 6, enterAction="SettleTrain"},
-        { desc = "成功挖掘的人才入职", mustDone = true, enterAction = "SettlePoach", nStepUniqueId = 7},
-        { desc = "市场份额刷新", nStepUniqueId = 17},
-        { desc = "更新产品品质", nStepUniqueId = 3},
+--        { desc = "获取上个季度市场收益", nStepUniqueId = 14},
+--        { desc = "市场份额刷新", nStepUniqueId = 17},
+--        { desc = "更新产品品质", nStepUniqueId = 3},
         --[[自由操作阶段]]
-        { desc = "推盘阶段：产品上线、市场竞标、人才市场竞标、解雇/挖人/培训、研发分配人力", nStepUniqueId = 2},
+--        { desc = "推盘阶段：产品上线、市场竞标、人才市场竞标、解雇/挖人/培训、研发分配人力", nStepUniqueId = 2},
         --[[进入季度末自动流程]]
-        { desc = "推进研发进度", nStepUniqueId = 13},
-        { desc = "支付薪水", nStepUniqueId = 15, timeLimitAction = "PayOffSalary"},
- 
+--        { desc = "推进研发进度", nStepUniqueId = 13},
         -- { desc = "产品上线，把加倍进度的员工放到待岗区", nStepUniqueId = 101},
         -- { desc = "季度竞标市场用户", syncNextStep = true, finalAction = "SettleOrder", nStepUniqueId = 111},
         -- { desc = "临时招聘，支付临时招聘费用", nStepUniqueId = 102},
@@ -52,8 +46,7 @@ tbConfig = {
         -- { desc = "本季收入结算—现结款收入、放置延期收款", nStepUniqueId = 106},
         -- { desc = "研发推进", nStepUniqueId = 107},
         -- { desc = "roll点扣除剩余点数，查看预研结果", nStepUniqueId = 109},
-        -- { desc = "支付人员工资（总人力*工资）", mustDone = true, nStepUniqueId = 110, timeLimitAction = "PayOffSalary"},
-    },
+--    },
     --tbEndStepPerYear = {
         -- { desc = "准备进入年底", syncNextStep = true, finalAction = "EnableNextMarket", nStepUniqueId = 201},  -- 下个步骤，开放海外市场应该是大家一起开的。所以这里加一步，等大家一起NextStep
         -- { desc = "海外市场自动开放", enterAction = "EnableMarketTip", nStepUniqueId = 202},
@@ -72,20 +65,16 @@ tbConfig = {
     },
     tbProductSort = {"a1", "a2", "b1", "b2", "d1", "d2", "e1", "e2"},
 
-    tbYearStep = {},
+    --tbYearStep = {},
 
     tbResearchSort = {"d", "e"},
     tbInitUserData = {
-        -- 当前年步骤
-        nCurYearStep = 1,
         -- 当前季度
         nCurSeason = 0,
         -- 当前季度步骤
         nCurSeasonStep = 1,
         -- 当前步骤已经操作完，防止重复操作
         bStepDone = false,
-        -- 等待下一步
-        bReadyNextStep = false,
         -- 提示
         szTitle = "",
         -- 薪水等级
@@ -255,14 +244,14 @@ tbConfig = {
     },
 }
 
-for i = 1, 4 do
+--[[for i = 1, 4 do
     for j, v in ipairs(tbConfig.tbStepPerSeason) do
         local tbSeasonCfg = Lib.copyTab(v)
         tbSeasonCfg.nCurSeason = i
         tbSeasonCfg.nCurSeasonStep = j
         table.insert(tbConfig.tbYearStep, tbSeasonCfg)
     end
-end
+end--]]
 
 tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
 tbConfig.tbInitUserData.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
