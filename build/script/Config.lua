@@ -94,7 +94,7 @@ tbConfig = {
         tbMarketingExpense = {},
         -- 产品
         tbProduct = {
-           -- a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false },
+            a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false, nQuality = 1 },
         },
          -- 订单
         tbOrder = {
@@ -157,6 +157,24 @@ tbConfig = {
         },
         tbYearReport = {
         },
+
+        bMarketingDone = false,
+
+        -- 市场份额
+        tbMarket = {
+            a1 = 0,
+            a2 = 0,
+            b1 = 0,
+            b2 = 0,
+            d1 = 0,
+            d2 = 0,
+            e1 = 0,
+            e2 = 0,
+        },
+
+        -- 市场投标计划
+        tbMarketingExpense = {
+        },
     },
     tbInitUserDataYearPath = {
         [1] = {  -- 第一年开始的初始数据补丁
@@ -214,10 +232,26 @@ tbConfig = {
 
     --- 市场初始总份额
     tbMarket = {
-        a = 250,
-        b = 150,
-        c = 350,
-        d = 450,
+        a1 = 250,
+        a2 = 250,
+        b1 = 150,
+        b2 = 150,
+        d1 = 350,
+        d2 = 350,
+        e1 = 450,
+        e2 = 450,
+    },
+
+    --- 产品基础留存率
+    tbProductRetentionRate = {
+        a1 = 0.5,
+        a2 = 0.5,
+        b1 = 0.5,
+        b2 = 0.5,
+        d1 = 0.5,
+        d2 = 0.5,
+        e1 = 0.5,
+        e2 = 0.5,
     },
 }
 
