@@ -81,7 +81,7 @@ local tbRuntimeData = {
                 nTax = 0,
             }
         }--]]
-    }
+    },
 
     --==== 产品市场相关信息 ====
     tbMarket = {},
