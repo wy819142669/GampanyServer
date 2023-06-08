@@ -93,7 +93,7 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.tbMarket = Lib.copyTab(tbConfig.tbMarket)
     runtime.nCurYear = tbParam.Year
-    runtime.nCurSeason = 1
+    runtime.nCurSeason = 0
     --runtime.nDataVersion = 1
     --runtime.nGameID = runtime.nGameID + 1
     runtime.bPlaying = true
