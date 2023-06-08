@@ -20,22 +20,10 @@ local tbRuntimeData = {
     nCurYear = 1,       -- 当前年份
     nCurSeason = 1,     -- 当前季度, 取值未0~4, 0表示新年开始时且1季度开始前
 
-    tbMarket = {},
+    --==== 玩家相关信息 ====
     nGamerCount = 0,
-    tbLoginAccount = {
-        -- "王" = 4151234,
-    }, -- 已登录账号
-    nReadyNextStepCount = 0,
-
-    tbCutdownProduct = {
-        -- a1 = true,
-        -- b1 = true,
-    },
-    tbAddNewManpower = { false, false, false, false },
-    tbManpower = { -- 人才市场各等级人数
-        0, 0, 0, 0, 0
-    },
-    tbUser = {
+    tbLoginAccount = {},    -- 已登录账号列表
+    tbUser = {              -- 玩家运行时数据
         --[[default = {
             -- 当前季度
             nCurSeason = 1,
@@ -94,6 +82,20 @@ local tbRuntimeData = {
             }
         }--]]
     }
+
+    --==== 产品市场相关信息 ====
+    tbMarket = {},
+
+    --==== 人才市场相关信息 ====
+    tbManpower = { -- 人才市场各等级人数
+        0, 0, 0, 0, 0
+    },
+
+    tbCutdownProduct = {
+        -- a1 = true,
+        -- b1 = true,
+    },
+    tbAddNewManpower = { false, false, false, false },    
 }
 
 local tbFunc = {

@@ -46,18 +46,19 @@ end
 function tbAdminFunc.DoReset(tbParam)
     local runtime = GetTableRuntime()
     --runtime.nDataVersion = 0
+
+    runtime.bPlaying = false
     runtime.nCurYear = 1
     runtime.nCurSeason = 1
-    runtime.tbUser = {}
-    runtime.nReadyNextStepCount = 0
+
+    runtime.nGamerCount = 0
     runtime.tbLoginAccount = {}
-    runtime.tbCutdownProduct = {}
-    runtime.bPlaying = false
+    runtime.tbUser = {}
+
     runtime.tbMarket = {}
+
+    runtime.tbCutdownProduct = {}
     runtime.tbManpower = {0, 0, 0, 0, 0}
-    runtime.nTimeLimitToNextSyncStep = 0
-    runtime.nSkipDestNextSyncStep = 0
-    runtime.nCurSyncStep = 0
     return "success", true
 end
 
