@@ -207,6 +207,14 @@ tbConfig = {
         nRenovating = 4,     -- 翻新
         nClosed = 5,         -- 关闭
     },
+
+    --- 市场初始总份额
+    tbMarket = {
+        a = 250,
+        b = 150,
+        c = 350,
+        d = 450,
+    },
 }
 
 for i, v in ipairs(tbConfig.tbBeginStepPerYear) do

@@ -54,7 +54,7 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.tbLoginAccount = {}
     runtime.tbCutdownProduct = {}
     runtime.bPlaying = false
-    runtime.tbMarket = {1}
+    runtime.tbMarket = {}
     runtime.tbManpower = {0, 0, 0, 0, 0}
     runtime.nTimeLimitToNextSyncStep = 0
     runtime.nSkipDestNextSyncStep = 0
@@ -93,6 +93,7 @@ function tbAdminFunc.DoStart(tbParam)
     end
 
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
+    runtime.tbMarket = Lib.copyTab(tbConfig.tbMarket)
     runtime.nDataVersion = 1
     runtime.nCurYear = tbParam.Year
     runtime.nCurSeason = 1
