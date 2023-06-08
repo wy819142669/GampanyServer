@@ -2,11 +2,11 @@ require("Json")
 require("Lib")
 require("Config")
 
-local tbFunc = {}
+local tbQueryFunc = {}
 
 function Query(jsonParam)
     local tbParam = JsonDecode(jsonParam)
-    local func = tbFunc[tbParam.FuncName]
+    local func = tbQueryFunc[tbParam.FuncName]
     local szMsg
     local bRet = false
     if func then
@@ -27,10 +27,10 @@ function Query(jsonParam)
 end
 
 --------------------接口实现---------------------------------------
-function tbFunc.GetLuaFile(tbParam)
+function tbQueryFunc.GetConfigData(tbParam)
     return "success", true,  { tbConfig = tbConfig }
 end
 
-function tbFunc.GetRunTimeData(tbParam)
+function tbQueryFunc.GetRunTimeData(tbParam)
     return "success", true, { tbRuntimeData = GetTableRuntime() }
 end

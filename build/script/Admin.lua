@@ -75,7 +75,6 @@ function tbAdminFunc.DoStart(tbParam)
     tbParam.Year = tbParam.Year or 1
 
     for userName, tbLoginAccountInfo in pairs(runtime.tbLoginAccount) do
-        if tbLoginAccountInfo.joinGame then
             runtime.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
             runtime.tbUser[userName].szAccount = userName
             runtime.tbUser[userName].tbHistoryYearReport = {}
@@ -89,7 +88,6 @@ function tbAdminFunc.DoStart(tbParam)
             for k, v in pairs(tbConfig.tbInitUserDataYearPath[tbParam.Year]) do
                 runtime.tbUser[userName][k] = Lib.copyTab(v)
             end
-        end
     end
 
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
@@ -104,7 +102,8 @@ function tbAdminFunc.DoStart(tbParam)
 end
 
 function tbAdminFunc.NextStep(tbParam)
-    if tbParam.CurStep ~= GetTableRuntime().sCurrentStep then
+    local runtime = GetTableRuntime()
+    if tbParam.CurStep ~= runtime.sCurrentStep or tbParam.CurSeason ~= runtime.nCurSeason then
         return "failed, step mismatch", false    --避免在收到请求时，服务端已经刚刚变过步骤了
     end
     NextStepIfAllGamersDone(true)

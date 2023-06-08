@@ -1,10 +1,16 @@
 STEP = { PreYear = "PreYear", PostYear="PostYear", PreSeason="PreSeason", PostSeason="PostSeason", Season="Season"}
 
 tbConfig = {
+    --[[未实际启用，暂时注释掉
     nLuaVersion = 1,
-    nMaxGamerCount = 9, --最多允许容纳的玩家的数目，因为界面没有做灵活适配，所以限制数目上限
-    tbAdminAccount = {"sys01", "sys02", "sys03" },
-    szAdminPassword = "",
+    --]]
+
+    --==== 游戏整体性设置与控制 ====
+    nMaxGamerCount = 9,     --最多允许容纳的玩家的数目，因为界面没有做灵活适配，所以限制数目上限
+    bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
+    szAdminPassword = "",   --管理者登录密码
+
+    --==== ====
     nSalary = 1, -- 薪水
     fSalaryRatioPerLevel = 0.2,  -- 每薪水等级薪水涨幅
     fHireWeightRatioPerLevel = 0.5,  -- 每薪水等级增加招聘权重系数

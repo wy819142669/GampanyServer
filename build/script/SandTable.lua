@@ -105,10 +105,6 @@ local tbFunc = {
     Query = {},
 }
 
-function OnReloadFinish(jsonParam)
-    tbConfig.nLuaVersion = tbConfig.nLuaVersion + 1
-end
-
 function Action(jsonParam)
     CheckTimeLimit()
 
@@ -164,27 +160,17 @@ end
 --------------------接口实现---------------------------------------
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)
-    local exist = table.contain_key(tbRuntimeData.tbLoginAccount, tbParam.Account)
-    if tbRuntimeData.nGamerCount >= tbConfig.nMaxGamerCount and not exist then
-        print("Login : failed, too much gamers")
-        return "failed, too much gamers", false
-    end
+    if not table.contain_key(tbRuntimeData.tbLoginAccount, tbParam.Account) then
+        if tbRuntimeData.nGamerCount >= tbConfig.nMaxGamerCount then
+            print("Login : failed, too much gamers")
+            return "failed, too much gamers", false
+        end
 
-    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
-        table.insert(tbConfig.tbAdminAccount, tbParam.Account)
-    end
-
-    local bAdmin = table.contain_value(tbConfig.tbAdminAccount, tbParam.Account)
-
-    if tbRuntimeData.bPlaying then -- 已经开始后，非管理员不能再进入
-        if not bAdmin then
+        if tbRuntimeData.bPlaying and (not tbConfig.bDebug) then -- 已经开始后，非调试模式不能再进入
             return "failed, already start", false
         end
-    end
 
-   -- tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = not bAdmin}
-    tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), admin = bAdmin, joinGame = true}
-    if not exist then
+        tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time()}
         tbRuntimeData.nGamerCount = tbRuntimeData.nGamerCount + 1
     end
     return "success", true
@@ -205,17 +191,9 @@ function tbFunc.Action.StepDone(tbParam)
     return "success", true
 end
 
--- 该系统账号是否也参与游戏 {FuncName = "AdminJoinGame", Join = false}
-function tbFunc.Action.AdminJoinGame(tbParam)
-    if tbRuntimeData.tbLoginAccount[tbParam.Account].admin then
-        tbRuntimeData.tbLoginAccount[tbParam.Account].joinGame = tbParam.Join
-    end
-    return "success", true
-end
-
 -- 限时 {FuncName = "TimeLimitToNextSyncStep", TimeLimit = 0}  --TimeLimit 单位秒， 自动快进到下一个同步步骤的限时。0为取消限时
 function tbFunc.Action.TimeLimitToNextSyncStep(tbParam)
-    if not table.contain_value(tbConfig.tbAdminAccount, tbParam.Account) then
+    if not tbConfig.bDebug then -- 调试模式，才允许玩家发出设置请求
         return "failed, only admin can setTimeLimit", false
     end
 
