@@ -197,6 +197,21 @@ tbConfig = {
         e2 = 450,
     },
 
+    --- 市场总份额下限
+    tbMarketMinimumLimit = {
+        a1 = 150,
+        a2 = 150,
+        b1 = 50,
+        b2 = 50,
+        d1 = 250,
+        d2 = 250,
+        e1 = 350,
+        e2 = 350,
+    },
+
+    --- 品类份额转移
+    nLossMarket = 25,
+
     --- 产品基础留存率
     tbProductRetentionRate = {
         a1 = 0.5,
@@ -207,6 +222,17 @@ tbConfig = {
         d2 = 0.5,
         e1 = 0.5,
         e2 = 0.5,
+    },
+
+    tbProductARPU = {
+        a1 = 3,
+        a2 = 3,
+        b1 = 9,
+        b2 = 9,
+        d1 = 8,
+        d2 = 8,
+        e1 = 10,
+        e2 = 10,
     },
 }
 

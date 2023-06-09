@@ -30,10 +30,10 @@ function Market.CommitMarket(tbParam)
     return szReturnMsg, true
 end
 
-
-function Market.SettleMarket()
+-- 份额流失
+function Market.LossMarket()
     local tbRuntimeData = GetTableRuntime()
-    -- 份额流失
+    
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for productName, tbProduct in pairs(tbUser.tbProduct) do
             local nQuality = tbProduct.nQuality or 0
@@ -47,8 +47,104 @@ function Market.SettleMarket()
             tbRuntimeData.tbMarket[productName] = tbRuntimeData.tbMarket[productName] + nLossMarket
         end
     end
+end
 
-    -- 份额分配
+-- 品类份额转移
+function Market.LossMarketByQuality()
+    local tbRuntimeData = GetTableRuntime()
+    local tbCurrentTotalMarket = {}
+    local tbInfos = {}
+    local tbSortInfos = {}
+
+    --math.randomseed(os.time())
+    
+    for _, productName in pairs(tbConfig.tbProductSort) do
+        tbCurrentTotalMarket[productName] = tbRuntimeData.tbMarket[productName]
+
+        tbInfos[productName] = {
+            nHighestQuality = 0,
+            nProductCount = 0,
+            nTotalQuality = 0,
+        }
+    end
+
+    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
+        for productName, nMarket in pairs(tbUser.tbMarket) do
+            tbCurrentTotalMarket[productName] = tbCurrentTotalMarket[productName] + nMarket
+            if tbUser.tbProduct[productName] and tbUser.tbProduct[productName].progress >= tbConfig.tbProduct[productName].maxProgress then
+                local nQuality = tbUser.tbProduct[productName].nQuality or 0
+                if tbInfos[productName].nHighestQuality < nQuality then
+                    tbInfos[productName].nHighestQuality = nQuality
+                end
+
+                tbInfos[productName].nProductCount = tbInfos[productName].nProductCount + 1
+                tbInfos[productName].nTotalQuality = tbInfos[productName].nTotalQuality + nQuality
+            end
+        end
+    end
+
+    for productName, tbInfo in pairs(tbInfos) do
+        table.insert(tbSortInfos, {
+            productName = productName,
+            nHighestQuality = tbInfo.nHighestQuality,tbLossSortInfo,
+            nProductCount = tbInfo.nProductCount,
+            nTotalQuality = tbInfo.nTotalQuality,
+        })
+    end
+
+    table.sort(tbSortInfos, function(l,r)
+        if l.nTotalQuality * r.nProductCount > r.nTotalQuality * l.nProductCount then
+            return true
+        elseif l.nTotalQuality * r.nProductCount == r.nTotalQuality * l.nProductCount then
+            if l.nProductCount > r.nProductCount then
+                return true
+            elseif l.nProductCount == r.nProductCount then
+                if l.nHighestQuality > r.nHighestQuality then
+                    return true
+                end
+            end
+        end
+
+        return false
+    end)
+
+    local nIndex = #tbSortInfos
+    for i = #tbSortInfos - 1, 1, -1 do
+        if tbSortInfos[i].nTotalQuality * tbSortInfos[i + 1].nProductCount > tbSortInfos[i + 1].nTotalQuality * tbSortInfos[i].nProductCount then
+            break
+        end
+
+        if tbSortInfos[i].nProductCount > tbSortInfos[i + 1].nProductCount then
+            break
+        end
+
+        if tbSortInfos[i].nHighestQuality > tbSortInfos[i + 1].nHighestQuality then
+            break
+        end
+
+        nIndex = i
+    end
+
+    local nLossIndex        = math.random(nIndex, #tbSortInfos)
+    local tbGainSortInfo    = tbSortInfos[1]
+    local tbLossSortInfo    = tbSortInfos[nLossIndex]
+
+    local nLossMarket = math.min(math.min(tbCurrentTotalMarket[tbLossSortInfo.productName] - tbConfig.tbMarketMinimumLimit[tbLossSortInfo.productName], tbConfig.nLossMarket), tbRuntimeData.tbMarket[tbLossSortInfo.productName])
+    if nLossMarket < 0 then
+        nLossMarket = 0
+    end
+
+    tbRuntimeData.tbMarket[tbLossSortInfo.productName] = tbRuntimeData.tbMarket[tbLossSortInfo.productName] - nLossMarket
+    tbRuntimeData.tbMarket[tbGainSortInfo.productName] = tbRuntimeData.tbMarket[tbGainSortInfo.productName] + nLossMarket
+
+    print("LossMarketByQuality LossMarket: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.productName .. " -> " .. tbGainSortInfo.productName)
+
+end
+
+-- 份额分配
+function Market.DistributionMarket()
+    local tbRuntimeData = GetTableRuntime()
+
     for productName, nMarket in pairs(tbRuntimeData.tbMarket) do
         if nMarket > 0 then
             local tbInfos = {}
@@ -77,8 +173,8 @@ function Market.SettleMarket()
                     local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
                     tbRuntimeData.tbUser[tbInfo.userName].tbMarket[productName] = tbRuntimeData.tbUser[tbInfo.userName].tbMarket[productName] + nCost
                     nTotalCost = nTotalCost + nCost
-                    print("user: " .. tostring(tbInfo.userName) .. " product: " .. tostring(productName) .. "Add Market: " .. tostring(nCost) .. 
-                    "TotalMarket: " .. tostring(nTotalMarket) .. "MarketValue: " .. tostring(tbInfo.fMarketValue) .. "TotalMarketValue: " .. tostring(fTotalMarketValue))
+                    print("user: " .. tostring(tbInfo.userName) .. " product: " .. tostring(productName) .. " Add Market: " .. tostring(nCost) .. 
+                    " TotalMarket: " .. tostring(nTotalMarket) .. " MarketValue: " .. tostring(tbInfo.fMarketValue) .. " TotalMarketValue: " .. tostring(fTotalMarketValue))
                 end
 
                 tbRuntimeData.tbMarket[productName] = tbRuntimeData.tbMarket[productName] - nTotalCost
@@ -91,4 +187,37 @@ function Market.SettleMarket()
         tbUser.bMarketingDone = false
         tbUser.tbMarketingExpense = {}
     end
+end
+
+-- 获得收益
+function Market.GainRevenue()
+    local tbRuntimeData = GetTableRuntime()
+
+    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
+        for productName, nMarket in pairs(tbUser.tbMarket) do
+            if nMarket > 0 and tbUser.tbProduct[productName] and tbUser.tbProduct[productName].progress >= tbConfig.tbProduct[productName].maxProgress then
+                local nQuality = tbUser.tbProduct[productName].nQuality or 0
+                local nRevenue = nMarket * tbConfig.tbProductARPU[productName] * (0.9 + 0.1 * nQuality)
+
+                tbUser.nCash = tbUser.nCash + nRevenue
+
+                print(userName .. " " .. productName .. " Cash += " .. tostring(nRevenue))
+            end
+        end
+    end
+end
+
+function Market.SettleMarket()
+
+    -- 份额流失
+    Market.LossMarket()
+
+    -- 品类份额转移
+    Market.LossMarketByQuality()
+
+    -- 份额分配
+    Market.DistributionMarket()
+
+    -- 获得收益 
+    Market.GainRevenue()
 end

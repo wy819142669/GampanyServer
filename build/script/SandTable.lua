@@ -555,8 +555,8 @@ end
 -- 每个季度结束后的自动处理
 function DoPostSeason()
                     -- 推进研发进度
-    Market.SettleMarket()  -- 更新市场竞标结果
-                    -- 获取上个季度市场收益
+    Market.SettleMarket()  -- 更新市场竞标结果 -- 获取上个季度市场收益
+                    
     HumanResources.PayOffSalary()   -- 支付薪水
 end
 
