@@ -157,7 +157,7 @@ function HumanResources.Poach(tbParam)
         local rand = math.random()
         local nSuccessWeight = tbParam.nExpense * 5 / tbParam.nLevel + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         local nFailedWeight =  tbConfig.nSalary * (1 + (tbTargetUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
-        print("poach - success:", nSuccessWeight, "failed:", nFailedWeight, "rand:", rand, "sueecss ratio:", nSuccessWeight / (nSuccessWeight + nFailedWeight))
+        print("poach - success:".. nSuccessWeight, "failed:" .. nFailedWeight, "rand:" .. rand, "sueecss ratio:" .. nSuccessWeight / (nSuccessWeight + nFailedWeight))
         if nSuccessWeight < nFailedWeight then
             szResult = "对方坚决拒绝了你的挖角"
         elseif rand > nSuccessWeight / (nSuccessWeight + nFailedWeight) then
@@ -193,26 +193,24 @@ function HumanResources.SettleDepart()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         for i = 1, #tbUser.tbDepartManpower do
             local nNum = tbUser.tbDepartManpower[i]
-
+            print("SettleDepart=====", tbUser.szAccount, i, nNum)
             if nNum > 0 then
+                local nCount = math.min(nNum, tbUser.tbFireManpower[i])
+                nNum = nNum - nCount
+                tbUser.tbFireManpower[i] = tbUser.tbFireManpower[i] - nCount
+
+                nCount = math.min(nNum, tbUser.tbIdleManpower[i])
+                nNum = nNum - nCount
+                tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nCount
+
                 for _, tbProductInfo in pairs(tbUser.tbProduct) do
-                    local nCount = math.min(nNum, tbProductInfo.tbManpower[i])
+                    nCount = math.min(nNum, tbProductInfo.tbManpower[i])
                     nNum = nNum - nCount
                     tbProductInfo.tbManpower[i] = tbProductInfo.tbManpower[i] - nCount
-
                     if nNum == 0 then
                         break
                     end
                 end
-
-                local nCount = math.min(nNum, tbUser.tbIdleManpower[i])
-                nNum = nNum - nCount
-                tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nCount
-
-                nCount = math.min(nNum, tbUser.tbFireManpower[i])
-                nNum = nNum - nCount
-                tbUser.tbFireManpower[i] = tbUser.tbFireManpower[i] - nCount
-
                 assert(nNum == 0)
             end
             tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbDepartManpower[i]
