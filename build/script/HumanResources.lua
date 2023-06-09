@@ -123,12 +123,15 @@ function HumanResources.Poach(tbParam)
         return "本季度已经执行过挖掘", false
     end
 
+    if tbUser.nCash < tbParam.nExpense then
+        return "没有足够的资金进行挖人", false
+    end
+
     local tbTargetUser = tbRuntimeData.tbUser[tbParam.TargetUser]
     if not tbTargetUser then
         return "目标公司不存在", false
     end
-
-    if not tbParam.nLevel or tbParam.nLevel < 1 then
+    if not tbParam.nLevel or tbParam.nLevel < 1 or tbParam.nLevel > tbConfig.nManpowerMaxExpLevel then
         return "需要人才等级无效", false
     end
 
@@ -156,9 +159,9 @@ function HumanResources.Poach(tbParam)
         local nFailedWeight =  tbConfig.nSalary * (1 + (tbTargetUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         print("poach - success:", nSuccessWeight, "failed:", nFailedWeight, "rand:", rand, "sueecss ratio:", nSuccessWeight / (nSuccessWeight + nFailedWeight))
         if nSuccessWeight < nFailedWeight then
-            szResult = "对于你提出的方案，对方坚决拒绝"
+            szResult = "对方坚决拒绝了你的挖角"
         elseif rand > nSuccessWeight / (nSuccessWeight + nFailedWeight) then
-            szResult = "对于你提出的方案，对方犹豫了好一会儿"
+            szResult = "对方犹豫一阵后拒绝了你的挖角"
         else
             szResult = "对方同意加入你"
             bSuccess = true

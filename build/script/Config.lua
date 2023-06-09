@@ -15,11 +15,11 @@ tbConfig = {
     nManpowerMaxExpLevel = 5,       -- 人员能力等级最大值
     fTrainMaxRatioPerLevel = 0.2,   -- 每级可培训人数比例
     fTrainMaxRatioTotal = 0.1,      -- 总可培训人数比例
-    tbPoachExpenseRatio = { 2, 4, 8, 12, 16},  -- 挖掘人才可选薪水倍数
-
     fPoachSalaryLevelRatio = 1.2,   -- 挖掘时薪水等级系数
     nPoachSalaryWeight = 1,         -- 挖掘时薪水等级部分的权重， 此参数越高，挖掘费用效果越不明显
-    fPoachFailedReturnExpenseRatio = 0.8, -- 挖掘人才失败时候返还费用比例
+    tbPoachExpenseRatio = { 2, 4, 8, 12, 16},   -- 挖掘人才可选薪水倍数
+    fPoachFailedReturnExpenseRatio = 0.8,       -- 挖掘人才失败时候返还费用比例
+
     fTaxRate = 0.1,
 
     tbProduct = {
