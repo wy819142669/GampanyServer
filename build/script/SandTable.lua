@@ -27,10 +27,6 @@ local tbRuntimeData = {
     tbLoginAccount = {},    -- 已登录账号列表
     tbUser = {              -- 玩家运行时数据
         --[[default = {
-            -- 当前季度
-            nCurSeason = 1,
-            -- 当前季度步骤
-            nCurSeasonStep = 1,
             -- 当前步骤已经操作完，防止重复操作
             bStepDone = false,
             -- 提示
@@ -89,9 +85,7 @@ local tbRuntimeData = {
     tbMarket = {},
 
     --==== 人才市场相关信息 ====
-    tbManpower = { -- 人才市场各等级人数
-        0, 0, 0, 0, 0
-    },
+    tbManpowerInMarket = { 0, 0, 0, 0, 0 }, -- 人才市场各等级人数。元素个数需要等于tbConfig.nManpowerMaxExpLevel
 
     tbCutdownProduct = {
         -- a1 = true,
@@ -101,7 +95,6 @@ local tbRuntimeData = {
 
 local tbFunc = {
     Action = {},
-    Query = {},
 }
 
 function Action(jsonParam)
@@ -275,8 +268,6 @@ function tbFunc.finalAction.NewYear()
     tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
 
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.nCurSeason = 0
-        tbUser.nCurSeasonStep = 1
         tbUser.tbOrder = {}
         tbUser.tbLaborCost = {0, 0, 0, 0}
         tbUser.nMarketingExpense = 0
@@ -551,13 +542,13 @@ end
 
 -- 每个季度开始前的自动处理
 function DoPreSeason()
-    HumanResources.AddNewManpower()  -- 新人才进入人才市场
+    HumanResources.AddNewManpower() -- 新人才进入人才市场
     HumanResources.SettleDepart()  --办理离职（交付流失员工）
                     -- 更新产品品质
-    HumanResources.SettleFire()  -- 解雇人员离职
-    HumanResources.SettleTrain()  -- 培训中的员工升级
-    HumanResources.SettlePoach()  -- 成功挖掘的人才入职
-    HumanResources.SettleHire()   -- 人才市场招聘结果
+    HumanResources.SettleFire()     -- 解雇人员离职
+    HumanResources.SettleTrain()    -- 培训中的员工升级
+    HumanResources.SettlePoach()    -- 成功挖掘的人才入职
+    HumanResources.SettleHire()     -- 人才市场招聘结果
                    -- 各品类市场份额刷新、Npc调整
 end
 
@@ -566,7 +557,7 @@ function DoPostSeason()
                     -- 推进研发进度
     Market.SettleMarket()  -- 更新市场竞标结果
                     -- 获取上个季度市场收益
-    HumanResources.PayOffSalary()  -- 支付薪水
+    HumanResources.PayOffSalary()   -- 支付薪水
 end
 
 -- 每年结束后的自动处理

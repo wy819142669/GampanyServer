@@ -8,15 +8,17 @@ tbConfig = {
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
     szAdminPassword = "",   --管理者登录密码
 
-    --==== ====
-    nSalary = 1, -- 薪水
-    fSalaryRatioPerLevel = 0.2,  -- 每薪水等级薪水涨幅
-    fHireWeightRatioPerLevel = 0.5,  -- 每薪水等级增加招聘权重系数
-    fTrainMaxRatioPerLevel = 0.2,  -- 每级可培训人数比例
-    fTrainMaxRatioTotal = 0.1,   -- 总可培训人数比例
+    --==== 人力相关系统设置，只读不写 ====
+    nSalary = 1,                    -- 薪水
+    fSalaryRatioPerLevel = 0.2,     -- 每薪水等级薪水涨幅
+    fHireWeightRatioPerLevel = 0.5, -- 每薪水等级增加招聘权重系数
+    nManpowerMaxExpLevel = 5,       -- 人员能力等级最大值
+    fTrainMaxRatioPerLevel = 0.2,   -- 每级可培训人数比例
+    fTrainMaxRatioTotal = 0.1,      -- 总可培训人数比例
     tbPoachExpenseRatio = { 2, 4, 8, 12, 16},  -- 挖掘人才可选薪水倍数
-    fPoachSalaryLevelRatio = 1.2, -- 挖掘时薪水等级系数
-    nPoachSalaryWeight = 1, -- 挖掘时薪水等级部分的权重， 此参数越高，挖掘费用效果越不明显
+
+    fPoachSalaryLevelRatio = 1.2,   -- 挖掘时薪水等级系数
+    nPoachSalaryWeight = 1,         -- 挖掘时薪水等级部分的权重， 此参数越高，挖掘费用效果越不明显
     fPoachFailedReturnExpenseRatio = 0.8, -- 挖掘人才失败时候返还费用比例
     fTaxRate = 0.1,
 
@@ -36,16 +38,23 @@ tbConfig = {
 
     tbResearchSort = {"d", "e"},
     tbInitUserData = {
-        -- 当前季度
-        nCurSeason = 0,
-        -- 当前季度步骤
-        nCurSeasonStep = 1,
         -- 当前步骤已经操作完，防止重复操作
         bStepDone = false,
+
+        --==== 人力相关数据项 ====
+        nSalaryLevel = 1,       -- 薪水等级
+        nTotalManpower = 40,    -- 总人力
+        nSeverancePackage = 0,                  -- 招聘、解雇费用
+        tbLaborCost = {0, 0, 0, 0},             -- 薪水
+        --tbHire = { nNum = , nExpense = },     --运行时产生的数据项: 向市场发出的招聘计划
+        --bManpowerMarketDone = false,          --运行时产生的数据项: 是否执行过向市场招聘
+        tbIdleManpower = { 10, 5, 4, 1, 0 },    -- 待岗，一下几个表，元素个数需要等于 tbConfig.nManpowerMaxExpLevel
+        tbFireManpower = { 0, 0, 0, 0, 0},      -- 解雇员工
+        tbTrainManpower = { 0, 0, 0, 0, 0},     -- 培训员工
+        tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工
+
         -- 提示
         szTitle = "",
-        -- 薪水等级
-        nSalaryLevel = 1,
          -- 市场营销投入
         tbMarketingExpense = {},
         -- 产品
@@ -56,14 +65,7 @@ tbConfig = {
         tbOrder = {
             --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
         },
-        -- 待岗
-        tbIdleManpower = { 10, 5, 4, 1, 0 },
-        -- 解雇员工
-        tbFireManpower = { 0, 0, 0, 0, 0},
-        -- 培训员工
-        tbTrainManpower = { 0, 0, 0, 0, 0},
-        -- 即将离职员工
-        tbDepartManpower = {0, 0, 0, 0, 0},
+
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
         -- 现金
@@ -74,12 +76,7 @@ tbConfig = {
         nTax = 0,
         -- 市场营销费
         nMarketingExpense = 0,
-        -- 总人力
-        nTotalManpower = 40,
-        -- 招聘、解雇费用
-        nSeverancePackage = 0,
-        -- 薪水
-        tbLaborCost = {0, 0, 0, 0},
+
         -- 权益占比
         fEquityRatio = 1.0,
         -- 上一年财报
@@ -163,7 +160,9 @@ tbConfig = {
     },
     tbOrder = { -- 订单
     },
-    tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数
+
+    --==== 人力相关系统设置数据，只读不写 ====
+    tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数，子表元素个数需要等于tbConfig.nManpowerMaxExpLevel
         {61, 26, 12, 1, 0},
         {66, 39, 21, 4, 0},
         {77, 54, 38, 11, 0},
@@ -175,7 +174,7 @@ tbConfig = {
         {20, 23, 29, 26, 12},
         {21, 20, 30, 31, 18},
     },
-    fSeason1NewManpowerRatio = 0.3,  -- 一季度新进人数占全年人数比例， 剩下的三季度新进
+    fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
     -- 产品状态
     tbProductState = {

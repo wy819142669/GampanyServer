@@ -58,7 +58,7 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.tbMarket = {}
 
     runtime.tbCutdownProduct = {}
-    runtime.tbManpower = {0, 0, 0, 0, 0}
+    runtime.tbManpowerInMarket = {0, 0, 0, 0, 0}
     return "success", true
 end
 
@@ -72,31 +72,30 @@ function tbAdminFunc.DoStart(tbParam)
     end
 
     math.randomseed(os.time())
-    tbParam.Year = tbParam.Year or 1
+    --runtime.nDataVersion = 1
+    --runtime.nGameID = runtime.nGameID + 1
+    runtime.bPlaying = true
+    runtime.nCurYear = tbParam.Year or 1
+    runtime.nCurSeason = 0
 
     for userName, tbLoginAccountInfo in pairs(runtime.tbLoginAccount) do
             runtime.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
             runtime.tbUser[userName].szAccount = userName
             runtime.tbUser[userName].tbHistoryYearReport = {}
-            if tbParam.Year == 1 then
+            if runtime.nCurYear == 1 then
                 runtime.tbUser[userName].tbHistoryYearReport[1] = runtime.tbUser[userName].tbYearReport
             else
                 runtime.tbUser[userName].tbHistoryYearReport[1] = Lib.copyTab(runtime.tbUser[userName].tbYearReport)
                 runtime.tbUser[userName].tbHistoryYearReport[2] = runtime.tbUser[userName].tbYearReport
             end
 
-            for k, v in pairs(tbConfig.tbInitUserDataYearPath[tbParam.Year]) do
+            for k, v in pairs(tbConfig.tbInitUserDataYearPath[runtime.nCurYear]) do
                 runtime.tbUser[userName][k] = Lib.copyTab(v)
             end
     end
 
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.tbMarket = Lib.copyTab(tbConfig.tbMarket)
-    runtime.nCurYear = tbParam.Year
-    runtime.nCurSeason = 0
-    --runtime.nDataVersion = 1
-    --runtime.nGameID = runtime.nGameID + 1
-    runtime.bPlaying = true
     return "success", true
 end
 

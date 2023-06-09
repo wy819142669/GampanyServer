@@ -1,7 +1,7 @@
 local tbConfig = tbConfig
 HumanResources = {}
 
--- RaiseSalary 调薪 {FuncName = "DoOperate", OperateType = "RaiseSalary"}
+-- 调薪 {FuncName = "DoOperate", OperateType = "RaiseSalary"}
 function HumanResources.RaiseSalary(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
@@ -221,28 +221,10 @@ function HumanResources.SettlePoach()
     end
 end
 
+-- 人才市场予以处理各企业的招聘计划
 function HumanResources.SettleHire()
-    --[[
-    tbManpower = { -- 人才市场各等级人数
-        0, 0, 0, 0, 0
-    },
-    tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数
-        {61, 26, 12, 1, 0},
-        {66, 39, 21, 4, 0},
-        {77, 54, 38, 11, 0},
-        {76, 65, 50, 19, 0},
-        {53, 54, 41, 19, 3},
-        {43, 43, 45, 21, 8},
-        {32, 36, 38, 24, 10},
-        {25, 29, 30, 24, 12},
-        {20, 23, 29, 26, 12},
-        {21, 20, 30, 31, 18},
-    },
-    fSeason1NewManpowerRatio = 0.3,  -- 一季度新进人数占全年人数比例， 剩下的三季度新进
-
-    tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
-    ]]
-
+    -- tbManpowerInMarket = { 0, 0, 0, 0, 0 } -- 人才市场各等级人数，元素个数需要等于tbConfig.nManpowerMaxExpLevel
+    -- tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
     local tbRuntimeData = GetTableRuntime()
 
     -- 计算权重
@@ -256,7 +238,7 @@ function HumanResources.SettleHire()
                 userName = userName,
                 nNum = tbUser.tbHire.nNum,
                 nWeight = nWeight,
-                tbNewManpower = {0, 0, 0, 0, 0}
+                tbNewManpower = {0, 0, 0, 0, 0} --元素个数需要等于tbConfig.nManpowerMaxExpLevel
             })
 
             nTotalWeight = nTotalWeight + nWeight
@@ -265,12 +247,11 @@ function HumanResources.SettleHire()
     end
 
     -- 开始随机发派人才
-    local nTopLevel = #tbRuntimeData.tbManpower
+    local nTopLevel = tbConfig.nManpowerMaxExpLevel
     while nTotalNeed > 0 do
-        while nTopLevel > 0 and tbRuntimeData.tbManpower[nTopLevel] == 0 do
+        while nTopLevel > 0 and tbRuntimeData.tbManpowerInMarket[nTopLevel] == 0 do
             nTopLevel = nTopLevel - 1
         end
-
         if nTopLevel == 0 then
             break
         end
@@ -279,7 +260,7 @@ function HumanResources.SettleHire()
         for _, tbHireInfo in ipairs(tbUserHireInfo) do
             if tbHireInfo.nNum > 0 then
                 if nRand <= tbHireInfo.nWeight then
-                    tbRuntimeData.tbManpower[nTopLevel] = tbRuntimeData.tbManpower[nTopLevel] - 1
+                    tbRuntimeData.tbManpowerInMarket[nTopLevel] = tbRuntimeData.tbManpowerInMarket[nTopLevel] - 1
 
                     tbHireInfo.nNum = tbHireInfo.nNum - 1
                     tbHireInfo.tbNewManpower[nTopLevel] = tbHireInfo.tbNewManpower[nTopLevel] + 1
@@ -299,7 +280,7 @@ function HumanResources.SettleHire()
     -- 竞标结果更新到人力
     for _, tbHire in ipairs(tbUserHireInfo) do
         local tbUser = tbRuntimeData.tbUser[tbHire.userName]
-        for i = 1, #tbUser.tbIdleManpower do
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
             tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] + tbHire.tbNewManpower[i]
             tbUser.nTotalManpower = tbUser.nTotalManpower + tbHire.tbNewManpower[i]
         end
@@ -309,26 +290,28 @@ function HumanResources.SettleHire()
 
     -- 清除招聘投标数据
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.tbHire = { nNum = 0 , nExpense = 0}
+        tbUser.tbHire = nil
         tbUser.bManpowerMarketDone = false
     end
 end
 
 function HumanResources.AddNewManpower()
     local tbRuntimeData = GetTableRuntime()
-    print("AddNewManpower", tbRuntimeData.nCurSeason, tbRuntimeData.nCurYear, #tbConfig.tbNewManpowerPerYear)
     local nCurSeason = tbRuntimeData.nCurSeason
+    if nCurSeason ~= 1 and nCurSeason ~= 3 then
+        return  -- 只有第一三季度，人才市场才会增加新人
+    end
+    print("AddNewManpower", tbRuntimeData.nCurYear, nCurSeason, #tbConfig.tbNewManpowerPerYear)
     if tbRuntimeData.nCurYear <= #tbConfig.tbNewManpowerPerYear then
         local tbNewManpower = tbConfig.tbNewManpowerPerYear[tbRuntimeData.nCurYear]
-        for i = 1, #tbRuntimeData.tbManpower do
-            local nNew = 0
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
+            local nNew = tbNewManpower[i]
             if nCurSeason == 1 then
-                nNew = math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
-            elseif nCurSeason == 3 then
-                nNew = tbNewManpower[i] - math.floor(tbNewManpower[i] * tbConfig.fSeason1NewManpowerRatio + 0.5)
+                nNew = math.floor(nNew * tbConfig.fSeason1NewManpowerRatio + 0.5)
+            else
+                nNew = nNew - math.floor(nNew * tbConfig.fSeason1NewManpowerRatio + 0.5)
             end
-
-            tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + nNew
+            tbRuntimeData.tbManpowerInMarket[i] = tbRuntimeData.tbManpowerInMarket[i] + nNew
         end
     end
 end
@@ -338,7 +321,7 @@ function HumanResources.SettleFire()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         for i = 1, #tbUser.tbFireManpower do
             if tbUser.tbFireManpower[i] ~= 0 then
-                tbRuntimeData.tbManpower[i] = tbRuntimeData.tbManpower[i] + tbUser.tbFireManpower[i]
+                tbRuntimeData.tbManpowerInMarket[i] = tbRuntimeData.tbManpowerInMarket[i] + tbUser.tbFireManpower[i]
                 tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
                 tbUser.tbFireManpower[i] = 0
             end
