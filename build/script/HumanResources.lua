@@ -14,31 +14,33 @@ function HumanResources.RaiseSalary(tbParam)
 end
 
 -- 招聘 {FuncName = "DoOperate", OperateType = "CommitHire", nNum = 20, nExpense = 60}
+-- 同一个季度，新的招聘计划会替换旧提交的计划
 function HumanResources.CommitHire(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bManpowerMarketDone then
-        return "已经设置过招聘计划", false
-    end
     
     if tbRuntimeData.nCurSeason == 2 or tbRuntimeData.nCurSeason == 4 then
         return "只有1、3季度才可以招聘", false
     end
 
-    if tbParam.nNum == 0 then
-        return "招聘人数至少1人", false
+    if tbUser.tbHire then
+        tbUser.nCash = tbUser.nCash + tbUser.tbHire.nExpense
+        tbUser.nSeverancePackage = tbUser.nSeverancePackage - tbUser.tbHire.nExpense
+        tbUser.tbHire = nil
     end
-
     if tbParam.nExpense > tbUser.nCash then
         return "资金不足", false
     end
 
-    tbUser.nCash = tbUser.nCash - tbParam.nExpense
-    tbUser.nSeverancePackage = tbUser.nSeverancePackage + tbParam.nExpense
-    tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
-
-    tbUser.bManpowerMarketDone = true
-    local szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
+    local szReturnMsg
+    if tbParam.nExpense > 0 and tbParam.nNum > 0 then
+        tbUser.nCash = tbUser.nCash - tbParam.nExpense
+        tbUser.nSeverancePackage = tbUser.nSeverancePackage + tbParam.nExpense
+        tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
+        szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
+    else
+        szReturnMsg = "success"
+    end
     return szReturnMsg, true
 end
 
@@ -61,7 +63,7 @@ function HumanResources.CommitFire(tbParam)
     tbUser.tbFireManpower[tbParam.nLevel] = tbParam.nNum
     local msg
     if tbParam.nNum > 0 then
-        msg = string.format("解雇%d位%d级员工，季度末将离开公司", tbParam.nNum, nLevel)
+        msg = string.format("解雇%d位%d级员工，季度末将离开公司", tbParam.nNum, tbParam.nLevel)
     else
         msg = "success"
     end
@@ -299,7 +301,6 @@ function HumanResources.SettleHire()
     -- 清除招聘投标数据
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbHire = nil
-        tbUser.bManpowerMarketDone = false
     end
 end
 
