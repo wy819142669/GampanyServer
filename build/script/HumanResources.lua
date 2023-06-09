@@ -43,21 +43,29 @@ function HumanResources.CommitHire(tbParam)
 end
 
 -- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", nLevel = 1, nNum = 2}
+-- 传入的nNum表示把欲解雇的人数更新为nNum，而不是再增加解雇nNum人
 function HumanResources.CommitFire(tbParam)
     local tbRuntimeData = GetTableRuntime()
+    if tbRuntimeData.nCurSeason == 0 then
+        return "年初阶段不能解雇员工", false
+    end
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-
     if tbParam.nNum < 0 then
         return "解雇人数不能是"..tbParam.nNum, false
     end
-
-    if tbUser.tbIdleManpower[tbParam.nLevel] < tbParam.nNum then
+    local total = tbUser.tbIdleManpower[tbParam.nLevel] + tbUser.tbFireManpower[tbParam.nLevel]
+    if total < tbParam.nNum then
         return "人数不足", false
     end
-
-    tbUser.tbFireManpower[tbParam.nLevel] = tbUser.tbFireManpower[tbParam.nLevel] + tbParam.nNum
-    tbUser.tbIdleManpower[tbParam.nLevel] = tbUser.tbIdleManpower[tbParam.nLevel] - tbParam.nNum
-    return string.format("成功解雇%d人,季度末将离开公司", tbParam.nNum), true
+    tbUser.tbIdleManpower[tbParam.nLevel] = total - tbParam.nNum
+    tbUser.tbFireManpower[tbParam.nLevel] = tbParam.nNum
+    local msg
+    if tbParam.nNum > 0 then
+        msg = string.format("解雇%d位%d级员工，季度末将离开公司", tbParam.nNum, nLevel)
+    else
+        msg = "success"
+    end
+    return msg, true
 end
 
 -- 培训 {FuncName = "DoOperate", OperateType = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
@@ -319,7 +327,7 @@ end
 function HumanResources.SettleFire()
     local tbRuntimeData = GetTableRuntime()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        for i = 1, #tbUser.tbFireManpower do
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
             if tbUser.tbFireManpower[i] ~= 0 then
                 tbRuntimeData.tbManpowerInMarket[i] = tbRuntimeData.tbManpowerInMarket[i] + tbUser.tbFireManpower[i]
                 tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
