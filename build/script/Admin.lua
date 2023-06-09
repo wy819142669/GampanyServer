@@ -94,6 +94,8 @@ function tbAdminFunc.DoStart(tbParam)
             end
     end
 
+    InitManpowerData()
+
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.tbMarket = Lib.copyTab(tbConfig.tbMarket)
     return "success", true

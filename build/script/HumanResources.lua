@@ -23,6 +23,10 @@ function HumanResources.CommitHire(tbParam)
         return "只有1、3季度才可以招聘", false
     end
 
+    if tbParam.nExpense < tbParam.nNum * tbConfig.nSalary then
+        return "预算费用太低，不能低于人均工资", false
+    end
+
     if tbUser.tbHire then
         tbUser.nCash = tbUser.nCash + tbUser.tbHire.nExpense
         tbUser.nSeverancePackage = tbUser.nSeverancePackage - tbUser.tbHire.nExpense
@@ -79,23 +83,16 @@ function HumanResources.CommitTrain(tbParam)
     end
 
     local tbMax = Lib.copyTab(tbUser.tbIdleManpower)
-    for i = 1, 5 do
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
         tbMax[i] = tbMax[i] + tbUser.tbFireManpower[i]
-    end
-    for _, tbProductInfo in pairs(tbUser.tbProduct) do
-        for i = 1, 5 do
-            tbMax[i] = tbMax[i] + tbProductInfo.tbManpower[i]
-        end
-    end
-
-    for i = 1, 5 do
+        tbMax[i] = tbMax[i] + tbUser.tbJobManpower[i]
         tbMax[i] = math.max(1, math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel))
     end
 
-    tbMax[5] = 0
+    tbMax[tbConfig.nManpowerMaxExpLevel] = 0
 
     local nTotalNum = 0
-    for i = 1, 5 do
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
         nTotalNum = nTotalNum + tbParam.tbTrain[i]
         if tbParam.tbTrain[i] > tbMax[i] then
             return string.format("%d级员工最多只能培训%d个", i, tbMax[i]), false
@@ -141,21 +138,13 @@ function HumanResources.Poach(tbParam)
 
     local szResult
     local bSuccess = false
-    local hasTargetLevelManpower = (tbTargetUser.tbIdleManpower[tbParam.nLevel] ~= 0)
-    if not hasTargetLevelManpower then
-        for _, tbProductInfo in pairs(tbTargetUser.tbProduct) do
-            if tbProductInfo.tbManpower[tbParam.nLevel] ~= 0 then
-                hasTargetLevelManpower = true
-                break
-            end
-        end
-    end
+    local hasTargetLevelManpower = tbTargetUser.tbIdleManpower[tbParam.nLevel] + tbTargetUser.tbFireManpower[tbParam.nLevel] + tbTargetUser.tbJobManpower[tbParam.nLevel] - tbTargetUser.tbDepartManpower[tbParam.nLevel] > 0
 
     if not hasTargetLevelManpower then
         szResult = "目标公司并没有你需要的人才"
     else
         local rand = math.random()
-        local nSuccessWeight = tbParam.nExpense * 5 / tbParam.nLevel + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
+        local nSuccessWeight = tbParam.nExpense * tbConfig.nManpowerMaxExpLevel / tbParam.nLevel + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         local nFailedWeight =  tbConfig.nSalary * (1 + (tbTargetUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         print("poach - success:".. nSuccessWeight, "failed:" .. nFailedWeight, "rand:" .. rand, "sueecss ratio:" .. nSuccessWeight / (nSuccessWeight + nFailedWeight))
         if nSuccessWeight < nFailedWeight then
@@ -216,6 +205,7 @@ function HumanResources.SettleDepart()
             tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbDepartManpower[i]
             tbUser.tbDepartManpower[i] = 0
         end
+        HumanResources.UpdateJobManpower(tbUser)
     end
 end
 
@@ -342,7 +332,7 @@ end
 function HumanResources.SettleTrain()
     local tbRuntimeData = GetTableRuntime()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        for i = 5 - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
+        for i = tbConfig.nManpowerMaxExpLevel - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
             for _, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
                 if tbProduct.tbManpower[i] > 0 then
                     local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
@@ -360,6 +350,26 @@ function HumanResources.SettleTrain()
         end
 
         tbUser.bCommitTrainDone = false
+    end
+end
+
+function HumanResources.UpdateAllUserManpower()
+    local tbRuntimeData = GetTableRuntime()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        HumanResources.UpdateJobManpower(tbUser)
+        tbUser.nTotalManpower = 0
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
+            tbUser.nTotalManpower = tbUser.nTotalManpower + tbUser.tbIdleManpower[i] + tbUser.tbFireManpower[i] + tbUser.tbJobManpower[i]
+        end
+    end
+end
+
+function HumanResources.UpdateJobManpower(tbUser)
+    tbUser.tbJobManpower = {0, 0, 0, 0, 0}
+    for _, tbProductInfo in pairs(tbUser.tbProduct) do
+        for i = 1, #tbUser.tbJobManpower do
+            tbUser.tbJobManpower[i] = tbUser.tbJobManpower[i] + tbProductInfo.tbManpower[i]
+        end
     end
 end
 

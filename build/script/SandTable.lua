@@ -126,6 +126,10 @@ function GetTableRuntime()
     return tbRuntimeData
 end
 
+function InitManpowerData()
+    HumanResources.UpdateAllUserManpower()
+end
+
 --------------------接口实现---------------------------------------
 -- 登录 {FuncName = "Login"}
 function tbFunc.Action.Login(tbParam)

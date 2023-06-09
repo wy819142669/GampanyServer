@@ -51,7 +51,8 @@ tbConfig = {
         tbFireManpower = { 0, 0, 0, 0, 0},      -- 待解雇员工
         tbTrainManpower = { 0, 0, 0, 0, 0},     -- 培训员工
         tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工
-
+        tbJobManpower = { 10, 5, 4, 1, 0 },     -- 在岗员工
+        
         -- 提示
         szTitle = "",
          -- 市场营销投入
