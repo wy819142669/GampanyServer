@@ -544,17 +544,19 @@ end
 function DoPreSeason()
     HumanResources.AddNewManpower() -- 新人才进入人才市场
     HumanResources.SettleDepart()  --办理离职（交付流失员工）
-                    -- 更新产品品质
     HumanResources.SettleFire()     -- 解雇人员离职
     HumanResources.SettleTrain()    -- 培训中的员工升级
     HumanResources.SettlePoach()    -- 成功挖掘的人才入职
     HumanResources.SettleHire()     -- 人才市场招聘结果
-                   -- 各品类市场份额刷新、Npc调整
+                   -- Npc调整
 end
 
 -- 每个季度结束后的自动处理
 function DoPostSeason()
                     -- 推进研发进度
+                    -- 更新产品品质
+                    -- 流失份额、各品类市场份额刷新、更新市场竞标结果
+                    -- 获取收益
     Market.SettleMarket()  -- 更新市场竞标结果 -- 获取上个季度市场收益
                     
     HumanResources.PayOffSalary()   -- 支付薪水
