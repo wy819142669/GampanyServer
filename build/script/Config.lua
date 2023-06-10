@@ -55,6 +55,8 @@ tbConfig = {
 
         -- 提示
         szTitle = "",
+        -- 系统消息
+        tbMsg = {},
          -- 市场营销投入
         tbMarketingExpense = {},
         -- 产品
