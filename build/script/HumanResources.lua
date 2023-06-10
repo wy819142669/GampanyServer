@@ -78,20 +78,29 @@ end
 function HumanResources.CommitTrain(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bCommitTrainDone then
-        return "本季度已经设置过培训计划", false
+    local result = "success"
+
+    -- 如果有旧的提交记录，则undo
+    local nTotalNum = 0
+    if tbUser.tbTrainManpower then
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
+            nTotalNum = nTotalNum + tbUser.tbTrainManpower[i]
+        end
+        tbUser.nCash = tbUser.nCash + nTotalNum * tbConfig.nSalary
+        tbUser.tbTrainManpower = nil
+        result = "成功取消培训计划"
     end
 
+    --计算最多允许培训的人员数目
     local tbMax = Lib.copyTab(tbUser.tbIdleManpower)
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         tbMax[i] = tbMax[i] + tbUser.tbFireManpower[i]
         tbMax[i] = tbMax[i] + tbUser.tbJobManpower[i]
         tbMax[i] = math.max(1, math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel))
     end
-
     tbMax[tbConfig.nManpowerMaxExpLevel] = 0
 
-    local nTotalNum = 0
+    nTotalNum = 0
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         nTotalNum = nTotalNum + tbParam.tbTrain[i]
         if tbParam.tbTrain[i] > tbMax[i] then
@@ -99,17 +108,21 @@ function HumanResources.CommitTrain(tbParam)
         end
     end
 
-    local nMaxTotalNum = math.floor(tbUser.nTotalManpower * tbConfig.fTrainMaxRatioTotal)
-    if nTotalNum > nMaxTotalNum then
-        return string.format("最多只能培训%d人", nMaxTotalNum), false
+    if nTotalNum > 0 then
+        local nMaxTotalNum = math.floor(tbUser.nTotalManpower * tbConfig.fTrainMaxRatioTotal)
+        if nTotalNum > nMaxTotalNum then
+            return string.format("最多只能培训%d人", nMaxTotalNum), false
+        end
+
+        local nCost = nTotalNum * tbConfig.nSalary
+        if nCost < tbUser.nCash then
+            return "没有足够的费用进行培训", false
+        end
+        tbUser.nCash = tbUser.nCash - nCost
+        tbUser.tbTrainManpower = tbParam.tbTrain
+        result = "成功设置培训"
     end
-
-    local nCost = nTotalNum * tbConfig.nSalary
-
-    tbUser.nCash = tbUser.nCash - nCost
-    tbUser.tbTrainManpower = tbParam.tbTrain
-    tbUser.bCommitTrainDone = true
-    return "成功设置培训", true
+    return result, true
 end
 
 -- 挖掘人才 {FuncName = "DoOperate", OperateType = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
@@ -332,24 +345,32 @@ end
 function HumanResources.SettleTrain()
     local tbRuntimeData = GetTableRuntime()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        for i = tbConfig.nManpowerMaxExpLevel - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
-            for _, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
-                if tbProduct.tbManpower[i] > 0 then
-                    local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
-
-                    tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
-                    tbProduct.tbManpower[i] = tbProduct.tbManpower[i] - nLevelUpCount
-                    tbProduct.tbManpower[i + 1] = tbProduct.tbManpower[i + 1] + nLevelUpCount
-                end
+        repeat
+            if not tbUser.tbTrainManpower then
+                break
             end
-
-            local nLevelUpCount = math.min(tbUser.tbIdleManpower[i], tbUser.tbTrainManpower[i])
-            tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
-            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nLevelUpCount
-            tbUser.tbIdleManpower[i + 1] = tbUser.tbIdleManpower[i + 1] + nLevelUpCount
-        end
-
-        tbUser.bCommitTrainDone = false
+            for i = tbConfig.nManpowerMaxExpLevel - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
+                repeat
+                    if tbUser.tbTrainManpower[i] == 0 then
+                        break
+                    end
+                    for _, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
+                        if tbProduct.tbManpower[i] > 0 then
+                            local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
+                            tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
+                            tbProduct.tbManpower[i] = tbProduct.tbManpower[i] - nLevelUpCount
+                            tbProduct.tbManpower[i + 1] = tbProduct.tbManpower[i + 1] + nLevelUpCount
+                        end
+                    end
+                    local nLevelUpCount = math.min(tbUser.tbIdleManpower[i], tbUser.tbTrainManpower[i])
+                    tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
+                    tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nLevelUpCount
+                    tbUser.tbIdleManpower[i + 1] = tbUser.tbIdleManpower[i + 1] + nLevelUpCount
+                    --若有多余，那是本季度离职的人
+                until true
+            end
+        until true
+        tbUser.tbTrainManpower = nil
     end
 end
 
