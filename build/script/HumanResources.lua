@@ -48,7 +48,7 @@ function HumanResources.CommitHire(tbParam)
     return szReturnMsg, true
 end
 
--- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", nLevel = 1, nNum = 2}
+-- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", tbFire= {0, 0, 0, 0, 0}}
 -- 传入的nNum表示把欲解雇的人数更新为nNum，而不是再增加解雇nNum人
 function HumanResources.CommitFire(tbParam)
     local tbRuntimeData = GetTableRuntime()
@@ -56,18 +56,23 @@ function HumanResources.CommitFire(tbParam)
         return "年初阶段不能解雇员工", false
     end
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbParam.nNum < 0 then
-        return "解雇人数不能是"..tbParam.nNum, false
+    local tbFire = tbParam.tbFire
+    local finalCount = 0
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
+        if tbFire == nil or tbFire[i] < 0 then
+            return "解雇人数参数错误", false
+        end
+        local total = tbUser.tbIdleManpower[i] + tbUser.tbFireManpower[i]
+        if total < tbFire[i] then
+            return "人数不足够解雇", false
+        end
+        tbUser.tbIdleManpower[i] = total - tbFire[i]
+        tbUser.tbFireManpower[i] = tbFire[i]
+        finalCount = finalCount + tbFire[i]
     end
-    local total = tbUser.tbIdleManpower[tbParam.nLevel] + tbUser.tbFireManpower[tbParam.nLevel]
-    if total < tbParam.nNum then
-        return "人数不足", false
-    end
-    tbUser.tbIdleManpower[tbParam.nLevel] = total - tbParam.nNum
-    tbUser.tbFireManpower[tbParam.nLevel] = tbParam.nNum
     local msg
-    if tbParam.nNum > 0 then
-        msg = string.format("解雇%d位%d级员工，季度末将离开公司", tbParam.nNum, tbParam.nLevel)
+    if finalCount > 0 then
+        msg = string.format("被解雇的%d位员工，将于季度末离开", finalCount)
     else
         msg = "success"
     end
@@ -115,7 +120,7 @@ function HumanResources.CommitTrain(tbParam)
         end
 
         local nCost = nTotalNum * tbConfig.nSalary
-        if nCost < tbUser.nCash then
+        if nCost > tbUser.nCash then
             return "没有足够的费用进行培训", false
         end
         tbUser.nCash = tbUser.nCash - nCost
@@ -195,7 +200,6 @@ function HumanResources.SettleDepart()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         for i = 1, #tbUser.tbDepartManpower do
             local nNum = tbUser.tbDepartManpower[i]
-            print("SettleDepart=====", tbUser.szAccount, i, nNum)
             if nNum > 0 then
                 local nCount = math.min(nNum, tbUser.tbFireManpower[i])
                 nNum = nNum - nCount

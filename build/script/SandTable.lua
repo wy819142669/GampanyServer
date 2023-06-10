@@ -328,7 +328,7 @@ end
 tbFunc.Action.funcDoOperate = {}
 tbFunc.Action.funcDoOperate.RaiseSalary = HumanResources.RaiseSalary  -- RaiseSalary 调薪 {FuncName = "DoOperate", OperateType = "RaiseSalary"}
 tbFunc.Action.funcDoOperate.CommitHire = HumanResources.CommitHire  -- 招聘 {FuncName = "DoOperate", OperateType = "CommitHire", nNum = 20, nExpense = 60}
-tbFunc.Action.funcDoOperate.CommitFire = HumanResources.CommitFire  -- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", nLevel = 1, nNum = 2}
+tbFunc.Action.funcDoOperate.CommitFire = HumanResources.CommitFire  -- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", tbFire= {0, 0, 0, 0, 0}}
 tbFunc.Action.funcDoOperate.CommitTrain = HumanResources.CommitTrain  -- 培训 {FuncName = "DoOperate", OperateType = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
 tbFunc.Action.funcDoOperate.Poach = HumanResources.Poach            -- 挖掘人才 {FuncName = "DoOperate", OperateType = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
 tbFunc.Action.funcDoOperate.CommitMarket = Market.CommitMarket      -- 提交市场竞标 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a = 1, b = 2, c = 1}}
