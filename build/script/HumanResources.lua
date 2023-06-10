@@ -6,10 +6,10 @@ function HumanResources.RaiseSalary(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bStepDone or tbRuntimeData.nCurSeason ~= 0 then
-        return "该步骤已结束", false
+        return "仅在年初可以调薪", false
     end
     tbUser.nSalaryLevel = tbUser.nSalaryLevel + 1
-    local szReturnMsg = string.format("薪水等级提升至%d级", tbUser.nSalaryLevel)
+    local szReturnMsg = "薪水标准提升至:" .. tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
     return szReturnMsg, true
 end
 
@@ -33,7 +33,7 @@ function HumanResources.CommitHire(tbParam)
         tbUser.tbHire = nil
     end
     if tbParam.nExpense > tbUser.nCash then
-        return "资金不足", false
+        return "没有足够的资金进行招聘", false
     end
 
     local szReturnMsg
@@ -134,7 +134,7 @@ end
 function HumanResources.Poach(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bPoachDone then
+    if tbUser.tbPoach then
         return "本季度已经执行过挖掘", false
     end
 
@@ -156,9 +156,7 @@ function HumanResources.Poach(tbParam)
 
     local szResult
     local bSuccess = false
-    local hasTargetLevelManpower = tbTargetUser.tbIdleManpower[tbParam.nLevel] + tbTargetUser.tbFireManpower[tbParam.nLevel] + tbTargetUser.tbJobManpower[tbParam.nLevel] - tbTargetUser.tbDepartManpower[tbParam.nLevel] > 0
-
-    if not hasTargetLevelManpower then
+    if tbTargetUser.tbIdleManpower[tbParam.nLevel] + tbTargetUser.tbFireManpower[tbParam.nLevel] + tbTargetUser.tbJobManpower[tbParam.nLevel] == 0 then
         szResult = "目标公司并没有你需要的人才"
     else
         local rand = math.random()
@@ -178,7 +176,12 @@ function HumanResources.Poach(tbParam)
     local nCost
     if bSuccess then
         nCost = tbParam.nExpense
-        tbTargetUser.tbDepartManpower[tbParam.nLevel] = tbTargetUser.tbDepartManpower[tbParam.nLevel] + 1
+        if tbTargetUser.tbDepartManpower and tbTargetUser.tbDepartManpower[tbParam.nLevel] then
+            tbTargetUser.tbDepartManpower[tbParam.nLevel] = tbTargetUser.tbDepartManpower[tbParam.nLevel] + 1
+        else
+            tbTargetUser.tbDepartManpower = tbTargetUser.tbDepartManpower or {}
+            tbTargetUser.tbDepartManpower[tbParam.nLevel] = 1
+        end
     else
         nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
     end
@@ -191,38 +194,41 @@ function HumanResources.Poach(tbParam)
         szResult = szResult,
         bSuccess = bSuccess
     }
-    tbUser.bPoachDone = true
     return szResult, true
 end
 
 function HumanResources.SettleDepart()
     local tbRuntimeData = GetTableRuntime()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        for i = 1, #tbUser.tbDepartManpower do
-            local nNum = tbUser.tbDepartManpower[i]
-            if nNum > 0 then
-                local nCount = math.min(nNum, tbUser.tbFireManpower[i])
-                nNum = nNum - nCount
-                tbUser.tbFireManpower[i] = tbUser.tbFireManpower[i] - nCount
+        if tbUser.tbDepartManpower then
+            for i = 1, tbConfig.nManpowerMaxExpLevel do -- #tbUser.tbDepartManpower
+                if tbUser.tbDepartManpower[i] then
+                    local nNum = tbUser.tbDepartManpower[i]
+                    if nNum > 0 then
+                        local nCount = math.min(nNum, tbUser.tbFireManpower[i])
+                        nNum = nNum - nCount
+                        tbUser.tbFireManpower[i] = tbUser.tbFireManpower[i] - nCount
 
-                nCount = math.min(nNum, tbUser.tbIdleManpower[i])
-                nNum = nNum - nCount
-                tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nCount
+                        nCount = math.min(nNum, tbUser.tbIdleManpower[i])
+                        nNum = nNum - nCount
+                        tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nCount
 
-                for _, tbProductInfo in pairs(tbUser.tbProduct) do
-                    nCount = math.min(nNum, tbProductInfo.tbManpower[i])
-                    nNum = nNum - nCount
-                    tbProductInfo.tbManpower[i] = tbProductInfo.tbManpower[i] - nCount
-                    if nNum == 0 then
-                        break
+                        for _, tbProductInfo in pairs(tbUser.tbProduct) do
+                            nCount = math.min(nNum, tbProductInfo.tbManpower[i])
+                            nNum = nNum - nCount
+                            tbProductInfo.tbManpower[i] = tbProductInfo.tbManpower[i] - nCount
+                            if nNum == 0 then
+                                break
+                            end
+                        end
+                        assert(nNum == 0)
                     end
+                    tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbDepartManpower[i]
+                    tbUser.tbDepartManpower[i] = 0
                 end
-                assert(nNum == 0)
             end
-            tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbDepartManpower[i]
-            tbUser.tbDepartManpower[i] = 0
+            HumanResources.UpdateJobManpower(tbUser)
         end
-        HumanResources.UpdateJobManpower(tbUser)
     end
 end
 
@@ -233,9 +239,7 @@ function HumanResources.SettlePoach()
             tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] = tbUser.tbIdleManpower[tbUser.tbPoach.nLevel] + 1
             tbUser.nTotalManpower = tbUser.nTotalManpower + 1
         end
-
         tbUser.tbPoach = nil
-        tbUser.bPoachDone = false
     end
 end
 
@@ -299,8 +303,10 @@ function HumanResources.SettleHire()
     for _, tbHire in ipairs(tbUserHireInfo) do
         local tbUser = tbRuntimeData.tbUser[tbHire.userName]
         for i = 1, tbConfig.nManpowerMaxExpLevel do
-            tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] + tbHire.tbNewManpower[i]
-            tbUser.nTotalManpower = tbUser.nTotalManpower + tbHire.tbNewManpower[i]
+            if tbHire.tbNewManpower[i] then
+                tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] + tbHire.tbNewManpower[i]
+                tbUser.nTotalManpower = tbUser.nTotalManpower + tbHire.tbNewManpower[i]
+            end
         end
     end
 
@@ -337,7 +343,7 @@ function HumanResources.SettleFire()
     local tbRuntimeData = GetTableRuntime()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         for i = 1, tbConfig.nManpowerMaxExpLevel do
-            if tbUser.tbFireManpower[i] ~= 0 then
+            if tbUser.tbFireManpower[i] > 0 then
                 tbRuntimeData.tbManpowerInMarket[i] = tbRuntimeData.tbManpowerInMarket[i] + tbUser.tbFireManpower[i]
                 tbUser.nTotalManpower = tbUser.nTotalManpower - tbUser.tbFireManpower[i]
                 tbUser.tbFireManpower[i] = 0
@@ -349,31 +355,27 @@ end
 function HumanResources.SettleTrain()
     local tbRuntimeData = GetTableRuntime()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        repeat
-            if not tbUser.tbTrainManpower then
-                break
-            end
+        if tbUser.tbTrainManpower then
             for i = tbConfig.nManpowerMaxExpLevel - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
-                repeat
-                    if tbUser.tbTrainManpower[i] == 0 then
-                        break
-                    end
+                if tbUser.tbTrainManpower[i] > 0 then
                     for _, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
-                        if tbProduct.tbManpower[i] > 0 then
+                        if tbProduct.tbManpower[i] > 0 and tbUser.tbTrainManpower[i] > 0 then
                             local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
                             tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
                             tbProduct.tbManpower[i] = tbProduct.tbManpower[i] - nLevelUpCount
                             tbProduct.tbManpower[i + 1] = tbProduct.tbManpower[i + 1] + nLevelUpCount
                         end
                     end
-                    local nLevelUpCount = math.min(tbUser.tbIdleManpower[i], tbUser.tbTrainManpower[i])
-                    tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
-                    tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nLevelUpCount
-                    tbUser.tbIdleManpower[i + 1] = tbUser.tbIdleManpower[i + 1] + nLevelUpCount
+                    if tbUser.tbTrainManpower[i] > 0 then
+                        local nLevelUpCount = math.min(tbUser.tbIdleManpower[i], tbUser.tbTrainManpower[i])
+                        tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
+                        tbUser.tbIdleManpower[i] = tbUser.tbIdleManpower[i] - nLevelUpCount
+                        tbUser.tbIdleManpower[i + 1] = tbUser.tbIdleManpower[i + 1] + nLevelUpCount
+                    end
                     --若有多余，那是本季度离职的人
-                until true
+                end
             end
-        until true
+        end
         tbUser.tbTrainManpower = nil
     end
 end
@@ -392,7 +394,7 @@ end
 function HumanResources.UpdateJobManpower(tbUser)
     tbUser.tbJobManpower = {0, 0, 0, 0, 0}
     for _, tbProductInfo in pairs(tbUser.tbProduct) do
-        for i = 1, #tbUser.tbJobManpower do
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
             tbUser.tbJobManpower[i] = tbUser.tbJobManpower[i] + tbProductInfo.tbManpower[i]
         end
     end

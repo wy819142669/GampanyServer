@@ -49,10 +49,10 @@ tbConfig = {
         --tbHire = { nNum = , nExpense = },     --运行时产生的数据项: 向市场发出的招聘计划
         tbIdleManpower = { 10, 5, 4, 1, 0 },    -- 待岗员工。【以下几个表，元素个数需要等于 tbConfig.nManpowerMaxExpLevel】
         tbFireManpower = { 0, 0, 0, 0, 0},      -- 待解雇员工
-        -- tbTrainManpower = { 0, 0, 0, 0, 0},     -- 培训员工，运行时动态产生消亡的数据
-        tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工
         tbJobManpower = { 10, 5, 4, 1, 0 },     -- 在岗员工
-        
+        -- tbTrainManpower = { 0, 0, 0, 0, 0},     -- 培训员工，运行时动态产生消亡的数据
+        -- tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工，运行时动态产生消亡的数据
+
         -- 提示
         szTitle = "",
          -- 市场营销投入
