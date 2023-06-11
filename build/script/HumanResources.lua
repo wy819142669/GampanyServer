@@ -146,7 +146,8 @@ function HumanResources.Poach(tbParam)
     if not tbTargetUser then
         return "目标公司不存在", false
     end
-    if not tbParam.nLevel or tbParam.nLevel < 1 or tbParam.nLevel > tbConfig.nManpowerMaxExpLevel then
+    local lvl = tbParam.nLevel
+    if not lvl or lvl < 1 or lvl > tbConfig.nManpowerMaxExpLevel then
         return "需要人才等级无效", false
     end
 
@@ -156,11 +157,12 @@ function HumanResources.Poach(tbParam)
 
     local szResult
     local bSuccess = false
-    if tbTargetUser.tbIdleManpower[tbParam.nLevel] + tbTargetUser.tbFireManpower[tbParam.nLevel] + tbTargetUser.tbJobManpower[tbParam.nLevel] == 0 then
+    local preDepartCount = tbTargetUser.tbDepartManpower and tbTargetUser.tbDepartManpower[lvl] or 0
+    if tbTargetUser.tbIdleManpower[lvl] + tbTargetUser.tbFireManpower[lvl] + tbTargetUser.tbJobManpower[lvl] <= preDepartCount then
         szResult = "目标公司并没有你需要的人才"
     else
         local rand = math.random()
-        local nSuccessWeight = tbParam.nExpense * tbConfig.nManpowerMaxExpLevel / tbParam.nLevel + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
+        local nSuccessWeight = tbParam.nExpense * tbConfig.nManpowerMaxExpLevel / lvl + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         local nFailedWeight =  tbConfig.nSalary * (1 + (tbTargetUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         print("poach - success:".. nSuccessWeight, "failed:" .. nFailedWeight, "rand:" .. rand, "sueecss ratio:" .. nSuccessWeight / (nSuccessWeight + nFailedWeight))
         if nSuccessWeight < nFailedWeight then
@@ -176,13 +178,13 @@ function HumanResources.Poach(tbParam)
     local nCost
     if bSuccess then
         nCost = tbParam.nExpense
-        if tbTargetUser.tbDepartManpower and tbTargetUser.tbDepartManpower[tbParam.nLevel] then
-            tbTargetUser.tbDepartManpower[tbParam.nLevel] = tbTargetUser.tbDepartManpower[tbParam.nLevel] + 1
+        if tbTargetUser.tbDepartManpower and tbTargetUser.tbDepartManpower[lvl] then
+            tbTargetUser.tbDepartManpower[lvl] = tbTargetUser.tbDepartManpower[lvl] + 1
         else
             tbTargetUser.tbDepartManpower = tbTargetUser.tbDepartManpower or {}
-            tbTargetUser.tbDepartManpower[tbParam.nLevel] = 1
+            tbTargetUser.tbDepartManpower[lvl] = 1
         end
-        table.insert(tbTargetUser.tbMsg, string.format("你的一个%d级员工提交了离职申请，将在下个季度初离开公司。", tbParam.nLevel))
+        table.insert(tbTargetUser.tbMsg, string.format("你的一个%d级员工提交了离职申请，将在下个季度初离开公司。", lvl))
     else
         nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
     end
@@ -190,7 +192,7 @@ function HumanResources.Poach(tbParam)
     tbUser.nCash = tbUser.nCash - nCost
     tbUser.tbPoach = {
         TargetUser = tbParam.TargetUser,
-        nLevel = tbParam.nLevel,
+        nLevel = lvl,
         nExpense = tbParam.nExpense,
         szResult = szResult,
         bSuccess = bSuccess
