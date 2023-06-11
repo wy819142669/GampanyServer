@@ -1,8 +1,10 @@
 local tbConfig = tbConfig
-HumanResources = {}
+
+HR = {}             --用于包含响应客户端请求的函数
+HumanResources = {} --人力模块的内部函数
 
 -- 调薪 {FuncName = "HR", Operate = "RaiseSalary"}
-function HumanResources.RaiseSalary(tbParam)
+function HR.RaiseSalary(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bStepDone or tbRuntimeData.nCurSeason ~= 0 then
@@ -15,7 +17,7 @@ end
 
 -- 招聘 {FuncName = "HR", Operate = "CommitHire", nNum = 20, nExpense = 60}
 -- 同一个季度，新的招聘计划会替换旧提交的计划
-function HumanResources.CommitHire(tbParam)
+function HR.CommitHire(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     
@@ -50,7 +52,7 @@ end
 
 -- 解雇 {FuncName = "HR", Operate = "CommitFire", tbFire= {0, 0, 0, 0, 0}}
 -- 传入的nNum表示把欲解雇的人数更新为nNum，而不是再增加解雇nNum人
-function HumanResources.CommitFire(tbParam)
+function HR.CommitFire(tbParam)
     local tbRuntimeData = GetTableRuntime()
     if tbRuntimeData.nCurSeason == 0 then
         return "年初阶段不能解雇员工", false
@@ -80,7 +82,7 @@ function HumanResources.CommitFire(tbParam)
 end
 
 -- 培训 {FuncName = "HR", Operate = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
-function HumanResources.CommitTrain(tbParam)
+function HR.CommitTrain(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local result = "success"
@@ -131,7 +133,7 @@ function HumanResources.CommitTrain(tbParam)
 end
 
 -- 挖掘人才 {FuncName = "HR", Operate = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
-function HumanResources.Poach(tbParam)
+function HR.Poach(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.tbPoach then
@@ -200,8 +202,25 @@ function HumanResources.Poach(tbParam)
     return szResult, true
 end
 
--- 调配调动人员 {FuncName = "HR", Operate = "Reassign", Product = szName, Staffs={0,0,0,0,0}}
-function HumanResources.Reassign()
+-- 调配调动人员 {FuncName = "HR", Operate = "Reassign", ProductId=1, Staffs={0,0,0,0,0}} Staffs中的数值表示目标人数，而不是变动人数
+function HR.Reassign(tbParam)
+    local tbRuntimeData = GetTableRuntime()
+    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    if tbParam.ProductId == nil or tbParam.Staffs == nill then
+        return "调配调动人员参数有误", false
+    end
+    local product = tbUser.tbProduct[tbParam.ProductId]
+    if product == nil then
+        return "未找到产品：" .. Id, false
+    end
+
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
+        if product.tbManpower[i] + tbUser.tbIdleManpower[i] >= tbParam.Staffs[i] then
+            tbUser.tbIdleManpower[i] = product.tbManpower[i] + tbUser.tbIdleManpower[i] - tbParam.Staffs[i]
+            product.tbManpower[i] = tbParam.Staffs[i]
+         end
+    end
+    HumanResources:UpdateJobManpower(tbUser)
     return "success", true
 end
 

@@ -22,6 +22,21 @@ tbConfig = {
     tbPoachExpenseRatio = { 2, 4, 8, 12, 16},   -- 挖掘人才可选薪水倍数
     fPoachFailedReturnExpenseRatio = 0.8,       -- 挖掘人才失败时候返还费用比例
 
+    --==== 产品研发相关设置，只读不写 ====
+    fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
+    fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
+
+    -- 产品状态
+    tbProductState = {
+        nBuilding = 1,       -- 研发中
+        nEnabled = 2,        -- 可上线（完成研发）
+        nPublished = 3,      -- 发布
+        nRenovating = 4,     -- 翻新
+        nClosed = 5,         -- 关闭
+    },
+    -- 产品品类
+    tbProductCategory = { "A", "B", "C", "D" },
+
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
         a2 = { minManpower = 40, maxManpower = 120, maxProgress = 4, addMarketCost = 8,},
@@ -32,8 +47,7 @@ tbConfig = {
         e1 = { minManpower = 60, maxManpower = 180, maxProgress = 4, addMarketCost = 12,},
         e2 = { minManpower = 120, maxManpower = 360, maxProgress = 8, addMarketCost = 48,},
     },
-    tbProductSort = {"a1", "a2", "b1", "b2", "d1", "d2", "e1", "e2"},
-
+    --tbProductSort = {"a1", "a2", "b1", "b2", "d1", "d2", "e1", "e2"},
     --tbYearStep = {},
 
     tbResearchSort = {"d", "e"},
@@ -59,15 +73,6 @@ tbConfig = {
         {21, 20, 30, 31, 18},
     },
     fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
-
-    -- 产品状态
-    tbProductState = {
-        nBuilding = 1,       -- 研发中
-        nEnabled = 2,        -- 可上线
-        nPublished = 3,      -- 发布
-        nRenovating = 4,     -- 翻新
-        nClosed = 5,         -- 关闭
-    },
 
     --- 市场初始总份额
     tbMarket = {
@@ -96,18 +101,6 @@ tbConfig = {
     --- 品类份额转移
     nLossMarket = 25,
 
-    --- 产品基础留存率
-    tbProductRetentionRate = {
-        a1 = 0.5,
-        a2 = 0.5,
-        b1 = 0.5,
-        b2 = 0.5,
-        d1 = 0.5,
-        d2 = 0.5,
-        e1 = 0.5,
-        e2 = 0.5,
-    },
-
     tbProductARPU = {
         a1 = 3,
         a2 = 3,
@@ -117,6 +110,38 @@ tbConfig = {
         d2 = 8,
         e1 = 10,
         e2 = 10,
+    },
+
+    --====== 产品品类设置, 此表中key的值必须等于tbConfig.tbProductCategory中罗列的值====
+    tbProductCategory = {
+        A = {
+            nMinTeam = 8,       --团队最小人数需求
+            nIdeaTeam = 20,     --团队理想人数
+            nWorkLoad = 40,     --工作量
+            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            fProductRetentionRate = 0.5,    --产品基础留存率
+        },
+        B = {
+            nMinTeam = 8,       --团队最小人数需求
+            nIdeaTeam = 20,     --团队理想人数
+            nWorkLoad = 40,     --工作量
+            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            fProductRetentionRate = 0.5,    --产品基础留存率
+        },
+        C = {
+            nMinTeam = 8,       --团队最小人数需求
+            nIdeaTeam = 20,     --团队理想人数
+            nWorkLoad = 40,     --工作量
+            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            fProductRetentionRate = 0.5,    --产品基础留存率
+        },
+        D = {
+            nMinTeam = 8,       --团队最小人数需求
+            nIdeaTeam = 20,     --团队理想人数
+            nWorkLoad = 40,     --工作量
+            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            fProductRetentionRate = 0.5,    --产品基础留存率
+        },
     },
 }
 
@@ -141,7 +166,9 @@ tbInitTables = {
         -- tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工，运行时动态产生消亡的数据
 
         --==== 所有产品列表 ====
-        tbProduct = { },
+        tbProduct = { },        --所有未关闭的产品
+        tbClosedProduct = { },  --所有已关闭的产品
+
         --    a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false, nQuality = 1 },
 
         -- 提示
@@ -174,16 +201,7 @@ tbInitTables = {
         bMarketingDone = false,
 
         -- 市场份额
-        tbMarket = {
-            a1 = 0,
-            a2 = 0,
-            b1 = 0,
-            b2 = 0,
-            d1 = 0,
-            d2 = 0,
-            e1 = 0,
-            e2 = 0,
-        },
+        tbMarket = {     },
 
         -- 市场投标计划
         tbMarketingExpense = {
@@ -216,8 +234,40 @@ tbInitTables = {
         nCash = 0,
     },
 
-    --产品初始表
-    tbProduct = {
+    --新立项产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
+    tbInitNewProduct = {
+        A = {
+                Category = "A",                             --产品品类
+                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
+                tbManpower = {0,0,0,0,0},                   --团队人员
+                nFinishedWorkLoad = 0,                      --已完成工作量
+                fFinishedQuality = 0,                       --已完成工作量的累积品质
+            },
+        B = {
+                Category = "B",                             --产品品类
+                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
+                tbManpower = {0,0,0,0,0},                   --团队人员
+                nFinishedWorkLoad = 0,                      --已完成工作量
+                fFinishedQuality = 0,                       --已完成工作量的累积品质
+            },
+        C = {
+                Category = "C",                             --产品品类
+                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
+                tbManpower = {0,0,0,0,0},                   --团队人员
+                nFinishedWorkLoad = 0,                      --已完成工作量
+                fFinishedQuality = 0,                       --已完成工作量的累积品质
+            },
+        D = {
+                Category = "D",                             --产品品类
+                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
+                tbManpower = {0,0,0,0,0},                   --团队人员
+                nFinishedWorkLoad = 0,                      --已完成工作量
+                fFinishedQuality = 0,                       --已完成工作量的累积品质
+            },
+    },
+
+    --新发布产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
+    tbInitPublishedProduct = {
 
     },
 }

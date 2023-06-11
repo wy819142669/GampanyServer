@@ -1,8 +1,11 @@
 local tbConfig = tbConfig
-Market = {}
+
+MarketOperate = {}  --用于包含响应客户端请求的函数
+Market = {}         --市场模块的内部函数
 
 -- 提交市场竞标 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a = 1, b = 2, c = 1}}
 function Market.CommitMarket(tbParam)
+--[[
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     if tbUser.bMarketingDone then
@@ -28,29 +31,34 @@ function Market.CommitMarket(tbParam)
     tbUser.bMarketingDone = true
     local szReturnMsg = string.format("市场竞标:花费：%d", nTotalCost)
     return szReturnMsg, true
+]]
 end
 
 -- 份额流失
 function Market.LossMarket()
+    --[[todo 越子重构中
     local tbRuntimeData = GetTableRuntime()
     
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        for productName, tbProduct in pairs(tbUser.tbProduct) do
+        for id, tbProduct in pairs(tbUser.tbProduct) do
             local nQuality = tbProduct.nQuality or 0
-            local fLossRate = (1.0 - tbConfig.tbProductRetentionRate[productName] - 0.01 * nQuality)
+            local category = tbConfig.tbProductCategory[tbProduct.Category]
+            local fLossRate = (1.0 - category.fProductRetentionRate - 0.01 * nQuality)
             if fLossRate < 0 then
                 fLossRate = 0
             end
 
-            local nLossMarket = math.floor(tbUser.tbMarket[productName] * fLossRate)
-            tbUser.tbMarket[productName] = tbUser.tbMarket[productName] - nLossMarket;
-            tbRuntimeData.tbMarket[productName] = tbRuntimeData.tbMarket[productName] + nLossMarket
+            local nLossMarket = math.floor(tbUser.tbMarket[id] * fLossRate)
+            tbUser.tbMarket[id] = tbUser.tbMarket[id] - nLossMarket;
+            tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
         end
     end
+    --]]
 end
 
 -- 品类份额转移
 function Market.LossMarketByQuality()
+--[[todo 越子重构中
     local tbRuntimeData = GetTableRuntime()
     local tbCurrentTotalMarket = {}
     local tbInfos = {}
@@ -58,10 +66,10 @@ function Market.LossMarketByQuality()
 
     --math.randomseed(os.time())
     
-    for _, productName in pairs(tbConfig.tbProductSort) do
-        tbCurrentTotalMarket[productName] = tbRuntimeData.tbMarket[productName]
+    for category, _ in pairs(tbConfig.tbProductCategory) do
+        tbCurrentTotalMarket[category] = tbRuntimeData.tbMarket[category]
 
-        tbInfos[productName] = {
+        tbInfos[category] = {
             nHighestQuality = 0,
             nProductCount = 0,
             nTotalQuality = 0,
@@ -69,9 +77,10 @@ function Market.LossMarketByQuality()
     end
 
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        for productName, nMarket in pairs(tbUser.tbMarket) do
-            tbCurrentTotalMarket[productName] = tbCurrentTotalMarket[productName] + nMarket
-            if tbUser.tbProduct[productName] and tbUser.tbProduct[productName].progress >= tbConfig.tbProduct[productName].maxProgress then
+        for id, nMarket in pairs(tbUser.tbMarket) do
+            local product = tbUser.tbProduct[id]
+            tbCurrentTotalMarket[product.Category] = tbCurrentTotalMarket[product.Category] + nMarket
+            if product and tbUser.tbProduct[productName].progress >= tbConfig.tbProduct[productName].maxProgress then
                 local nQuality = tbUser.tbProduct[productName].nQuality or 0
                 if tbInfos[productName].nHighestQuality < nQuality then
                     tbInfos[productName].nHighestQuality = nQuality
@@ -138,7 +147,7 @@ function Market.LossMarketByQuality()
     tbRuntimeData.tbMarket[tbGainSortInfo.productName] = tbRuntimeData.tbMarket[tbGainSortInfo.productName] + nLossMarket
 
     print("LossMarketByQuality LossMarket: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.productName .. " -> " .. tbGainSortInfo.productName)
-
+    --]]
 end
 
 -- 份额分配

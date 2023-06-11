@@ -44,6 +44,8 @@ end
 
 -- 重置 {FuncName = "DoReset"}
 function tbAdminFunc.DoReset(tbParam)
+    Production:Reset()
+
     local runtime = GetTableRuntime()
     --runtime.nDataVersion = 0
 
