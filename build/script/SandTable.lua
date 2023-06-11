@@ -168,6 +168,22 @@ function tbFunc.Action.HR(tbParam)
     return "invalid HR operate", false
 end
 
+function tbFunc.Action.Develop(tbParam)
+    local func = HumanResources[tbParam.Operate]
+    if func then
+        return func(tbParam)
+    end
+    return "invalid Develop operate", false
+end
+
+function tbFunc.Action.Market(tbParam)
+    local func = HumanResources[tbParam.Operate]
+    if func then
+        return func(tbParam)
+    end
+    return "invalid Market operate", false
+end
+
 --todo: to delete
 tbFunc.finalAction = {}
 
@@ -337,38 +353,6 @@ function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
     return szReturnMsg, true
 end
 
--- 人员调整 {FuncName = "DoOperate", OperateType = "Turnover", GridType="product", GridName="b2"}
-function tbFunc.Action.funcDoOperate.Turnover(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local szReturnMsg = "success"
-
-    if tbParam.GridType == "product" then
-        local tbProduct = tbUser.tbProduct[tbParam.GridName]
-        if not tbProduct then
-            return "not product "..tbParam.GridName, false
-        end
-        local manpower = tbProduct.manpower
-        local minManpowerCfg = tbConfig.tbProduct[tbParam.GridName].minManpower
-        local maxManpowerCfg = tbConfig.tbProduct[tbParam.GridName].maxManpower
-        if manpower < minManpowerCfg and manpower + tbUser.nIdleManpower >= minManpowerCfg then
-            tbProduct.manpower = minManpowerCfg
-            tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - minManpowerCfg
-            szReturnMsg = string.format("产品%s研发人员+%d", tbParam.GridName, minManpowerCfg)
-        elseif not tbProduct.published and manpower < maxManpowerCfg and manpower + tbUser.nIdleManpower >= maxManpowerCfg then
-            tbProduct.manpower = maxManpowerCfg
-            tbUser.nIdleManpower = tbUser.nIdleManpower + manpower - maxManpowerCfg
-            szReturnMsg = string.format("产品%s研发人员+%d", tbParam.GridName, maxManpowerCfg - manpower)
-        else
-            tbProduct.manpower = 0
-            tbUser.nIdleManpower = tbUser.nIdleManpower + manpower
-            szReturnMsg = string.format("产品%s研发人员-%d", tbParam.GridName, manpower)
-        end
-    end
-
-    tbUser.bStepDone = true
-    return szReturnMsg, true
-end
-
 -- 订单收款 {FuncName = "DoOperate", OperateType = "GainMoney", ProductName="b2"}
 function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
@@ -483,6 +467,7 @@ function NextStepIfAllGamersDone(forceAllDone)
             DoPostYear()
             tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
             tbRuntimeData.nCurSeason = 0
+            DoPreYear()
         end
     end
     -- 重置步骤完成标记
@@ -520,7 +505,6 @@ function DoPostYear()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         --todo 完成年报：看看年报还有什么要填的
         tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
-        tbUser.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)    --清空年报，为来年做准备
     end
     --以下内容拷贝自原本的 tbFunc.finalAction.NewYear
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
@@ -531,7 +515,14 @@ function DoPostYear()
 --        tbUser.nTax = 0
 --        tbUser.nSeverancePackage = 0
     end
+end
 
+-- 每年开始时的自动处理
+function DoPreYear()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        tbUser.tbYearReport = Lib.copyTab(tbInitTables.tbInitReport)    --清空年报
+        tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
+    end
 end
 
 --年尾扣税

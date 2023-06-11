@@ -79,7 +79,7 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.nCurSeason = 0
 
     for userName, tbLoginAccountInfo in pairs(runtime.tbLoginAccount) do
-            runtime.tbUser[userName] = Lib.copyTab(tbConfig.tbInitUserData)
+            runtime.tbUser[userName] = Lib.copyTab(tbInitTables.tbInitUserData)
             runtime.tbUser[userName].szAccount = userName
             runtime.tbUser[userName].tbHistoryYearReport = {}
             if runtime.nCurYear == 1 then

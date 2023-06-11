@@ -22,7 +22,6 @@ tbConfig = {
     tbPoachExpenseRatio = { 2, 4, 8, 12, 16},   -- 挖掘人才可选薪水倍数
     fPoachFailedReturnExpenseRatio = 0.8,       -- 挖掘人才失败时候返还费用比例
 
-
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
         a2 = { minManpower = 40, maxManpower = 120, maxProgress = 4, addMarketCost = 8,},
@@ -38,99 +37,10 @@ tbConfig = {
     --tbYearStep = {},
 
     tbResearchSort = {"d", "e"},
-    tbInitUserData = {
-        -- 当前步骤已经操作完，防止重复操作
-        bStepDone = false,
-
-        --==== 人力相关数据项 ====
-        nSalaryLevel = 1,       -- 薪水等级
-        nTotalManpower = 40,    -- 总人力
-        nSeverancePackage = 0,                  -- 招聘、解雇费用
-        tbLaborCost = {0, 0, 0, 0},             -- 薪水
-        --tbHire = { nNum = , nExpense = },     --运行时产生的数据项: 向市场发出的招聘计划
-        tbIdleManpower = { 10, 5, 4, 1, 0 },    -- 待岗员工。【以下几个表，元素个数需要等于 tbConfig.nManpowerMaxExpLevel】
-        tbFireManpower = { 0, 0, 0, 0, 0},      -- 待解雇员工
-        tbJobManpower = { 10, 5, 4, 1, 0 },     -- 在岗员工
-        -- tbTrainManpower = { 0, 0, 0, 0, 0},     -- 培训员工，运行时动态产生消亡的数据
-        -- tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工，运行时动态产生消亡的数据
-
-        -- 提示
-        szTitle = "",
-        -- 系统消息
-        tbMsg = {},
-         -- 市场营销投入
-        tbMarketingExpense = {},
-        -- 产品
-        tbProduct = {
-            a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false, nQuality = 1 },
-        },
-         -- 订单
-        tbOrder = {
-            --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
-        },
-
-        -- 待收款
-        tbReceivables = {0, 0, 0, 0},
-        -- 现金
-        nCash = 1000,
-        -- 追加市场费
-        nAppendMarketCost = 0,
-        -- 税收
-        nTax = 0,
-        -- 市场营销费
-        nMarketingExpense = 0,
-
-        -- 权益占比
-        fEquityRatio = 1.0,
-
-        tbYearReport = { },
-
-        bMarketingDone = false,
-
-        -- 市场份额
-        tbMarket = {
-            a1 = 0,
-            a2 = 0,
-            b1 = 0,
-            b2 = 0,
-            d1 = 0,
-            d2 = 0,
-            e1 = 0,
-            e2 = 0,
-        },
-
-        -- 市场投标计划
-        tbMarketingExpense = {
-        },
-    },
     tbInitUserDataYearPath = {
         [1] = {  -- 第一年开始的初始数据补丁
         },
         [2] = {},
-    },
-    tbInitReport = {
-        -- 收入
-        nTurnover = 0,
-        -- 人力费用
-        nLaborCosts = 0,
-        -- 销售费用
-        nMarketingExpense = 0,
-        -- 行政+本地化费用
-        nSGA = 0,
-        -- 营业利润
-        nGrossProfit = 0,
-        -- 财务费用
-        nFinancialExpenses = 0,
-        -- 利润
-        nProfitBeforeTax = 0,
-        -- 需要缴纳税款
-        nTax = 0,
-        -- 净利润
-        nNetProfit = 0,
-        -- 权益
-        nEquity = 0,
-        -- 现金
-        nCash = 0,
     },
     tbOrder = { -- 订单
     },
@@ -210,4 +120,106 @@ tbConfig = {
     },
 }
 
-tbConfig.tbInitUserData.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
+--一些初始表/空表设置，用于服务端运行时从此复制，以形成各项初始表，因不参与日常计算，所以不放人tbConfig不需同步到客户端
+tbInitTables = {
+
+    --玩家运行数据初始表
+    tbInitUserData = {
+        -- 当前步骤已经操作完，防止重复操作
+        bStepDone = false,
+
+        --==== 人力相关数据项 ====
+        nSalaryLevel = 1,       -- 薪水等级
+        nTotalManpower = 40,    -- 总人力
+        nSeverancePackage = 0,                  -- 招聘、解雇费用
+        tbLaborCost = {0, 0, 0, 0},             -- 薪水
+        --tbHire = { nNum = , nExpense = },     --运行时产生的数据项: 向市场发出的招聘计划
+        tbIdleManpower = { 10, 5, 4, 1, 0 },    -- 待岗员工。【以下几个表，元素个数需要等于 tbConfig.nManpowerMaxExpLevel】
+        tbFireManpower = { 0, 0, 0, 0, 0},      -- 待解雇员工
+        tbJobManpower = { 10, 5, 4, 1, 0 },     -- 在岗员工
+        -- tbTrainManpower = { 0, 0, 0, 0, 0},     -- 培训员工，运行时动态产生消亡的数据
+        -- tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工，运行时动态产生消亡的数据
+
+        --==== 所有产品列表 ====
+        tbProduct = { },
+        --    a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false, nQuality = 1 },
+
+        -- 提示
+        szTitle = "",
+        -- 系统消息
+        tbMsg = {},
+         -- 市场营销投入
+        tbMarketingExpense = {},
+         -- 订单
+        tbOrder = {
+            --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
+        },
+
+        -- 待收款
+        tbReceivables = {0, 0, 0, 0},
+        -- 现金
+        nCash = 1000,
+        -- 追加市场费
+        nAppendMarketCost = 0,
+        -- 税收
+        nTax = 0,
+        -- 市场营销费
+        nMarketingExpense = 0,
+
+        -- 权益占比
+        fEquityRatio = 1.0,
+
+        tbYearReport = { },
+
+        bMarketingDone = false,
+
+        -- 市场份额
+        tbMarket = {
+            a1 = 0,
+            a2 = 0,
+            b1 = 0,
+            b2 = 0,
+            d1 = 0,
+            d2 = 0,
+            e1 = 0,
+            e2 = 0,
+        },
+
+        -- 市场投标计划
+        tbMarketingExpense = {
+        },
+    },
+
+    --年报初始表
+    tbInitReport = {
+        -- 收入
+        nTurnover = 0,
+        -- 人力费用
+        nLaborCosts = 0,
+        -- 销售费用
+        nMarketingExpense = 0,
+        -- 行政+本地化费用
+        nSGA = 0,
+        -- 营业利润
+        nGrossProfit = 0,
+        -- 财务费用
+        nFinancialExpenses = 0,
+        -- 利润
+        nProfitBeforeTax = 0,
+        -- 需要缴纳税款
+        nTax = 0,
+        -- 净利润
+        nNetProfit = 0,
+        -- 权益
+        nEquity = 0,
+        -- 现金
+        nCash = 0,
+    },
+
+    --产品初始表
+    tbProduct = {
+
+    },
+}
+
+tbInitTables.tbInitUserData.tbYearReport = Lib.copyTab(tbInitTables.tbInitReport)
