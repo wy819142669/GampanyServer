@@ -1,7 +1,7 @@
 local tbConfig = tbConfig
 HumanResources = {}
 
--- 调薪 {FuncName = "DoOperate", OperateType = "RaiseSalary"}
+-- 调薪 {FuncName = "HR", Operate = "RaiseSalary"}
 function HumanResources.RaiseSalary(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
@@ -13,7 +13,7 @@ function HumanResources.RaiseSalary(tbParam)
     return szReturnMsg, true
 end
 
--- 招聘 {FuncName = "DoOperate", OperateType = "CommitHire", nNum = 20, nExpense = 60}
+-- 招聘 {FuncName = "HR", Operate = "CommitHire", nNum = 20, nExpense = 60}
 -- 同一个季度，新的招聘计划会替换旧提交的计划
 function HumanResources.CommitHire(tbParam)
     local tbRuntimeData = GetTableRuntime()
@@ -48,7 +48,7 @@ function HumanResources.CommitHire(tbParam)
     return szReturnMsg, true
 end
 
--- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", tbFire= {0, 0, 0, 0, 0}}
+-- 解雇 {FuncName = "HR", Operate = "CommitFire", tbFire= {0, 0, 0, 0, 0}}
 -- 传入的nNum表示把欲解雇的人数更新为nNum，而不是再增加解雇nNum人
 function HumanResources.CommitFire(tbParam)
     local tbRuntimeData = GetTableRuntime()
@@ -79,7 +79,7 @@ function HumanResources.CommitFire(tbParam)
     return msg, true
 end
 
--- 培训 {FuncName = "DoOperate", OperateType = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
+-- 培训 {FuncName = "HR", Operate = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
 function HumanResources.CommitTrain(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
@@ -130,7 +130,7 @@ function HumanResources.CommitTrain(tbParam)
     return result, true
 end
 
--- 挖掘人才 {FuncName = "DoOperate", OperateType = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
+-- 挖掘人才 {FuncName = "HR", Operate = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
 function HumanResources.Poach(tbParam)
     local tbRuntimeData = GetTableRuntime()
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
@@ -198,6 +198,11 @@ function HumanResources.Poach(tbParam)
         bSuccess = bSuccess
     }
     return szResult, true
+end
+
+-- 调配调动人员 {FuncName = "HR", Operate = "Reassign", Product = szName, Staffs={0,0,0,0,0}}
+function HumanResources.Reassign()
+    return "success", true
 end
 
 function HumanResources.SettleDepart()
@@ -407,6 +412,7 @@ function HumanResources.SettleTrain()
                     --若有多余，那是本季度离职的人
                 end
             end
+            HumanResources.UpdateJobManpower(tbUser)
         end
         tbUser.tbTrainManpower = nil
     end

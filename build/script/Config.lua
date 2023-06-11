@@ -8,6 +8,8 @@ tbConfig = {
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
     szAdminPassword = "",   --管理者登录密码
 
+    fTaxRate = 0.1,         --税率【每年税额=税前利润*税率，当年亏损（税前利润为负）则不扣税】
+
     --==== 人力相关系统设置，只读不写 ====
     nSalary = 1,                    -- 薪水
     fSalaryRatioPerLevel = 0.2,     -- 每薪水等级薪水涨幅
@@ -20,7 +22,6 @@ tbConfig = {
     tbPoachExpenseRatio = { 2, 4, 8, 12, 16},   -- 挖掘人才可选薪水倍数
     fPoachFailedReturnExpenseRatio = 0.8,       -- 挖掘人才失败时候返还费用比例
 
-    fTaxRate = 0.1,
 
     tbProduct = {
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
@@ -81,37 +82,8 @@ tbConfig = {
 
         -- 权益占比
         fEquityRatio = 1.0,
-        -- 上一年财报
-        tbLastYearReport = {
-            -- 收入
-            nTurnover = 40,
-            -- 人力费用
-            nLaborCosts = 0,
-            -- 销售费用
-            nMarketingExpense = 0,
-            -- 行政+本地化费用
-            nSGA = 0,
-            -- 营业利润
-            nGrossProfit = 0,
-            -- 财务费用
-            nFinancialExpenses = 0,
-            -- 利润
-            nProfitBeforeTax = 0,
-            -- 需要缴纳税款
-            nTax = 0,
-            -- 净利润
-            nNetProfit = 0,
-            -- 权益
-            nEquity = 60,
-            -- 现金
-            nCash = 60,
-            -- 融资
-            nFinance = 0,
-            --创始人权益
-            nFounderEquity = 60,
-        },
-        tbYearReport = {
-        },
+
+        tbYearReport = { },
 
         bMarketingDone = false,
 
@@ -238,5 +210,4 @@ tbConfig = {
     },
 }
 
-tbConfig.tbInitUserData.tbLastYearReport = Lib.copyTab(tbConfig.tbInitReport)
 tbConfig.tbInitUserData.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)

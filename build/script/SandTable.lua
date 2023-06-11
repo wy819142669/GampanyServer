@@ -70,14 +70,6 @@ local tbRuntimeData = {
             nSeverancePackage = 0,
             -- 薪水
             tbLaborCost = {0, 0, 0, 0},
-            -- 上一年财报
-            tbLastYearReport = {
-
-                -- 利润
-                nProfitBeforeTax = 0,
-                -- 需要缴纳税款
-                nTax = 0,
-            }
         }--]]
     },
 
@@ -166,6 +158,14 @@ end
 
 function tbFunc.Action.DoOperate(tbParam)
     return tbFunc.Action.funcDoOperate[tbParam.OperateType](tbParam)
+end
+
+function tbFunc.Action.HR(tbParam)
+    local func = HumanResources[tbParam.Operate]
+    if func then
+        return func(tbParam)
+    end
+    return "invalid HR operate", false
 end
 
 --todo: to delete
@@ -267,27 +267,6 @@ function tbFunc.finalAction.SettleOrder()
     end
 end
 
-function tbFunc.finalAction.NewYear()
-    print("new year")
-    tbRuntimeData.nCurYear = tbRuntimeData.nCurYear + 1
-
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.tbOrder = {}
-        tbUser.tbLaborCost = {0, 0, 0, 0}
-        tbUser.nMarketingExpense = 0
-        tbUser.nAppendMarketCost = 0
-        tbUser.nTax = 0
-        tbUser.nSeverancePackage = 0
-
-        -- 历年财报
-        -- 去年财报
-        tbUser.tbLastYearReport = tbUser.tbYearReport
-        -- 今年财报
-        tbUser.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)
-         -- 把今年财报也引用进来，万一能看实时呢^_^
-        tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
-    end
-end
 
 --todo: to delete
 tbFunc.enterAction = {}
@@ -316,9 +295,9 @@ function tbFunc.enterAction.FinancialReport(tbUser)
     tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax
                                         - tbUser.tbYearReport.nTax
 
-    tbUser.tbYearReport.nEquity = tbUser.tbLastYearReport.nEquity
-                                + tbUser.tbYearReport.nNetProfit
-                                + tbUser.tbYearReport.nFinance
+    --tbUser.tbYearReport.nEquity = tbUser.tbLastYearReport.nEquity
+    --                            + tbUser.tbYearReport.nNetProfit
+    --                            + tbUser.tbYearReport.nFinance
 
     tbUser.tbYearReport.nFounderEquity = math.floor(tbUser.tbYearReport.nEquity * tbUser.fEquityRatio + 0.5)
 
@@ -326,29 +305,7 @@ function tbFunc.enterAction.FinancialReport(tbUser)
 end
 
 tbFunc.Action.funcDoOperate = {}
-tbFunc.Action.funcDoOperate.RaiseSalary = HumanResources.RaiseSalary  -- RaiseSalary 调薪 {FuncName = "DoOperate", OperateType = "RaiseSalary"}
-tbFunc.Action.funcDoOperate.CommitHire = HumanResources.CommitHire  -- 招聘 {FuncName = "DoOperate", OperateType = "CommitHire", nNum = 20, nExpense = 60}
-tbFunc.Action.funcDoOperate.CommitFire = HumanResources.CommitFire  -- 解雇 {FuncName = "DoOperate", OperateType = "CommitFire", tbFire= {0, 0, 0, 0, 0}}
-tbFunc.Action.funcDoOperate.CommitTrain = HumanResources.CommitTrain  -- 培训 {FuncName = "DoOperate", OperateType = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
-tbFunc.Action.funcDoOperate.Poach = HumanResources.Poach            -- 挖掘人才 {FuncName = "DoOperate", OperateType = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
 tbFunc.Action.funcDoOperate.CommitMarket = Market.CommitMarket      -- 提交市场竞标 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a = 1, b = 2, c = 1}}
-
-
--- 交税{FuncName = "DoOperate", OperateType = "Tax"}
-function tbFunc.Action.funcDoOperate.Tax(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bStepDone then
-        return "already done", false
-    end
-
-    if tbUser.tbLastYearReport and tbUser.tbLastYearReport.nTax > 0 then
-        tbUser.nCash = tbUser.nCash - tbUser.tbLastYearReport.nTax -- 暂时允许玩家金钱为负
-        tbUser.nTax = tbUser.tbLastYearReport.nTax
-    end
-    tbUser.bStepDone = true
-    local szReturnMsg = string.format("成功交税，花费：%d", tbUser.tbLastYearReport and tbUser.tbLastYearReport.nTax or 0)
-    return szReturnMsg, true
-end
 
 -- 产品上线 {FuncName = "DoOperate", OperateType = "PublishProduct", PublishProduct = "b2"}}
 function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
@@ -498,15 +455,6 @@ function tbFunc.Action.funcDoOperate.UpdateProductProgress(tbParam)
     return szReturnMsg, true
 end
 
--- 融资 { FuncName = "DoOperate", OperateType = "Finance"}
-function tbFunc.Action.funcDoOperate.Finance(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local nFinance = tbUser.tbLastYearReport.nTurnover
-
-    tbUser.tbYearReport.nFinance = tbUser.tbYearReport.nFinance + nFinance
-    tbUser.nCash = tbUser.nCash + nFinance
-    tbUser.fEquityRatio = tbUser.fEquityRatio / 2
-end
 --------------------------------------------------------------------
 function NextStepIfAllGamersDone(forceAllDone)
     local bAllDone = true
@@ -568,6 +516,34 @@ end
 
 -- 每年结束后的自动处理
 function DoPostYear()
+    DoPayTax()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        --todo 完成年报：看看年报还有什么要填的
+        tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
+        tbUser.tbYearReport = Lib.copyTab(tbConfig.tbInitReport)    --清空年报，为来年做准备
+    end
+    --以下内容拷贝自原本的 tbFunc.finalAction.NewYear
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+--        tbUser.tbOrder = {}
+--        tbUser.tbLaborCost = {0, 0, 0, 0}
+--        tbUser.nMarketingExpense = 0
+--        tbUser.nAppendMarketCost = 0
+--        tbUser.nTax = 0
+--        tbUser.nSeverancePackage = 0
+    end
+
+end
+
+--年尾扣税
+function DoPayTax()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        tbUser.tbYearReport.nTax = math.floor(tbUser.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
+        if tbUser.tbYearReport.nTax < 0 then
+            tbUser.tbYearReport.nTax = 0
+        end
+        tbUser.nCash = tbUser.nCash - tbUser.tbYearReport.nTax
+        tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax - tbUser.tbYearReport.nTax
+    end
 end
 
 print("load SandTable.lua success")
