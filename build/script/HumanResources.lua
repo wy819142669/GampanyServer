@@ -28,7 +28,6 @@ function HR.CommitHire(tbParam, user)
 
     if user.tbHire then
         user.nCash = user.nCash + user.tbHire.nExpense
-        user.nSeverancePackage = user.nSeverancePackage - user.tbHire.nExpense
         user.tbHire = nil
     end
     if tbParam.nExpense > user.nCash then
@@ -38,7 +37,6 @@ function HR.CommitHire(tbParam, user)
     local szReturnMsg
     if tbParam.nExpense > 0 and tbParam.nNum > 0 then
         user.nCash = user.nCash - tbParam.nExpense
-        user.nSeverancePackage = user.nSeverancePackage + tbParam.nExpense
         user.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
         szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
     else
@@ -455,9 +453,7 @@ function HumanResources.PayOffSalary()
     for _, user in pairs(tbRuntimeData.tbUser) do
         local nCost = user.nTotalManpower * tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
         nCost = math.floor(nCost + 0.5)
-
         user.nCash = user.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
-        user.tbLaborCost[tbRuntimeData.nCurSeason] = nCost
         table.insert(user.tbMsg, string.format("支付薪水：%d", nCost))
     end
 end

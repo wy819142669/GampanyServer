@@ -142,20 +142,21 @@ tbInitTables = {
         --==== 人力相关数据项 ====
         nSalaryLevel = 1,       -- 薪水等级
         nTotalManpower = 40,    -- 总人力
-        nSeverancePackage = 0,                  -- 招聘、解雇费用
-        tbLaborCost = {0, 0, 0, 0},             -- 薪水
-        --tbHire = { nNum = , nExpense = },     --运行时产生的数据项: 向市场发出的招聘计划
         tbIdleManpower = { 10, 5, 4, 1, 0 },    -- 待岗员工。【以下几个表，元素个数需要等于 tbConfig.nManpowerMaxExpLevel】
         tbFireManpower = { 0, 0, 0, 0, 0},      -- 待解雇员工
         tbJobManpower = { 10, 5, 4, 1, 0 },     -- 在岗员工
-        -- tbTrainManpower = { 0, 0, 0, 0, 0},     -- 培训员工，运行时动态产生消亡的数据
-        -- tbDepartManpower = {0, 0, 0, 0, 0},     -- 即将离职员工，运行时动态产生消亡的数据
+        -- tbHire = { nNum = , nExpense = },    -- 向市场发出的招聘计划【运行时动态产生消亡的数据】
+        -- tbTrainManpower = { 0, 0, 0, 0, 0},  -- 培训员工【运行时动态产生消亡的数据】
+        -- tbDepartManpower = {0, 0, 0, 0, 0},  -- 即将离职员工【运行时动态产生消亡的数据】
 
         --==== 所有产品列表 ====
-        tbProduct = { },        --所有未关闭的产品
-        tbClosedProduct = { },  --所有已关闭的产品
+        tbProduct = { },        -- 所有未关闭的产品
+        tbClosedProduct = { },  -- 所有已关闭的产品
 
-        --    a1 = { manpower = 20, tbManpower = { 10, 5, 4, 1, 0 }, progress = 3, published = true, done = false, nQuality = 1 },
+        --==== 财务数 ====
+        nCash = 1000,               -- 现金
+        tbYearReport = { },         -- 当年报告
+        tbHistoryYearReport = {},   -- 历史年报
 
         -- 提示
         szTitle = "",
@@ -170,19 +171,14 @@ tbInitTables = {
 
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
-        -- 现金
-        nCash = 1000,
         -- 追加市场费
         nAppendMarketCost = 0,
-        -- 税收
-        nTax = 0,
         -- 市场营销费
         nMarketingExpense = 0,
 
         -- 权益占比
         fEquityRatio = 1.0,
 
-        tbYearReport = { },
 
         bMarketingDone = false,
 
@@ -206,18 +202,11 @@ tbInitTables = {
         nSGA = 0,
         -- 营业利润
         nGrossProfit = 0,
-        -- 财务费用
-        nFinancialExpenses = 0,
-        -- 利润
-        nProfitBeforeTax = 0,
-        -- 需要缴纳税款
-        nTax = 0,
-        -- 净利润
-        nNetProfit = 0,
-        -- 权益
-        nEquity = 0,
-        -- 现金
-        nCash = 0,
+        
+        nProfitBeforeTax = 0,   -- 税前利润
+        nTax = 0,               -- 税款
+        nNetProfit = 0,         -- 净利润
+        nBalance = 0,           -- 结余现金
     },
 
     --新立项产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值

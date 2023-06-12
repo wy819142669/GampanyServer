@@ -27,8 +27,6 @@ local tbRuntimeData = {
     tbLoginAccount = {},    -- 已登录账号列表
     tbUser = {              -- 玩家运行时数据
         --[[default = {
-            -- 当前步骤已经操作完，防止重复操作
-            bStepDone = false,
             -- 提示
             szTitle = "",
             -- 市场营销投入
@@ -41,24 +39,12 @@ local tbRuntimeData = {
             tbOrder = {
                 a1 = {{ cfg = {}, market = 1, done = false}, {cfg = {}, market = 2, done = true}}
             },
-            -- 待岗
-            nIdleManpower = 0,
             -- 代收款
             tbReceivables = {0, 0, 0, 0},
-            -- 现金
-            nCash = 0,
             -- 追加市场费
             nAppendMarketCost = 0,
-            -- 税收
-            nTax = 0,
             -- 市场营销费
             nMarketingExpense = 0,
-            -- 总人力
-            nTotalManpower = 0,
-            -- 招聘、解雇费用
-            nSeverancePackage = 0,
-            -- 薪水
-            tbLaborCost = {0, 0, 0, 0},
         }--]]
     },
 
@@ -279,47 +265,8 @@ function tbFunc.finalAction.SettleOrder()
     end
 end
 
-
---todo: to delete
-tbFunc.enterAction = {}
-function tbFunc.enterAction.FinancialReport(tbUser)
-    tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + tbUser.nSeverancePackage
-    for _, v in ipairs(tbUser.tbLaborCost) do
-        tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + v
-    end
-
-    tbUser.tbYearReport.nMarketingExpense = tbUser.nMarketingExpense
-    tbUser.tbYearReport.nSGA = tbUser.tbYearReport.nSGA + tbUser.nAppendMarketCost
-    tbUser.tbYearReport.nGrossProfit = tbUser.tbYearReport.nTurnover
-                                        - tbUser.tbYearReport.nLaborCosts
-                                        - tbUser.tbYearReport.nMarketingExpense
-                                        - tbUser.tbYearReport.nSGA
-
-    tbUser.tbYearReport.nFinancialExpenses = 0
-    tbUser.tbYearReport.nProfitBeforeTax = tbUser.tbYearReport.nGrossProfit
-                                        - tbUser.tbYearReport.nFinancialExpenses
-
-    tbUser.tbYearReport.nTax = math.floor(tbUser.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
-    if tbUser.tbYearReport.nTax < 0 then
-        tbUser.tbYearReport.nTax = 0
-    end
-
-    tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax
-                                        - tbUser.tbYearReport.nTax
-
-    --tbUser.tbYearReport.nEquity = tbUser.tbLastYearReport.nEquity
-    --                            + tbUser.tbYearReport.nNetProfit
-    --                            + tbUser.tbYearReport.nFinance
-
-    tbUser.tbYearReport.nFounderEquity = math.floor(tbUser.tbYearReport.nEquity * tbUser.fEquityRatio + 0.5)
-
-    tbUser.tbYearReport.nCash = tbUser.nCash
-end
-
 tbFunc.Action.funcDoOperate = {}
 tbFunc.Action.funcDoOperate.CommitMarket = Market.CommitMarket      -- 提交市场竞标 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a = 1, b = 2, c = 1}}
-
-
 
 -- 订单收款 {FuncName = "DoOperate", OperateType = "GainMoney", ProductName="b2"}
 function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
@@ -439,19 +386,15 @@ end
 
 -- 每年结束后的自动处理
 function DoPostYear()
-    DoPayTax()
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        --todo 完成年报：看看年报还有什么要填的
-        tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
+    for _, user in pairs(tbRuntimeData.tbUser) do
+        DoPayTax(user)
+        DoYearReport(user)
     end
     --以下内容拷贝自原本的 tbFunc.finalAction.NewYear
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
 --        tbUser.tbOrder = {}
---        tbUser.tbLaborCost = {0, 0, 0, 0}
 --        tbUser.nMarketingExpense = 0
 --        tbUser.nAppendMarketCost = 0
---        tbUser.nTax = 0
---        tbUser.nSeverancePackage = 0
     end
 end
 
@@ -464,13 +407,30 @@ function DoPreYear()
 end
 
 --年尾扣税
-function DoPayTax()
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.tbYearReport.nTax = math.floor(tbUser.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
-        tbUser.tbYearReport.nTax = tbUser.tbYearReport.nTax < 0 and 0 or tbUser.tbYearReport.nTax
-        tbUser.nCash = tbUser.nCash - tbUser.tbYearReport.nTax
-        tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax - tbUser.tbYearReport.nTax
-    end
+function DoPayTax(user)
+    user.tbYearReport.nTax = math.floor(user.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
+    user.tbYearReport.nTax = user.tbYearReport.nTax < 0 and 0 or user.tbYearReport.nTax
+    user.nCash = user.nCash - user.tbYearReport.nTax
+    user.tbYearReport.nNetProfit = user.tbYearReport.nProfitBeforeTax - user.tbYearReport.nTax
+end
+
+--处理年报
+function DoYearReport(user)
+    user.tbYearReport.nBalance = user.nCash
+    -- todo to be finished
+    -- tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + tbUser.nSeverancePackage
+--    for _, v in ipairs(tbUser.tbLaborCost) do
+--        tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + v
+--    end
+
+    --tbUser.tbYearReport.nMarketingExpense = tbUser.nMarketingExpense
+    --tbUser.tbYearReport.nSGA = tbUser.tbYearReport.nSGA + tbUser.nAppendMarketCost
+    --tbUser.tbYearReport.nGrossProfit = tbUser.tbYearReport.nTurnover
+    --                                    - tbUser.tbYearReport.nLaborCosts
+    --                                    - tbUser.tbYearReport.nMarketingExpense
+    --                                    - tbUser.tbYearReport.nSGA
+
+    --tbUser.tbYearReport.nProfitBeforeTax = tbUser.tbYearReport.nGrossProfit
 end
 
 print("load SandTable.lua success")
