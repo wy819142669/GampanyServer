@@ -35,9 +35,9 @@ tbConfig = {
         nClosed = 5,         -- 关闭
     },
     -- 产品品类
-    tbProductCategory = { "A", "B", "C", "D" },
+    tbProductCategoryNames = { "A", "B", "C", "D" },
 
-    tbProduct = {
+    tbProduct = {           --todo 待被整理
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
         a2 = { minManpower = 40, maxManpower = 120, maxProgress = 4, addMarketCost = 8,},
         b1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3,},
@@ -49,13 +49,6 @@ tbConfig = {
     },
     --tbProductSort = {"a1", "a2", "b1", "b2", "d1", "d2", "e1", "e2"},
     --tbYearStep = {},
-
-    tbResearchSort = {"d", "e"},
-    tbInitUserDataYearPath = {
-        [1] = {  -- 第一年开始的初始数据补丁
-        },
-        [2] = {},
-    },
     tbOrder = { -- 订单
     },
 
@@ -112,7 +105,7 @@ tbConfig = {
         e2 = 10,
     },
 
-    --====== 产品品类设置, 此表中key的值必须等于tbConfig.tbProductCategory中罗列的值====
+    --====== 产品品类设置, 此表中key的值必须等于tbConfig.tbProductCategoryNames中罗列的值====
     tbProductCategory = {
         A = {
             nMinTeam = 8,       --团队最小人数需求
@@ -236,39 +229,16 @@ tbInitTables = {
 
     --新立项产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
     tbInitNewProduct = {
-        A = {
-                Category = "A",                             --产品品类
-                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
-                tbManpower = {0,0,0,0,0},                   --团队人员
-                nFinishedWorkLoad = 0,                      --已完成工作量
-                fFinishedQuality = 0,                       --已完成工作量的累积品质
-            },
-        B = {
-                Category = "B",                             --产品品类
-                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
-                tbManpower = {0,0,0,0,0},                   --团队人员
-                nFinishedWorkLoad = 0,                      --已完成工作量
-                fFinishedQuality = 0,                       --已完成工作量的累积品质
-            },
-        C = {
-                Category = "C",                             --产品品类
-                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
-                tbManpower = {0,0,0,0,0},                   --团队人员
-                nFinishedWorkLoad = 0,                      --已完成工作量
-                fFinishedQuality = 0,                       --已完成工作量的累积品质
-            },
-        D = {
-                Category = "D",                             --产品品类
-                Sate = tbConfig.tbProductState.nBuilding,   --产品状态
-                tbManpower = {0,0,0,0,0},                   --团队人员
-                nFinishedWorkLoad = 0,                      --已完成工作量
-                fFinishedQuality = 0,                       --已完成工作量的累积品质
-            },
+        --Category = "A",                           --产品品类，数据在立项时动态设置
+        Sate = tbConfig.tbProductState.nBuilding,   --产品状态
+        tbManpower = {0,0,0,0,0},                   --团队人员
+        nFinishedWorkLoad = 0,                      --已完成工作量
+        fFinishedQuality = 0,                       --已完成工作量的累积品质
     },
 
     --新发布产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
     tbInitPublishedProduct = {
-
+        nMarketExpance = 1,         --市场推广费用，至少为1
     },
 }
 

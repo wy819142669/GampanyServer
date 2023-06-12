@@ -3,6 +3,7 @@ require("Lib")
 require("Config")
 
 tbAdminFunc = {}
+Administration = {}
 
 function Admin(jsonParam)
     local tbParam = JsonDecode(jsonParam)
@@ -81,19 +82,7 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.nCurSeason = 0
 
     for userName, tbLoginAccountInfo in pairs(runtime.tbLoginAccount) do
-            runtime.tbUser[userName] = Lib.copyTab(tbInitTables.tbInitUserData)
-            runtime.tbUser[userName].szAccount = userName
-            runtime.tbUser[userName].tbHistoryYearReport = {}
-            if runtime.nCurYear == 1 then
-                runtime.tbUser[userName].tbHistoryYearReport[1] = runtime.tbUser[userName].tbYearReport
-            else
-                runtime.tbUser[userName].tbHistoryYearReport[1] = Lib.copyTab(runtime.tbUser[userName].tbYearReport)
-                runtime.tbUser[userName].tbHistoryYearReport[2] = runtime.tbUser[userName].tbYearReport
-            end
-
-            for k, v in pairs(tbConfig.tbInitUserDataYearPath[runtime.nCurYear]) do
-                runtime.tbUser[userName][k] = Lib.copyTab(v)
-            end
+        Administration:NewUser(userName)
     end
 
     InitManpowerData()
@@ -101,6 +90,22 @@ function tbAdminFunc.DoStart(tbParam)
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     runtime.tbMarket = Lib.copyTab(tbConfig.tbMarket)
     return "success", true
+end
+
+function Administration:NewUser(name)
+    local runtime = GetTableRuntime()
+    local user = Lib.copyTab(tbInitTables.tbInitUserData)
+    user.szAccount = name
+    user.tbHistoryYearReport = {}
+    if runtime.nCurYear == 1 then
+        user.tbHistoryYearReport[1] = user.tbYearReport
+    else
+        for i = runtime.nCurYear - 1, 1, -1 do
+            user.tbHistoryYearReport[i] = Lib.copyTab(user.tbYearReport)
+        end
+        user.tbHistoryYearReport[runtime.nCurYear] = user.tbYearReport
+    end
+    runtime.tbUser[name] = user
 end
 
 function tbAdminFunc.NextStep(tbParam)

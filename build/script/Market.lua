@@ -1,37 +1,51 @@
 local tbConfig = tbConfig
 
-MarketOperate = {}  --用于包含响应客户端请求的函数
-Market = {}         --市场模块的内部函数
+Market = {}     --用于包含响应客户端请求的函数
+MarketMgr = {}  --市场模块的内部函数
 
--- 提交市场竞标 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a = 1, b = 2, c = 1}}
-function Market.CommitMarket(tbParam)
---[[
-    local tbRuntimeData = GetTableRuntime()
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bMarketingDone then
-        return "已经设置过市场竞标计划", false
+-- 产品上线发布 {FuncName="Market", Operate="Publish", Id=1 }
+function Market.Publish(tbParam, user)
+    local product = nil
+    if tbParam.Id then
+        product = user.tbProduct[tbParam.Id]
+    end
+    if not product then
+        return "product not exist", false
+    end
+    if product.State == tbConfig.tbProductState.nPublished or product.State == tbConfig.tbProductState.nRenovating then
+        return "already published", false
+    end
+    if product.State ~= tbConfig.tbProductState.nEnabled then
+        return "progress not enough", false
     end
 
-    local nTotalCost = 0
-    for productName, nMarketingExpense in pairs(tbParam.tbMarketingExpense) do
-        if not tbUser.tbProduct[productName] or tbUser.tbProduct[productName].progress ~= tbConfig.tbProduct[productName].maxProgress then
-            return "研发进度需要完成", false
-        end
-
-        nTotalCost = nTotalCost + nMarketingExpense;
+    --复制已发布产品的数据初始化项
+    for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
+        product[k] = v
     end
-
-    if nTotalCost ~= 0 and nTotalCost > tbUser.nCash then
-        return "资金不足", false
-    end
-    
-    tbUser.nCash = tbUser.nCash - nTotalCost
-    tbUser.tbMarketingExpense = tbParam.tbMarketingExpense
-
-    tbUser.bMarketingDone = true
-    local szReturnMsg = string.format("市场竞标:花费：%d", nTotalCost)
+    product.State = tbConfig.tbProductState.nPublished
+    local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
-]]
+end
+
+-- 提交市场竞标 {FuncName="Market", OperateType="CommitMarket", Id=1, Expense=1}
+-- 以后可能改成全部产品一起提交
+function Market.CommitMarket(tbParam, user)
+    local product = nil
+    if tbParam.Id then
+        product = user.tbProduct[tbParam.Id]
+    end
+    if not product then
+        return "product not exist", false
+    end
+    if product.State ~= tbConfig.tbProductState.nPublished then
+        return "product hasn't been published yet", false
+    end
+    if tbParam.Expense < 1 then
+        return "market expense not enough", false
+    end
+    product.nMarketExpance = tbParam.Expense
+    return "success", true
 end
 
 -- 份额流失
@@ -153,7 +167,7 @@ end
 -- 份额分配
 function Market.DistributionMarket()
     local tbRuntimeData = GetTableRuntime()
-
+--[[
     for productName, nMarket in pairs(tbRuntimeData.tbMarket) do
         if nMarket > 0 then
             local tbInfos = {}
@@ -196,12 +210,13 @@ function Market.DistributionMarket()
         tbUser.bMarketingDone = false
         tbUser.tbMarketingExpense = {}
     end
+--]]
 end
 
 -- 获得收益
 function Market.GainRevenue()
     local tbRuntimeData = GetTableRuntime()
-
+--[[
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for productName, nMarket in pairs(tbUser.tbMarket) do
             if nMarket > 0 and tbUser.tbProduct[productName] and tbUser.tbProduct[productName].progress >= tbConfig.tbProduct[productName].maxProgress then
@@ -214,6 +229,7 @@ function Market.GainRevenue()
             end
         end
     end
+--]]
 end
 
 function Market.SettleMarket()

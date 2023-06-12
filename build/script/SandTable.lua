@@ -37,17 +37,6 @@ local tbRuntimeData = {
                 a2 = { 5, 3, 3},
                 b1 = { 20, 40, 3},
             }
-            -- 产品
-            tbProduct = {
-                a1 = { manpower = 20, progress = 4, market = { 1, 2, 3 }, published = true, done = false },
-                a2 = {},
-                b1 = {},
-                b2 = {},
-                d1 = {},
-                d2 = {},
-                e1 = {},
-                e2 = {},
-            },
             -- 订单
             tbOrder = {
                 a1 = {{ cfg = {}, market = 1, done = false}, {cfg = {}, market = 2, done = true}}
@@ -137,6 +126,10 @@ function tbFunc.Action.Login(tbParam)
 
         tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time()}
         tbRuntimeData.nGamerCount = tbRuntimeData.nGamerCount + 1
+        
+        if tbRuntimeData.bPlaying then
+            Administration:NewUser(tbParam.Account)
+        end
     end
     return "success", true
 end
@@ -161,26 +154,28 @@ function tbFunc.Action.DoOperate(tbParam)
 end
 
 function tbFunc.Action.HR(tbParam)
+    local user = tbRuntimeData.tbUser[tbParam.Account]
     local func = HR[tbParam.Operate]
     if func then
-        return func(tbParam)
+        return func(tbParam, user)
     end
     return "invalid HR operate", false
 end
 
 function tbFunc.Action.Develop(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+    local user = tbRuntimeData.tbUser[tbParam.Account]
     local func = Develop[tbParam.Operate]
     if func then
-        return func(tbParam, tbUser)
+        return func(tbParam, user)
     end
     return "invalid Develop operate", false
 end
 
 function tbFunc.Action.Market(tbParam)
-    local func = MarketOperate[tbParam.Operate]
+    local user = tbRuntimeData.tbUser[tbParam.Account]
+    local func = Market[tbParam.Operate]
     if func then
-        return func(tbParam)
+        return func(tbParam, user)
     end
     return "invalid Market operate", false
 end
@@ -324,38 +319,11 @@ end
 tbFunc.Action.funcDoOperate = {}
 tbFunc.Action.funcDoOperate.CommitMarket = Market.CommitMarket      -- 提交市场竞标 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a = 1, b = 2, c = 1}}
 
--- 产品上线 {FuncName = "DoOperate", OperateType = "PublishProduct", PublishProduct = "b2"}}
-function tbFunc.Action.funcDoOperate.PublishProduct(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local tbProduct = tbUser.tbProduct[tbParam.PublishProduct]
-    if not tbProduct then
-        return "product not exist", false
-    end
 
-    if tbProduct.published then
-        return "already published", false
-    end
-
-    local tbProductCfg = tbConfig.tbProduct[tbParam.PublishProduct]
-    if tbProduct.progress ~= tbProductCfg.maxProgress then
-        return "progress not enough", false
-    end
-
-    if tbProduct.manpower > tbProductCfg.minManpower then
-        local moveNum = tbProduct.manpower - tbProductCfg.minManpower
-
-        tbProduct.manpower = tbProduct.manpower - moveNum
-        tbUser.nIdleManpower = tbUser.nIdleManpower + moveNum
-    end
-
-    tbProduct.published = true
-    tbUser.bStepDone = true
-    local szReturnMsg = string.format("成功发布产品:%s", tbParam.PublishProduct)
-    return szReturnMsg, true
-end
 
 -- 订单收款 {FuncName = "DoOperate", OperateType = "GainMoney", ProductName="b2"}
 function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
+--[[todo 待重构
     local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbProduct = tbUser.tbProduct[tbParam.ProductName]
     if not tbProduct then
@@ -405,39 +373,7 @@ function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
     tbUser.bStepDone = true
     local szReturnMsg = string.format("产品%s本季度成功营收:%d", tbParam.ProductName, nTurnover)
     return szReturnMsg, true
-end
-
--- 推进进度 {FuncName = "DoOperate", OperateType = "UpdateProductProgress", ProductName="b2"}
-function tbFunc.Action.funcDoOperate.UpdateProductProgress(tbParam)
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    local tbProduct = tbUser.tbProduct[tbParam.ProductName]
-    if not tbProduct then
-        return "product not exist", false
-    end
-
-    if tbProduct.published then
-        return "published", false
-    end
-
-    if tbProduct.done then
-        return "already done", false
-    end
-
-    local tbProductCfg = tbConfig.tbProduct[tbParam.ProductName]
-    if tbProduct.manpower == tbProductCfg.minManpower then
-        tbProduct.progress = tbProduct.progress + 1
-    elseif tbProduct.manpower == tbProductCfg.maxManpower then
-        tbProduct.progress = tbProduct.progress + 2
-    end
-
-    if tbProduct.progress > tbProductCfg.maxProgress then
-        tbProduct.progress = tbProductCfg.maxProgress
-    end
-    tbProduct.done = true
-    tbUser.bStepDone = true
-
-    local szReturnMsg = string.format("产品%s进度推进:%d/%d", tbParam.ProductName, tbProduct.progress, tbProduct.maxProgress)
-    return szReturnMsg, true
+--]]
 end
 
 --------------------------------------------------------------------

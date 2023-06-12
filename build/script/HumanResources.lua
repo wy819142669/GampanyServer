@@ -4,23 +4,20 @@ HR = {}             --用于包含响应客户端请求的函数
 HumanResources = {} --人力模块的内部函数
 
 -- 调薪 {FuncName = "HR", Operate = "RaiseSalary"}
-function HR.RaiseSalary(tbParam)
+function HR.RaiseSalary(tbParam, user)
     local tbRuntimeData = GetTableRuntime()
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.bStepDone or tbRuntimeData.nCurSeason ~= 0 then
+    if user.bStepDone or tbRuntimeData.nCurSeason ~= 0 then
         return "仅在年初可以调薪", false
     end
-    tbUser.nSalaryLevel = tbUser.nSalaryLevel + 1
-    local szReturnMsg = "薪水标准提升至:" .. tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
+    user.nSalaryLevel = user.nSalaryLevel + 1
+    local szReturnMsg = "薪水标准提升至:" .. tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
     return szReturnMsg, true
 end
 
 -- 招聘 {FuncName = "HR", Operate = "CommitHire", nNum = 20, nExpense = 60}
 -- 同一个季度，新的招聘计划会替换旧提交的计划
-function HR.CommitHire(tbParam)
+function HR.CommitHire(tbParam, user)
     local tbRuntimeData = GetTableRuntime()
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    
     if tbRuntimeData.nCurSeason == 2 or tbRuntimeData.nCurSeason == 4 then
         return "只有1、3季度才可以招聘", false
     end
@@ -29,20 +26,20 @@ function HR.CommitHire(tbParam)
         return "预算费用太低，不能低于人均工资", false
     end
 
-    if tbUser.tbHire then
-        tbUser.nCash = tbUser.nCash + tbUser.tbHire.nExpense
-        tbUser.nSeverancePackage = tbUser.nSeverancePackage - tbUser.tbHire.nExpense
-        tbUser.tbHire = nil
+    if user.tbHire then
+        user.nCash = user.nCash + user.tbHire.nExpense
+        user.nSeverancePackage = user.nSeverancePackage - user.tbHire.nExpense
+        user.tbHire = nil
     end
-    if tbParam.nExpense > tbUser.nCash then
+    if tbParam.nExpense > user.nCash then
         return "没有足够的资金进行招聘", false
     end
 
     local szReturnMsg
     if tbParam.nExpense > 0 and tbParam.nNum > 0 then
-        tbUser.nCash = tbUser.nCash - tbParam.nExpense
-        tbUser.nSeverancePackage = tbUser.nSeverancePackage + tbParam.nExpense
-        tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
+        user.nCash = user.nCash - tbParam.nExpense
+        user.nSeverancePackage = user.nSeverancePackage + tbParam.nExpense
+        user.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
         szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
     else
         szReturnMsg = "success"
@@ -52,24 +49,23 @@ end
 
 -- 解雇 {FuncName = "HR", Operate = "CommitFire", tbFire= {0, 0, 0, 0, 0}}
 -- 传入的nNum表示把欲解雇的人数更新为nNum，而不是再增加解雇nNum人
-function HR.CommitFire(tbParam)
+function HR.CommitFire(tbParam, user)
     local tbRuntimeData = GetTableRuntime()
     if tbRuntimeData.nCurSeason == 0 then
         return "年初阶段不能解雇员工", false
     end
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
     local tbFire = tbParam.tbFire
     local finalCount = 0
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         if tbFire == nil or tbFire[i] < 0 then
             return "解雇人数参数错误", false
         end
-        local total = tbUser.tbIdleManpower[i] + tbUser.tbFireManpower[i]
+        local total = user.tbIdleManpower[i] + user.tbFireManpower[i]
         if total < tbFire[i] then
             return "人数不足够解雇", false
         end
-        tbUser.tbIdleManpower[i] = total - tbFire[i]
-        tbUser.tbFireManpower[i] = tbFire[i]
+        user.tbIdleManpower[i] = total - tbFire[i]
+        user.tbFireManpower[i] = tbFire[i]
         finalCount = finalCount + tbFire[i]
     end
     local msg
@@ -82,27 +78,25 @@ function HR.CommitFire(tbParam)
 end
 
 -- 培训 {FuncName = "HR", Operate = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
-function HR.CommitTrain(tbParam)
-    local tbRuntimeData = GetTableRuntime()
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+function HR.CommitTrain(tbParam, user)
     local result = "success"
 
     -- 如果有旧的提交记录，则undo
     local nTotalNum = 0
-    if tbUser.tbTrainManpower then
+    if user.tbTrainManpower then
         for i = 1, tbConfig.nManpowerMaxExpLevel do
-            nTotalNum = nTotalNum + tbUser.tbTrainManpower[i]
+            nTotalNum = nTotalNum + user.tbTrainManpower[i]
         end
-        tbUser.nCash = tbUser.nCash + nTotalNum * tbConfig.nSalary
-        tbUser.tbTrainManpower = nil
+        user.nCash = user.nCash + nTotalNum * tbConfig.nSalary
+        user.tbTrainManpower = nil
         result = "成功取消培训计划"
     end
 
     --计算最多允许培训的人员数目
-    local tbMax = Lib.copyTab(tbUser.tbIdleManpower)
+    local tbMax = Lib.copyTab(user.tbIdleManpower)
     for i = 1, tbConfig.nManpowerMaxExpLevel do
-        tbMax[i] = tbMax[i] + tbUser.tbFireManpower[i]
-        tbMax[i] = tbMax[i] + tbUser.tbJobManpower[i]
+        tbMax[i] = tbMax[i] + user.tbFireManpower[i]
+        tbMax[i] = tbMax[i] + user.tbJobManpower[i]
         tbMax[i] = math.max(1, math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel))
     end
     tbMax[tbConfig.nManpowerMaxExpLevel] = 0
@@ -116,31 +110,30 @@ function HR.CommitTrain(tbParam)
     end
 
     if nTotalNum > 0 then
-        local nMaxTotalNum = math.floor(tbUser.nTotalManpower * tbConfig.fTrainMaxRatioTotal)
+        local nMaxTotalNum = math.floor(user.nTotalManpower * tbConfig.fTrainMaxRatioTotal)
         if nTotalNum > nMaxTotalNum then
             return string.format("最多只能培训%d人", nMaxTotalNum), false
         end
 
         local nCost = nTotalNum * tbConfig.nSalary
-        if nCost > tbUser.nCash then
+        if nCost > user.nCash then
             return "没有足够的费用进行培训", false
         end
-        tbUser.nCash = tbUser.nCash - nCost
-        tbUser.tbTrainManpower = tbParam.tbTrain
+        user.nCash = user.nCash - nCost
+        user.tbTrainManpower = tbParam.tbTrain
         result = "成功设置培训"
     end
     return result, true
 end
 
 -- 挖掘人才 {FuncName = "HR", Operate = "Poach", TargetUser = szName, nLevel = 5, nExpense = 12})
-function HR.Poach(tbParam)
+function HR.Poach(tbParam, user)
     local tbRuntimeData = GetTableRuntime()
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
-    if tbUser.tbPoach then
+    if user.tbPoach then
         return "本季度已经执行过挖掘", false
     end
 
-    if tbUser.nCash < tbParam.nExpense then
+    if user.nCash < tbParam.nExpense then
         return "没有足够的资金进行挖人", false
     end
 
@@ -164,7 +157,7 @@ function HR.Poach(tbParam)
         szResult = "目标公司并没有你需要的人才"
     else
         local rand = math.random()
-        local nSuccessWeight = tbParam.nExpense * tbConfig.nManpowerMaxExpLevel / lvl + tbConfig.nSalary * (1 + (tbUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
+        local nSuccessWeight = tbParam.nExpense * tbConfig.nManpowerMaxExpLevel / lvl + tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         local nFailedWeight =  tbConfig.nSalary * (1 + (tbTargetUser.nSalaryLevel - 1) * tbConfig.fPoachSalaryLevelRatio) * tbConfig.nPoachSalaryWeight
         print("poach - success:".. nSuccessWeight, "failed:" .. nFailedWeight, "rand:" .. rand, "sueecss ratio:" .. nSuccessWeight / (nSuccessWeight + nFailedWeight))
         if nSuccessWeight < nFailedWeight then
@@ -191,8 +184,8 @@ function HR.Poach(tbParam)
         nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
     end
 
-    tbUser.nCash = tbUser.nCash - nCost
-    tbUser.tbPoach = {
+    user.nCash = user.nCash - nCost
+    user.tbPoach = {
         TargetUser = tbParam.TargetUser,
         nLevel = lvl,
         nExpense = tbParam.nExpense,
@@ -203,24 +196,22 @@ function HR.Poach(tbParam)
 end
 
 -- 调配调动人员 {FuncName = "HR", Operate = "Reassign", ProductId=1, Staffs={0,0,0,0,0}} Staffs中的数值表示目标人数，而不是变动人数
-function HR.Reassign(tbParam)
-    local tbRuntimeData = GetTableRuntime()
-    local tbUser = tbRuntimeData.tbUser[tbParam.Account]
+function HR.Reassign(tbParam, user)
     if tbParam.ProductId == nil or tbParam.Staffs == nill then
         return "调配调动人员参数有误", false
     end
-    local product = tbUser.tbProduct[tbParam.ProductId]
+    local product = user.tbProduct[tbParam.ProductId]
     if product == nil then
         return "未找到产品：" .. Id, false
     end
 
     for i = 1, tbConfig.nManpowerMaxExpLevel do
-        if product.tbManpower[i] + tbUser.tbIdleManpower[i] >= tbParam.Staffs[i] then
-            tbUser.tbIdleManpower[i] = product.tbManpower[i] + tbUser.tbIdleManpower[i] - tbParam.Staffs[i]
+        if product.tbManpower[i] + user.tbIdleManpower[i] >= tbParam.Staffs[i] then
+            user.tbIdleManpower[i] = product.tbManpower[i] + user.tbIdleManpower[i] - tbParam.Staffs[i]
             product.tbManpower[i] = tbParam.Staffs[i]
          end
     end
-    HumanResources:UpdateJobManpower(tbUser)
+    HumanResources:UpdateJobManpower(user)
     return "success", true
 end
 
@@ -246,12 +237,13 @@ function HumanResources.SettleDepart()
                             table.insert(tbUser.tbMsg, string.format("公司的待岗员工中%d名%d级员工辞职离开了公司", nCount, i))
                         end
 
-                        for productName, tbProductInfo in pairs(tbUser.tbProduct) do
-                            nCount = math.min(nNum, tbProductInfo.tbManpower[i])
+                        for id, product in pairs(tbUser.tbProduct) do
+                            nCount = math.min(nNum, product.tbManpower[i])
                             if nCount > 0 then
                                 nNum = nNum - nCount
-                                tbProductInfo.tbManpower[i] = tbProductInfo.tbManpower[i] - nCount
-                                table.insert(tbUser.tbMsg, string.format("公司的%s项目的员工中%d名%d级员工辞职离开了公司", productName, nCount, i))
+                                product.tbManpower[i] = product.tbManpower[i] - nCount
+                                local info = string.format("公司的%s%d项目的员工中%d名%d级员工辞职离开了公司", product.Category, id, nCount, i)
+                                table.insert(tbUser.tbMsg, info)
                             end
                             if nNum == 0 then
                                 break
@@ -408,14 +400,14 @@ function HumanResources.SettleTrain()
         if tbUser.tbTrainManpower then
             for i = tbConfig.nManpowerMaxExpLevel - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
                 if tbUser.tbTrainManpower[i] > 0 then
-                    for productName, tbProduct in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
-                        if tbProduct.tbManpower[i] > 0 and tbUser.tbTrainManpower[i] > 0 then
-                            local nLevelUpCount = math.min(tbProduct.tbManpower[i], tbUser.tbTrainManpower[i])
+                    for id, product in pairs(tbUser.tbProduct) do -- TODO：改成按照产品优先级排序
+                        if product.tbManpower[i] > 0 and tbUser.tbTrainManpower[i] > 0 then
+                            local nLevelUpCount = math.min(product.tbManpower[i], tbUser.tbTrainManpower[i])
                             if nLevelUpCount > 0 then
                                 tbUser.tbTrainManpower[i] = tbUser.tbTrainManpower[i] - nLevelUpCount
-                                tbProduct.tbManpower[i] = tbProduct.tbManpower[i] - nLevelUpCount
-                                tbProduct.tbManpower[i + 1] = tbProduct.tbManpower[i + 1] + nLevelUpCount
-                                table.insert(tbUser.tbMsg, string.format("%s项目的%d名%d级员工晋升到%d级", productName, nLevelUpCount, i, i + 1))
+                                product.tbManpower[i] = product.tbManpower[i] - nLevelUpCount
+                                product.tbManpower[i + 1] = product.tbManpower[i + 1] + nLevelUpCount
+                                table.insert(tbUser.tbMsg, string.format("%s%d项目的%d名%d级员工晋升到%d级", product.Category, id, nLevelUpCount, i, i + 1))
                             end
                         end
                     end
@@ -450,9 +442,9 @@ end
 
 function HumanResources.UpdateJobManpower(tbUser)
     tbUser.tbJobManpower = {0, 0, 0, 0, 0}
-    for _, tbProductInfo in pairs(tbUser.tbProduct) do
+    for _, product in pairs(tbUser.tbProduct) do
         for i = 1, tbConfig.nManpowerMaxExpLevel do
-            tbUser.tbJobManpower[i] = tbUser.tbJobManpower[i] + tbProductInfo.tbManpower[i]
+            tbUser.tbJobManpower[i] = tbUser.tbJobManpower[i] + product.tbManpower[i]
         end
     end
 end
