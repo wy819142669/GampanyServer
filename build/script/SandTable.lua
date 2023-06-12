@@ -48,9 +48,6 @@ local tbRuntimeData = {
         }--]]
     },
 
-    --==== 产品市场相关信息 ====
-    tbMarket = {},
-
     --==== 人才市场相关信息 ====
     tbManpowerInMarket = { 0, 0, 0, 0, 0 }, -- 人才市场各等级人数。元素个数需要等于tbConfig.nManpowerMaxExpLevel
 

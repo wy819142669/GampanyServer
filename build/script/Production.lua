@@ -29,6 +29,8 @@ function Develop.CloseProduct(tbParam, user)
         return "success", true
     end
 
+    MarketMgr:OnCloseProduct(tbParam.Id, product)
+
     --该产品在岗人员全部回到空闲状态
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         user.tbJobManpower[i] = user.tbJobManpower[i] - product.tbManpower[i]

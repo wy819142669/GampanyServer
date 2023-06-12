@@ -26,6 +26,7 @@ function Market.Publish(tbParam, user)
     end
 
     Production:Publish(product)
+    tbPublishedProduct[product.Category][tbParam.Id] = product
     
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
@@ -50,6 +51,17 @@ function Market.Marketing(tbParam, user)
     product.nMarketExpance = tbParam.Expense
 ]]--
     return "success", true
+end
+
+function MarketMgr:DoStart()
+    tbPublishedProduct = { }
+    for k, _ in pairs(tbConfig.tbProductCategory) do
+        tbPublishedProduct[k] = {}
+    end
+end
+
+function MarketMgr:OnCloseProduct(id, product)
+    tbPublishedProduct[product.Category][id] = nil
 end
 
 -- 份额流失
@@ -211,7 +223,6 @@ function Market.DistributionMarket()
 
     -- 清除
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.bMarketingDone = false
         tbUser.tbMarketingExpense = {}
     end
 --]]

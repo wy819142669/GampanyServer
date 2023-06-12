@@ -57,9 +57,6 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.nGamerCount = 0
     runtime.tbLoginAccount = {}
     runtime.tbUser = {}
-
-    runtime.tbMarket = {}
-
     runtime.tbCutdownProduct = {}
     runtime.tbManpowerInMarket = {0, 0, 0, 0, 0}
     return "success", true
@@ -86,9 +83,9 @@ function tbAdminFunc.DoStart(tbParam)
     end
 
     InitManpowerData()
+    MarketMgr:DoStart()
 
     runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
-    runtime.tbMarket = Lib.copyTab(tbConfig.tbMarket)
     return "success", true
 end
 

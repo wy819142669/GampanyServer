@@ -68,18 +68,6 @@ tbConfig = {
     },
     fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
-    --- 市场初始总份额
-    tbMarket = {
-        a1 = 250,
-        a2 = 250,
-        b1 = 150,
-        b2 = 150,
-        d1 = 350,
-        d2 = 350,
-        e1 = 450,
-        e2 = 450,
-    },
-
     --- 品类份额转移
     nLossMarket = 25,
 
@@ -132,6 +120,11 @@ tbConfig = {
     },
 }
 
+--====所有已发布的产品（不包含已关闭的）（的引用），分品类组织====
+-- tbPublishedProduct数组：各key是 产品品类名，各value又是个数组，
+-- tbPublishedProduct的value数组：各key就是产品id，各value就是各产品的运行时数据表(是对 tbConfig.tbUser[xx].tbProduct[id]的引用)
+tbPublishedProduct = { }
+
 --一些初始表/空表设置，用于服务端运行时从此复制，以形成各项初始表，因不参与日常计算，所以不放人tbConfig不需同步到客户端
 tbInitTables = {
 
@@ -164,7 +157,7 @@ tbInitTables = {
         -- 系统消息
         tbMsg = {},
          -- 市场营销投入
-        tbMarketingExpense = {},
+        tbMarketingExpense = {},    --todo tobe delete
          -- 订单
         tbOrder = {
             --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
@@ -177,17 +170,8 @@ tbInitTables = {
         -- 市场营销费
         nMarketingExpense = 0,
 
-        -- 权益占比
-        fEquityRatio = 1.0,
-
-
-        bMarketingDone = false,
-
-        -- 市场份额
-        tbMarket = {     },
-
         -- 市场投标计划
-        tbMarketingExpense = {
+        tbMarketingExpense = {  --todo tobe delete
         },
     },
 
