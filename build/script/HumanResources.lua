@@ -210,7 +210,7 @@ function HR.Reassign(tbParam, user)
             product.tbManpower[i] = tbParam.Staffs[i]
          end
     end
-    HumanResources:UpdateJobManpower(user)
+    HumanResources.UpdateJobManpower(user)
     return "success", true
 end
 
@@ -444,6 +444,18 @@ function HumanResources.UpdateJobManpower(user)
     for _, product in pairs(user.tbProduct) do
         for i = 1, tbConfig.nManpowerMaxExpLevel do
             user.tbJobManpower[i] = user.tbJobManpower[i] + product.tbManpower[i]
+        end
+    end
+end
+
+function HumanResources.RecordProductManpower()
+    local tbRuntimeData = GetTableRuntime()
+    for _, user in pairs(tbRuntimeData.tbUser) do
+        for _, product in pairs(user.tbProduct) do
+            product.tbOriginalManpower = Lib.copyTab(product.tbManpower)
+        end
+        for _, product in pairs(user.tbClosedProduct) do
+            product.tbOriginalManpower = Lib.copyTab(product.tbManpower)
         end
     end
 end

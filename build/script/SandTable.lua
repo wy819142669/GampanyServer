@@ -363,6 +363,8 @@ function DoPreSeason()
     HumanResources.SettlePoach()    -- 成功挖掘的人才入职
     HumanResources.SettleHire()     -- 人才市场招聘结果
                    -- Npc调整
+
+    HumanResources.RecordProductManpower() -- 记录季度开始时的人力
 end
 
 -- 每个季度结束后的自动处理
