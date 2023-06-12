@@ -188,7 +188,7 @@ function HR.Poach(tbParam, user)
     user.tbPoach = {
         TargetUser = tbParam.TargetUser,
         nLevel = lvl,
-        nExpense = tbParam.nExpense,
+        nExpense = nCost,   --记录实际开销
         szResult = szResult,
         bSuccess = bSuccess
     }

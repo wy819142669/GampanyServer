@@ -467,9 +467,7 @@ end
 function DoPayTax()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbYearReport.nTax = math.floor(tbUser.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
-        if tbUser.tbYearReport.nTax < 0 then
-            tbUser.tbYearReport.nTax = 0
-        end
+        tbUser.tbYearReport.nTax = tbUser.tbYearReport.nTax < 0 and 0 or tbUser.tbYearReport.nTax
         tbUser.nCash = tbUser.nCash - tbUser.tbYearReport.nTax
         tbUser.tbYearReport.nNetProfit = tbUser.tbYearReport.nProfitBeforeTax - tbUser.tbYearReport.nTax
     end
