@@ -41,10 +41,6 @@ local tbRuntimeData = {
             },
             -- 代收款
             tbReceivables = {0, 0, 0, 0},
-            -- 追加市场费
-            nAppendMarketCost = 0,
-            -- 市场营销费
-            nMarketingExpense = 0,
         }--]]
     },
 
@@ -390,8 +386,6 @@ function DoPostYear()
     --以下内容拷贝自原本的 tbFunc.finalAction.NewYear
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
 --        tbUser.tbOrder = {}
---        tbUser.nMarketingExpense = 0
---        tbUser.nAppendMarketCost = 0
     end
 end
 
@@ -421,7 +415,6 @@ function DoYearReport(user)
 --    end
 
     --tbUser.tbYearReport.nMarketingExpense = tbUser.nMarketingExpense
-    --tbUser.tbYearReport.nSGA = tbUser.tbYearReport.nSGA + tbUser.nAppendMarketCost
     --tbUser.tbYearReport.nGrossProfit = tbUser.tbYearReport.nTurnover
     --                                    - tbUser.tbYearReport.nLaborCosts
     --                                    - tbUser.tbYearReport.nMarketingExpense
