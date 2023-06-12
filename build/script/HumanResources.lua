@@ -28,7 +28,6 @@ function HR.CommitHire(tbParam, user)
 
     if user.tbHire then
         user.nCash = user.nCash + user.tbHire.nExpense
-        user.nSeverancePackage = user.nSeverancePackage - user.tbHire.nExpense
         user.tbHire = nil
     end
     if tbParam.nExpense > user.nCash then
@@ -38,7 +37,6 @@ function HR.CommitHire(tbParam, user)
     local szReturnMsg
     if tbParam.nExpense > 0 and tbParam.nNum > 0 then
         user.nCash = user.nCash - tbParam.nExpense
-        user.nSeverancePackage = user.nSeverancePackage + tbParam.nExpense
         user.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
         szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
     else
@@ -182,13 +180,14 @@ function HR.Poach(tbParam, user)
         table.insert(tbTargetUser.tbMsg, string.format("你的一个%d级员工提交了离职申请，将在下个季度初离开公司。", lvl))
     else
         nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
+        nCost = math.max(nCost, 1)
     end
 
     user.nCash = user.nCash - nCost
     user.tbPoach = {
         TargetUser = tbParam.TargetUser,
         nLevel = lvl,
-        nExpense = tbParam.nExpense,
+        nExpense = nCost,   --记录实际开销
         szResult = szResult,
         bSuccess = bSuccess
     }
@@ -454,9 +453,7 @@ function HumanResources.PayOffSalary()
     for _, user in pairs(tbRuntimeData.tbUser) do
         local nCost = user.nTotalManpower * tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
         nCost = math.floor(nCost + 0.5)
-
         user.nCash = user.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
-        user.tbLaborCost[tbRuntimeData.nCurSeason] = nCost
         table.insert(user.tbMsg, string.format("支付薪水：%d", nCost))
     end
 end

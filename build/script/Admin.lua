@@ -96,7 +96,6 @@ function Administration:NewUser(name)
     local runtime = GetTableRuntime()
     local user = Lib.copyTab(tbInitTables.tbInitUserData)
     user.szAccount = name
-    user.tbHistoryYearReport = {}
     if runtime.nCurYear == 1 then
         user.tbHistoryYearReport[1] = user.tbYearReport
     else
