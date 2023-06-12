@@ -35,23 +35,37 @@ end
 -- 提交市场营销费用 {FuncName="Market", OperateType="Marketing", Product={{Id=1, Expense=10},{Id=5, Expense=40}}}
 -- Product中数组元素说明：Id=产品id，Expense=当季市场营销费用
 function Market.Marketing(tbParam, user)
---[[    local product = nil
-    if tbParam.Id then
-        product = user.tbProduct[tbParam.Id]
+    print("Marketing")
+    local nTotalExpense = 0
+    for _, tbProduct in pairs(tbParam) do
+        product = user.tbProduct[tbProduct.Id]
+
+        if not product then
+            return "product not exist", false
+        end
+
+        if product.State ~= tbConfig.tbProductState.nPublished then
+            return "product hasn't been published yet", false
+        end
+
+        if tbProduct.Expense < 1 then
+            return "market expense error", false
+        end
+
+        nTotalExpense = nTotalExpense + tbProduct.Expense
+    end 
+
+    if user.nCash < nTotalExpense then
+        return "cash not enough", false
     end
-    if not product then
-        return "product not exist", false
+    
+    for _, tbProduct in pairs(tbParam) do
+        user.tbProduct[tbProduct.Id].nMarketExpance = tbProduct.Expense
     end
-    if product.State ~= tbConfig.tbProductState.nPublished then
-        return "product hasn't been published yet", false
-    end
-    if tbParam.Expense < 1 then
-        return "market expense not enough", false
-    end
-    product.nMarketExpance = tbParam.Expense
-]]--
+    
     return "success", true
 end
+
 
 function MarketMgr:DoStart()
     tbPublishedProduct = { }
