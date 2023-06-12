@@ -223,7 +223,11 @@ tbInitTables = {
 
     --新发布产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
     tbInitPublishedProduct = {
-        nMarketExpance = 1,         --市场推广费用，至少为1
+        nMarketExpance = 1,         --市场营销费用，至少为1
+        nPreMarketExpance = 1,      --上季度市场营销费用
+        nPreMarketScale = 0,        --上季度市场规模
+        nPreARPU = 0,               --上季度ARPU
+        nPreMarketIncome = 0,       --上季度收入
         fCurQuality = 0,            --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
     },
 }
