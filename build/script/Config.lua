@@ -71,6 +71,26 @@ tbConfig = {
     --- 品类份额转移
     nLossMarket = 25,
 
+    --- npc市场营销费用
+    tbNpcMarketExpance = {
+        A = {
+            nInitialExpenses = 200,
+            nContinuousExpenses = 50,
+        },
+        B = {
+            nInitialExpenses = 400,
+            nContinuousExpenses = 100,
+        },
+        C = {
+            nInitialExpenses = 1200,
+            nContinuousExpenses = 150,
+        },
+        D = {
+            nInitialExpenses = 2000,
+            nContinuousExpenses = 250,
+        },
+    },
+
     --====== 产品品类设置, 此表中key的值必须等于tbConfig.tbProductCategoryNames中罗列的值====
     tbProductCategory = {
         A = {
