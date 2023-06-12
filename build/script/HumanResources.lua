@@ -177,7 +177,7 @@ function HR.Poach(tbParam, user)
             tbTargetUser.tbDepartManpower = tbTargetUser.tbDepartManpower or {}
             tbTargetUser.tbDepartManpower[lvl] = 1
         end
-        table.insert(tbTargetUser.tbMsg, string.format("你的一个%d级员工提交了离职申请，将在下个季度初离开公司。", lvl))
+        table.insert(tbTargetUser.tbTips, string.format("你的一个%d级员工提交了离职申请，将在下个季度初离开公司。", lvl))
     else
         nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
         nCost = math.max(nCost, 1)
@@ -226,14 +226,14 @@ function HumanResources.SettleDepart()
                         if nCount > 0 then
                             nNum = nNum - nCount
                             user.tbFireManpower[i] = user.tbFireManpower[i] - nCount
-                            table.insert(user.tbMsg, string.format("公司的即将解雇员工中%d名%d级员工辞职离开了公司", nCount, i))
+                            table.insert(user.tbSysMsg, string.format("公司的即将解雇员工中%d名%d级员工辞职离开了公司", nCount, i))
                         end
 
                         nCount = math.min(nNum, user.tbIdleManpower[i])
                         if nCount > 0 then
                             nNum = nNum - nCount
                             user.tbIdleManpower[i] = user.tbIdleManpower[i] - nCount
-                            table.insert(user.tbMsg, string.format("公司的待岗员工中%d名%d级员工辞职离开了公司", nCount, i))
+                            table.insert(user.tbSysMsg, string.format("公司的待岗员工中%d名%d级员工辞职离开了公司", nCount, i))
                         end
 
                         for id, product in pairs(user.tbProduct) do
@@ -242,7 +242,7 @@ function HumanResources.SettleDepart()
                                 nNum = nNum - nCount
                                 product.tbManpower[i] = product.tbManpower[i] - nCount
                                 local info = string.format("公司的%s%d项目的员工中%d名%d级员工辞职离开了公司", product.Category, id, nCount, i)
-                                table.insert(user.tbMsg, info)
+                                table.insert(user.tbSysMsg, info)
                             end
                             if nNum == 0 then
                                 break
@@ -265,7 +265,7 @@ function HumanResources.SettlePoach()
         if user.tbPoach and user.tbPoach.bSuccess then
             user.tbIdleManpower[user.tbPoach.nLevel] = user.tbIdleManpower[user.tbPoach.nLevel] + 1
             user.nTotalManpower = user.nTotalManpower + 1
-            table.insert(user.tbMsg, string.format("被挖掘来的1名%d级员工已经入职，处于待岗状态", user.tbPoach.nLevel))
+            table.insert(user.tbSysMsg, string.format("被挖掘来的1名%d级员工已经入职，处于待岗状态", user.tbPoach.nLevel))
         end
         user.tbPoach = nil
     end
@@ -344,7 +344,7 @@ function HumanResources.SettleHire()
         end
 
         local szMsg = "人才市场招聘结果：当前薪水%d级,计划招聘%d人,花费费用%d,实际招募到%s人%s,新入职员工平均等级%.2f"
-        table.insert(user.tbMsg, string.format(szMsg, user.nSalaryLevel, user.tbHire.nNum, user.tbHire.nExpense,
+        table.insert(user.tbSysMsg, string.format(szMsg, user.nSalaryLevel, user.tbHire.nNum, user.tbHire.nExpense,
             nCount, #tbNewManpowerInfo > 0 and "," .. table.concat(tbNewManpowerInfo, "、")  or "", nSumLevel / nCount
         ))
     end
@@ -386,7 +386,7 @@ function HumanResources.SettleFire()
                 tbRuntimeData.tbManpowerInMarket[i] = tbRuntimeData.tbManpowerInMarket[i] + user.tbFireManpower[i]
                 user.nTotalManpower = user.nTotalManpower - user.tbFireManpower[i]
 
-                table.insert(user.tbMsg, string.format("%d名%d级员工已被解雇离开公司", user.tbFireManpower[i], i))
+                table.insert(user.tbSysMsg, string.format("%d名%d级员工已被解雇离开公司", user.tbFireManpower[i], i))
                 user.tbFireManpower[i] = 0
             end
         end
@@ -406,7 +406,7 @@ function HumanResources.SettleTrain()
                                 user.tbTrainManpower[i] = user.tbTrainManpower[i] - nLevelUpCount
                                 product.tbManpower[i] = product.tbManpower[i] - nLevelUpCount
                                 product.tbManpower[i + 1] = product.tbManpower[i + 1] + nLevelUpCount
-                                table.insert(user.tbMsg, string.format("%s%d项目的%d名%d级员工晋升到%d级", product.Category, id, nLevelUpCount, i, i + 1))
+                                table.insert(user.tbSysMsg, string.format("%s%d项目的%d名%d级员工晋升到%d级", product.Category, id, nLevelUpCount, i, i + 1))
                             end
                         end
                     end
@@ -416,7 +416,7 @@ function HumanResources.SettleTrain()
                             user.tbTrainManpower[i] = user.tbTrainManpower[i] - nLevelUpCount
                             user.tbIdleManpower[i] = user.tbIdleManpower[i] - nLevelUpCount
                             user.tbIdleManpower[i + 1] = user.tbIdleManpower[i + 1] + nLevelUpCount
-                            table.insert(user.tbMsg, string.format("待岗的%d名%d级员工晋升到%d级", nLevelUpCount, i, i + 1))
+                            table.insert(user.tbSysMsg, string.format("待岗的%d名%d级员工晋升到%d级", nLevelUpCount, i, i + 1))
                         end
                     end
                     --若有多余，那是本季度离职的人
@@ -466,6 +466,6 @@ function HumanResources.PayOffSalary()
         local nCost = user.nTotalManpower * tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
         nCost = math.floor(nCost + 0.5)
         user.nCash = user.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
-        table.insert(user.tbMsg, string.format("支付薪水：%d", nCost))
+        table.insert(user.tbSysMsg, string.format("支付薪水：%d", nCost))
     end
 end

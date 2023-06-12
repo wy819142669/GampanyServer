@@ -378,6 +378,9 @@ end
 
 -- 每个季度结束后的自动处理
 function DoPostSeason()
+    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+        tbUser.tbSysMsg = {}
+    end
                     -- 推进研发进度
                     -- 更新产品品质
                     -- 流失份额、各品类市场份额刷新、更新市场竞标结果

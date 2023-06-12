@@ -175,7 +175,8 @@ tbInitTables = {
         -- 提示
         szTitle = "",
         -- 系统消息
-        tbMsg = {},
+        tbSysMsg = {},
+        tbTips = {},
          -- 市场营销投入
         tbMarketingExpense = {},    --todo tobe delete
          -- 订单
