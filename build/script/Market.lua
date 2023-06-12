@@ -31,10 +31,10 @@ function Market.Publish(tbParam, user)
     return szReturnMsg, true
 end
 
--- 提交市场竞标 {FuncName="Market", OperateType="CommitMarket", Id=1, Expense=1}
--- 以后可能改成全部产品一起提交
-function Market.CommitMarket(tbParam, user)
-    local product = nil
+-- 提交市场营销费用 {FuncName="Market", OperateType="Marketing", Product={{Id=1, Expense=10},{Id=5, Expense=40}}}
+-- Product中数组元素说明：Id=产品id，Expense=当季市场营销费用
+function Market.Marketing(tbParam, user)
+--[[    local product = nil
     if tbParam.Id then
         product = user.tbProduct[tbParam.Id]
     end
@@ -48,6 +48,7 @@ function Market.CommitMarket(tbParam, user)
         return "market expense not enough", false
     end
     product.nMarketExpance = tbParam.Expense
+]]--
     return "success", true
 end
 
