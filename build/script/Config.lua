@@ -79,61 +79,54 @@ tbConfig = {
         e2 = 450,
     },
 
-    --- 市场总份额下限
-    tbMarketMinimumLimit = {
-        a1 = 150,
-        a2 = 150,
-        b1 = 50,
-        b2 = 50,
-        d1 = 250,
-        d2 = 250,
-        e1 = 350,
-        e2 = 350,
-    },
-
     --- 品类份额转移
     nLossMarket = 25,
-
-    tbProductARPU = {
-        a1 = 3,
-        a2 = 3,
-        b1 = 9,
-        b2 = 9,
-        d1 = 8,
-        d2 = 8,
-        e1 = 10,
-        e2 = 10,
-    },
 
     --====== 产品品类设置, 此表中key的值必须等于tbConfig.tbProductCategoryNames中罗列的值====
     tbProductCategory = {
         A = {
+            --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
+            --==市场运营相关配置==
+            nBaseARPU = 10,     --基础ARPU
+            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
         },
         B = {
+            --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
+            --==市场运营相关配置==
+            nBaseARPU = 10,     --基础ARPU
+            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
         },
         C = {
+            --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
+            --==市场运营相关配置==
+            nBaseARPU = 10,     --基础ARPU
+            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
         },
         D = {
+            --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
+            --==市场运营相关配置==
+            nBaseARPU = 10,     --基础ARPU
+            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
         },
     },
 }

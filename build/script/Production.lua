@@ -1,4 +1,3 @@
-local tbConfig = tbConfig
 local tbProductState = tbConfig.tbProductState
 local nNewProductId = 0
 
@@ -79,6 +78,7 @@ function Production:PostSeason()
                 Production:UpdatePublished(product, user)
             elseif product.Sate == tbProductState.nRenovating then            
                 Production:UpdateRenovating(product, user)
+                Production:UpdatePublished(product, user)
             end
         end
     end
