@@ -56,6 +56,11 @@ function Develop.Renovate(tbParam, user)
         return "未完成的产品不能翻新：" .. tbParam.Id, false
     end
     product.State = tbProductState.nRenovating
+
+    -- 翻新时清空初始值，当翻新完成后替换当前值。
+    product.nRenovatedWorkLoad = 0
+    product.fRenovatedQuality = 0
+
     return "success", true
 end
 
@@ -72,8 +77,9 @@ function Production:PostSeason()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         for _, product in pairs(user.tbProduct) do
-            if product.Sate == tbProductState.nBuilding then
-                Production:UpdateWrokload(product, user)
+            -- 玩家没有执行上线操作前, 都需要执行UpdateWrokload函数
+            if product.Sate <= tbProductState.nEnabled then
+                Production:UpdateWrokload(product, user, {targetState = tbProductState.nEnabled})
             elseif product.Sate == tbProductState.nPublished then
                 Production:UpdatePublished(product, user)
             elseif product.Sate == tbProductState.nRenovating then            
@@ -84,7 +90,32 @@ function Production:PostSeason()
     end
 end
 
-function Production:UpdateWrokload(product, user)
+-- 首次发布和翻新发布都通过此函数设置品质与状态
+function Production:Publish(product)
+    local curQuality = product.fCurQuality
+    local oldState = product.State
+    if oldState == tbProductState.nEnabled then
+        curQuality = product.fFinishedQuality / product.nFinishedWorkLoad
+    elseif oldState == tbProductState.nRenovating then
+        curQuality = product.fRenovatedQuality / product.nRenovatedWorkLoad
+    end
+
+    product.fFinishedQuality = curQuality
+    product.fCurQuality = curQuality
+    product.State = tbProductState.nPublished
+end
+
+-- 判断当前产品是否翻新完成
+function Production:IsRenovateComplete(product)
+    if product.State ~= tbProductState.nRenovating then
+        return false
+    end
+
+    local category = tbConfig.tbProductCategory[product.Category]
+    return product.nRenovatedWorkLoad >= math.ceil(category.nWorkLoad * tbConfig.fRenovateWorkLoadRatio)
+end
+
+function Production:GetQuality(product)
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan = 0
     local totalQuality = 0
@@ -110,16 +141,37 @@ function Production:UpdateWrokload(product, user)
             end
         end
     end
-    product.nFinishedWorkLoad = product.nFinishedWorkLoad + totalMan
-    product.fFinishedQuality = product.fFinishedQuality + totalQuality
 
-    if product.nFinishedWorkLoad < category.nWorkLoad then
+    return totalQuality, totalMan
+end
+
+-- UpdateWrokload函数会被研发和翻新两个阶段复用, 所以有冲突的变量都需要通过options传入
+-- options = {
+--     workLoadKey = nil,       product中与当前阶段相关的 人力 变量的key
+--     qualityKey = nil,        product中与当前阶段相关的 质量 变量的key
+--     workLoadRatio = nil,     所需人力比例, 默认值为1, 翻新时通过传入参数控制比例
+--     targetState = nil,       满足工时后的目标状态, 默认为nEnabled, 翻新完毕后为nRenovaComplete, 需要手动执行上线
+-- }
+function Production:UpdateWrokload(product, user, options)
+    local category = tbConfig.tbProductCategory[product.Category]
+    local totalQuality, totalMan = self:GetQuality(product)
+    options = options or {}
+    local workLoadKey = options.workLoadKey or "nFinishedWorkLoad"
+    local qualityKey = options.qualityKey or "fFinishedQuality"
+    product[workLoadKey] = product[workLoadKey] + totalMan
+    product[qualityKey] = product[qualityKey] + totalQuality
+
+    -- 向上取整
+    local workLoadRatio = options.workLoadRatio or 1
+    if product[workLoadKey] < math.ceil(category.nWorkLoad * workLoadRatio) then
         return
     end
 
-    --====产品研发完成====
-    product.State = tbProductState.nEnabled
-    product.fFinishedQuality = fFinishedQuality / product.nFinishedWorkLoad
+    --====产品研发完成, 翻新过程中人力满足后不自动切换成上线状态, 需要玩家手动执行上线操作====
+    if options.targetState then
+        product.State = options.targetState
+    end
+
     --====把多余的人手（超过category.nMaintainTeam），自动释放====
     totalMan = 0
     for i = tbConfig.nManpowerMaxExpLevel, 1, -1 do
@@ -142,10 +194,24 @@ function Production:UpdateWrokload(product, user)
     end
 end
 
-function Production:UpdatePublished(product, user)
-    --todo to be finished
+function Production:UpdatePublished(product)
+    local addQuality = -1
+    local category = tbConfig.tbProductCategory[product.Category]
+    local totalQuality, totalMan = self:GetQuality(product)
+    -- 人力投入大于理想人员规模和当前品质大于等于初始品质
+    if totalMan >= category.nIdeaTeam and totalQuality >= product.fFinishedQuality then
+        addQuality = 1
+    end
+
+    -- 不能超过初始品质
+    product.fCurQuality = math.min(product.fCurQuality + addQuality, product.fCurQuality)
 end
 
 function Production:UpdateRenovating(product, user)
-    --todo to be finished
+    local options = {
+        workLoadKey = "nRenovatedWorkLoad",       
+        qualityKey = "fRenovatedQuality",        
+        workLoadRatio = tbConfig.fRenovateWorkLoadRatio,
+    }
+    self:UpdateWrokload(product, user, options)
 end

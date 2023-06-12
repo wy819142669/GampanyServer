@@ -12,10 +12,11 @@ function Market.Publish(tbParam, user)
     if not product then
         return "product not exist", false
     end
-    if product.State == tbConfig.tbProductState.nPublished or product.State == tbConfig.tbProductState.nRenovating then
+    if product.State == tbConfig.tbProductState.nPublished then
         return "already published", false
-    end
-    if product.State ~= tbConfig.tbProductState.nEnabled then
+    elseif product.State == tbConfig.tbProductState.nRenovating and not Production:IsRenovateComplete(product) then
+        return "renovate not completed", false
+    elseif product.State ~= tbConfig.tbProductState.nEnabled then
         return "progress not enough", false
     end
 
@@ -23,8 +24,9 @@ function Market.Publish(tbParam, user)
     for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
         product[k] = v
     end
-    product.fCurQuality = product.fFinishedQuality
-    product.State = tbConfig.tbProductState.nPublished
+
+    Production:Publish(product)
+    
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
 end

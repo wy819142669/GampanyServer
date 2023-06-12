@@ -25,6 +25,7 @@ tbConfig = {
     --==== 产品研发相关设置，只读不写 ====
     fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
     fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
+    fRenovateWorkLoadRatio = 0.7,   --翻新所需人力比例
 
     -- 产品状态
     tbProductState = {
@@ -227,6 +228,8 @@ tbInitTables = {
         tbManpower = {0,0,0,0,0},                   --团队人员
         nFinishedWorkLoad = 0,                      --已完成工作量
         fFinishedQuality = 0,                       --已完成工作量的累积品质
+        nRenovatedWorkLoad = 0,                     --已翻新工作量
+        fRenovatedQuality = 0,                      --已翻新工作量的累积品质
     },
 
     --新发布产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
