@@ -23,6 +23,7 @@ function Market.Publish(tbParam, user)
     for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
         product[k] = v
     end
+    product.fCurQuality = product.fFinishedQuality
     product.State = tbConfig.tbProductState.nPublished
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
