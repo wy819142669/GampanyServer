@@ -37,7 +37,7 @@ end
 function Market.Marketing(tbParam, user)
     print("Marketing")
     local nTotalExpense = 0
-    for _, tbProduct in pairs(tbParam) do
+    for _, tbProduct in pairs(tbParam.Product) do
         product = user.tbProduct[tbProduct.Id]
 
         if not product then
@@ -59,7 +59,7 @@ function Market.Marketing(tbParam, user)
         return "cash not enough", false
     end
     
-    for _, tbProduct in pairs(tbParam) do
+    for _, tbProduct in pairs(tbParam.Product) do
         user.tbProduct[tbProduct.Id].nMarketExpance = tbProduct.Expense
     end
     
