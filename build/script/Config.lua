@@ -35,8 +35,6 @@ tbConfig = {
         nRenovating = 4,     -- 翻新
         nClosed = 5,         -- 关闭
     },
-    -- 产品品类
-    tbProductCategoryNames = { "A", "B", "C", "D" },
 
     tbProduct = {           --todo 待被整理
         a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
@@ -91,7 +89,7 @@ tbConfig = {
         },
     },
 
-    --====== 产品品类设置, 此表中key的值必须等于tbConfig.tbProductCategoryNames中罗列的值====
+    --====== 产品品类设置====
     tbProductCategory = {
         A = {
             --==研发相关配置==
@@ -140,6 +138,14 @@ tbConfig = {
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 450, --市场总份额
+        },
+        Platform = { --==中台项目==，设置项与产品项的有些不同
+            --==研发相关配置==
+            nMinTeam = 8,       --团队最小人数需求
+            nIdeaTeam = 20,     --团队理想人数
+            nWorkLoad = 40,     --工作量
+            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            fProductRetentionRate = 0.5,    --产品基础留存率
         },
     },
 }
@@ -210,7 +216,7 @@ tbInitTables = {
         nBalance = 0,           -- 结余现金
     },
 
-    --新立项产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
+    --新立项产品初始表
     tbInitNewProduct = {
         --Category = "A",                           --产品品类，数据在立项时动态设置
         Sate = tbConfig.tbProductState.nBuilding,   --产品状态
@@ -222,7 +228,7 @@ tbInitTables = {
         nMarket = 0,                                --市场份额
     },
 
-    --新发布产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值
+    --新发布产品初始表
     tbInitPublishedProduct = {
         nMarketExpance = 1,         --市场营销费用，至少为1
         nLastMarketExpance = 1,      --最后一个季度/上季度市场营销费用
