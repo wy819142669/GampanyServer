@@ -81,7 +81,7 @@ function MarketMgr:DoStart()
             tbRuntimeData.tbMarket[category] = product.nTotalMarket;
         end
 
-        if not product.bForbiddenPublish then
+        if not product.bIsPlatform then
             for _ = 1, tbConfig.tbNpc.nInitialProductNum do
                 Market.NewNpcProduct(category)
             end

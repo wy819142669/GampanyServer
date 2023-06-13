@@ -158,7 +158,7 @@ tbConfig = {
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
-            bForbiddenPublish = true,
+            bIsPlatform = true,
         },
     },
 }
