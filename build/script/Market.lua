@@ -284,6 +284,7 @@ function Market.DistributionMarket()
     -- 清除
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for id, product in pairs(tbUser.tbProduct) do
+            product.nLastMarketExpance = product.nMarketExpance
             product.nMarketExpance = 0
         end
     end
@@ -297,11 +298,13 @@ function Market.GainRevenue()
         for id, product in pairs(tbUser.tbProduct) do
             if product.nMarket > 0 and product.State == tbConfig.tbProductState.nPublished then
                 local nQuality = product.nQuality or 0
-                local nRevenue = math.floor(product.nMarket * tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality))
+                local fARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality)
+                local nIncome = math.floor(product.nMarket * fARPU)
+                
+                product.nLastMarketIncome = nIncome
+                tbUser.nCash = tbUser.nCash + nIncome
 
-                tbUser.nCash = tbUser.nCash + nRevenue
-
-                print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nRevenue))
+                print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nIncome))
             end
         end
     end
