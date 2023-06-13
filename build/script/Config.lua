@@ -100,7 +100,7 @@ tbConfig = {
             fProductRetentionRate = 0.5,    --产品基础留存率
             --==市场运营相关配置==
             nBaseARPU = 10,     --基础ARPU
-            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
+            nMaxMarketScale = 30,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 250, --市场总份额
         },
         B = {
@@ -124,7 +124,7 @@ tbConfig = {
             fProductRetentionRate = 0.5,    --产品基础留存率
             --==市场运营相关配置==
             nBaseARPU = 10,     --基础ARPU
-            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
+            nMaxMarketScale = 40,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 350, --市场总份额
         },
         D = {
@@ -136,7 +136,7 @@ tbConfig = {
             fProductRetentionRate = 0.5,    --产品基础留存率
             --==市场运营相关配置==
             nBaseARPU = 10,     --基础ARPU
-            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
+            nMaxMarketScale = 50,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 450, --市场总份额
         },
         P = { --==中台项目==，设置项与产品项的有些不同
