@@ -32,7 +32,7 @@ function Market.Publish(tbParam, user)
     return szReturnMsg, true
 end
 
--- 提交市场营销费用 {FuncName="Market", OperateType="Marketing", Product={{Id=1, Expense=10},{Id=5, Expense=40}}}
+-- 提交市场营销费用 {FuncName="Market", Operate="Marketing", Product={{Id=1, Expense=10},{Id=5, Expense=40}}}
 -- Product中数组元素说明：Id=产品id，Expense=当季市场营销费用
 function Market.Marketing(tbParam, user)
     print("Marketing")

@@ -259,16 +259,6 @@ function tbFunc.finalAction.SettleOrder()
 end
 
 tbFunc.Action.funcDoOperate = {}
---tbFunc.Action.funcDoOperate.CommitMarket = Market.CommitMarket      -- 提交市场竞标 {FuncName = "DoOperate", OperateType = "CommitMarket", tbMarketingExpense = {a = 1, b = 2, c = 1}}
-
- function tbFunc.Action.funcDoOperate.Marketing(tbParam)
-    local user = tbRuntimeData.tbUser[tbParam.Account]
-    if not user then
-        return "no user", false
-    end
-
-    return Market.Marketing(tbParam.Product, user)
- end
 
 -- 订单收款 {FuncName = "DoOperate", OperateType = "GainMoney", ProductName="b2"}
 function tbFunc.Action.funcDoOperate.GainMoney(tbParam)
