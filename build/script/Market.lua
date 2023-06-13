@@ -343,6 +343,18 @@ function Market.GainRevenue()
             end
         end
     end
+
+    for id, product in pairs(Market.tbNpc.tbProduct) do
+        if product.nMarket > 0 and product.State == tbConfig.tbProductState.nPublished then
+            local nQuality = product.nQuality or 0
+            local fARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality)
+            local nIncome = math.floor(product.nMarket * fARPU)
+            
+            product.nLastMarketIncome = nIncome
+
+            print(tbConfig.tbNpc.szName .. " " .. tostring(id) .. " nLastMarketIncome = " .. tostring(nIncome))
+        end
+    end
 end
 
 function Market.SettleMarket()
@@ -361,7 +373,9 @@ function Market.SettleMarket()
 end
 
 function Market.UpdateNpc()
-    -- tbPublishedProduct[tbProduct.Category][productId] = tbProduct
+    for _, tbProduct in pairs(Market.tbNpc.tbProduct) do
+        tbProduct.nMarketExpance = 0
+    end
 
     for category, tbProductList in pairs(tbPublishedProduct) do
         local nProductNum = 0
@@ -388,19 +402,25 @@ function Market.UpdateNpc()
         end
     end
 
-    for _, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        if tbProduct.nMarketExpance == 0 then
-            tbProduct.nMarketExpance = tbConfig.tbNpcMarketExpance[tbProduct.Category].nContinuousExpenses * (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange
+    for id, tbProduct in pairs(Market.tbNpc.tbProduct) do
+        if tbProduct.State == tbConfig.tbProductState.nPublished and tbProduct.nMarketExpance == 0 then
+            tbProduct.nMarketExpance = tbConfig.tbNpcMarketExpance[tbProduct.Category].nContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
-    end
 
-    -- todo : 下线规则实现
+        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpance:", tbProduct.nMarketExpance)
+        if tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpance < tbConfig.tbNpc.fCloseWhenGainRatioLess then
+            print("Npc id:"..id, "close")
+            tbProduct.State = tbConfig.tbProductState.nClosed
+        end
+
+        tbProduct.nLastMarketIncome = nil
+    end
 end
 
 function Market.NewNpcProduct(category, nQuality)
     local id, product = Develop.CreateUserProduct(category, Market.tbNpc)
     product.nQuality = nQuality or 2
-    product.nMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange
+    product.nMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
     product.State = tbConfig.tbProductState.nPublished
     product.bIsNpc = true
     product.nID = id
