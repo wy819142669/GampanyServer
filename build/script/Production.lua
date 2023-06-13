@@ -152,7 +152,7 @@ end
 --     workLoadKey = nil,       product中与当前阶段相关的 人力 变量的key
 --     qualityKey = nil,        product中与当前阶段相关的 质量 变量的key
 --     workLoadRatio = nil,     所需人力比例, 默认值为1, 翻新时通过传入参数控制比例
---     targetState = nil,       满足工时后的目标状态, 默认为nEnabled, 翻新完毕后为nRenovaComplete, 需要手动执行上线
+--     targetState = nil,       不传递targetState在工时满足后不自动切换状态
 -- }
 function Production:UpdateWrokload(product, user, options)
     local category = tbConfig.tbProductCategory[product.Category]

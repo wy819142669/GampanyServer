@@ -196,12 +196,12 @@ end
 
 -- 调配调动人员 {FuncName = "HR", Operate = "Reassign", ProductId=1, Staffs={0,0,0,0,0}} Staffs中的数值表示目标人数，而不是变动人数
 function HR.Reassign(tbParam, user)
-    if tbParam.ProductId == nil or tbParam.Staffs == nill then
+    if tbParam.ProductId == nil or tbParam.Staffs == nil then
         return "调配调动人员参数有误", false
     end
     local product = user.tbProduct[tbParam.ProductId]
     if product == nil then
-        return "未找到产品：" .. Id, false
+        return "未找到产品：" .. tbParam.ProductId, false
     end
 
     for i = 1, tbConfig.nManpowerMaxExpLevel do
