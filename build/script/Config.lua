@@ -89,6 +89,18 @@ tbConfig = {
         },
     },
 
+    -- npc配置
+    tbNpc = {
+        nInitialProductNum = 2,  -- 初始市场npc产品数
+        nInitialProductQuality = 2.0, -- 初始市场npc产品品质
+
+        nMinNpcProductNum = 3, -- npc产品数量少于此，会上架产品
+        nMaxProductNum = 6,    -- 品类市场产品多余此，不再上架产品
+        fCloseWhenGainRatioLess = 3.0, -- 收益/营销费低于这个值，会下架产品
+        fExpenseFloatRange = 0.1,  -- 营销费随机浮动
+        szName = "Npc",
+    },
+
     --====== 产品品类设置====
     tbProductCategory = {
         A = {
@@ -146,6 +158,7 @@ tbConfig = {
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
+            bForbiddenPublish = true,
         },
     },
 }

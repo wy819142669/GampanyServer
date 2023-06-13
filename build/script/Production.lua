@@ -9,11 +9,18 @@ function Develop.NewProduct(tbParam, user)
     if tbParam.Category == nil then
         return "立项需要指明品类", false
     end
+
+    Develop.CreateUserProduct(tbParam.Category, user)
+    return "success", true
+end
+
+function Develop.CreateUserProduct(category, user)
     local product = Lib.copyTab(tbInitTables.tbInitNewProduct)
-    product.Category = tbParam.Category
+    product.Category = category
     local id = Production:NewProductId()
     user.tbProduct[id] = product
-    return "success", true
+
+    return id, product
 end
 
 -- 关闭产品 {FuncName = "Develop", Operate = "CloseProduct", Id=1 }
@@ -103,7 +110,8 @@ function Production:Publish(product)
     end
 
     product.fFinishedQuality = curQuality
-    product.fCurQuality = curQuality
+    product.fCurQuality = curQuality -- todo: remove fCurQuality
+    product.nQuality = math.floor(product.fCurQuality)
     product.State = tbProductState.nPublished
 end
 
@@ -206,7 +214,8 @@ function Production:UpdatePublished(product)
     end
 
     -- 不能超过初始品质
-    product.fCurQuality = math.min(product.fCurQuality + addQuality, product.fCurQuality)
+    product.fCurQuality = math.min(product.fCurQuality + addQuality, product.fCurQuality) -- todo:remove fCurQuality
+    product.nQuality = math.floor(product.fCurQuality)
 end
 
 function Production:UpdateRenovating(product, user)

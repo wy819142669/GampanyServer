@@ -69,7 +69,8 @@ end
 
 function MarketMgr:DoStart()
     local tbRuntimeData = GetTableRuntime()
-    
+
+    Market.tbNpc = { tbProduct = {} }
     tbRuntimeData.tbMarket = {}
     tbPublishedProduct = { }
     for category, product in pairs(tbConfig.tbProductCategory) do
@@ -77,6 +78,16 @@ function MarketMgr:DoStart()
         if IsPlatformCategory(category) == false then
             tbRuntimeData.tbMarket[category] = product.nTotalMarket;
         end
+
+        if not product.bForbiddenPublish then
+            for _ = 1, tbConfig.tbNpc.nInitialProductNum do
+                Market.NewNpcProduct(category)
+            end
+        end
+    end
+
+    for productId, tbProduct in pairs(Market.tbNpc.tbProduct) do
+        tbPublishedProduct[tbProduct.Category][productId] = tbProduct
     end
 end
 
@@ -88,20 +99,28 @@ end
 function Market.LossMarket()
     local tbRuntimeData = GetTableRuntime()
     
-    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        for id, tbProduct in pairs(tbUser.tbProduct) do
-            local nQuality = tbProduct.nQuality or 0
-            local category = tbConfig.tbProductCategory[tbProduct.Category]
-            local fLossRate = (1.0 - category.fProductRetentionRate - 0.01 * nQuality)
-            if fLossRate < 0 then
-                fLossRate = 0
+    local DoLossFunc = function (tbProductList)
+        for id, tbProduct in pairs(tbProductList) do
+            if tbProduct.nMarket and tbProduct.nMarket > 0 then
+                local nQuality = tbProduct.nQuality or 0
+                local category = tbConfig.tbProductCategory[tbProduct.Category]
+                local fLossRate = (1.0 - category.fProductRetentionRate - 0.01 * nQuality)
+                if fLossRate < 0 then
+                    fLossRate = 0
+                end
+                
+                local nLossMarket = math.floor(tbProduct.nMarket * fLossRate)
+                tbProduct.nMarket = tbProduct.nMarket - nLossMarket;
+                tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
             end
-            
-            local nLossMarket = math.floor(tbProduct.nMarket * fLossRate)
-            tbProduct.nMarket = tbProduct.nMarket - nLossMarket;
-            tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
         end
     end
+
+    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
+        DoLossFunc(tbUser.tbProduct)
+    end
+
+    DoLossFunc(Market.tbNpc.tbProduct)
 end
 
 -- 品类份额转移
@@ -264,12 +283,28 @@ function Market.DistributionMarket()
                 end
             end
 
+            for id, product in pairs(Market.tbNpc.tbProduct) do
+                local nQuality = product.nQuality or 0
+
+                if product.Category == category and product.nMarketExpance > 0 and nQuality > 0 then
+                    -- TODO 当季度上线
+                    local fMarketValue = product.nMarketExpance * (1.3 ^ (nQuality - 1))
+                    fTotalMarketValue = fTotalMarketValue + fMarketValue
+                    table.insert(tbInfos, {
+                        userName = tbConfig.tbNpc.szName,
+                        id = id,
+                        fMarketValue = fMarketValue,
+                    })
+                end
+            end
+
             if fTotalMarketValue > 0 then
                 local nTotalMarket = nMarket
                 local nTotalCost = 0
                 for _, tbInfo in pairs(tbInfos) do
                     local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
-                    tbRuntimeData.tbUser[tbInfo.userName].tbProduct[tbInfo.id].nMarket = tbRuntimeData.tbUser[tbInfo.userName].tbProduct[tbInfo.id].nMarket + nCost
+                    local tbUser = tbRuntimeData.tbUser[tbInfo.userName] or Market.tbNpc
+                    tbUser.tbProduct[tbInfo.id].nMarket = tbUser.tbProduct[tbInfo.id].nMarket + nCost
                     nTotalCost = nTotalCost + nCost
                     print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
                 end
@@ -319,4 +354,52 @@ function Market.SettleMarket()
 
     -- 获得收益 
     Market.GainRevenue()
+end
+
+function Market.UpdateNpc()
+    -- tbPublishedProduct[tbProduct.Category][productId] = tbProduct
+
+    for category, tbProductList in pairs(tbPublishedProduct) do
+        local nProductNum = 0
+        local nNpcProductNum = 0
+        local nTotalQuality = 0
+        local nUserMaxQuality = 0
+        for id, tbProduct in pairs(tbProductList) do
+            nProductNum = nProductNum + 1
+            if tbProduct.bIsNpc then
+                nNpcProductNum = nNpcProductNum + 1
+            else
+                if tbProduct.nQuality > nUserMaxQuality then
+                    nUserMaxQuality = tbProduct.nQuality
+                end
+            end
+
+            nTotalQuality = nTotalQuality + tbProduct.nQuality
+        end
+
+        if nProductNum > nNpcProductNum and nProductNum < tbConfig.tbNpc.nMaxProductNum and nNpcProductNum < tbConfig.tbNpc.nMinNpcProductNum then
+            local nAvgQuality = math.ceil(math.min(nTotalQuality / nProductNum, nUserMaxQuality))
+            local product = Market.NewNpcProduct(category, nAvgQuality)
+            tbProductList[product.nID] = product
+        end
+    end
+
+    for _, tbProduct in pairs(Market.tbNpc.tbProduct) do
+        if tbProduct.nMarketExpance == 0 then
+            tbProduct.nMarketExpance = tbConfig.tbNpcMarketExpance[tbProduct.Category].nContinuousExpenses * (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange
+        end
+    end
+
+    -- todo : 下线规则实现
+end
+
+function Market.NewNpcProduct(category, nQuality)
+    local id, product = Develop.CreateUserProduct(category, Market.tbNpc)
+    product.nQuality = nQuality or 2
+    product.nMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange
+    product.State = tbConfig.tbProductState.nPublished
+    product.bIsNpc = true
+    product.nID = id
+
+    return product
 end
