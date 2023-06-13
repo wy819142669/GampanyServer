@@ -59,6 +59,8 @@ function Market.Marketing(tbParam, user)
         return "cash not enough", false
     end
     
+    user.nCash = user.nCash - nTotalExpense
+
     for _, tbProduct in pairs(tbParam.Product) do
         user.tbProduct[tbProduct.Id].nMarketExpance = tbProduct.Expense
     end
@@ -290,20 +292,19 @@ end
 -- 获得收益
 function Market.GainRevenue()
     local tbRuntimeData = GetTableRuntime()
---[[
+
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        for productName, nMarket in pairs(tbUser.tbMarket) do
-            if nMarket > 0 and tbUser.tbProduct[productName] and tbUser.tbProduct[productName].progress >= tbConfig.tbProduct[productName].maxProgress then
-                local nQuality = tbUser.tbProduct[productName].nQuality or 0
-                local nRevenue = nMarket * tbConfig.tbProductARPU[productName] * (0.9 + 0.1 * nQuality)
+        for id, product in pairs(tbUser.tbProduct) do
+            if product.nMarket > 0 and product.State == tbConfig.tbProductState.nPublished then
+                local nQuality = product.nQuality or 0
+                local nRevenue = math.floor(product.nMarket * tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality))
 
                 tbUser.nCash = tbUser.nCash + nRevenue
 
-                print(userName .. " " .. productName .. " Cash += " .. tostring(nRevenue))
+                print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nRevenue))
             end
         end
     end
---]]
 end
 
 function Market.SettleMarket()
