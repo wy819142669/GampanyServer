@@ -127,16 +127,16 @@ function Market.LossMarketByQuality()
 
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for id, product in pairs(tbUser.tbProduct) do
-            if product.Category ~= 'P' then
+            if IsPlatformCategory(product.Category) == false then
                 tbCurrentTotalMarket[product.Category] = tbCurrentTotalMarket[product.Category] + product.nMarket
                 if product.State == tbConfig.tbProductState.nPublished then
                     local nQuality = product.nQuality or 0
-                    if tbInfos[product.Categor].nHighestQuality < nQuality then
-                        tbInfos[product.Categor].nHighestQuality = nQuality
+                    if tbInfos[product.Category].nHighestQuality < nQuality then
+                        tbInfos[product.Category].nHighestQuality = nQuality
                     end
 
-                    tbInfos[product.Categor].nProductCount = tbInfos[product.Categor].nProductCount + 1
-                    tbInfos[product.Categor].nTotalQuality = tbInfos[product.Categor].nTotalQuality + nQuality
+                    tbInfos[product.Category].nProductCount = tbInfos[product.Category].nProductCount + 1
+                    tbInfos[product.Category].nTotalQuality = tbInfos[product.Category].nTotalQuality + nQuality
                 end
             end
         end
@@ -242,49 +242,49 @@ end
 -- 份额分配
 function Market.DistributionMarket()
     local tbRuntimeData = GetTableRuntime()
---[[
-    for productName, nMarket in pairs(tbRuntimeData.tbMarket) do
+
+    for category, nMarket in pairs(tbRuntimeData.tbMarket) do
         if nMarket > 0 then
             local tbInfos = {}
             local fTotalMarketValue = 0
             for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-                local nQuality = 0
-                if tbUser.tbProduct[productName] then
-                    nQuality = tbUser.tbProduct[productName].nQuality or 0
-                end
+                for id, product in pairs(tbUser.tbProduct) do
+                    local nQuality = product.nQuality or 0
 
-                if tbUser.bMarketingDone == true and tbUser.tbMarketingExpense[productName] and nQuality > 0 then
-                    -- TODO 当季度上线
-                    local fMarketValue = tbUser.tbMarketingExpense[productName] * (1.3 ^ (nQuality - 1))
-                    fTotalMarketValue = fTotalMarketValue + fMarketValue
-                    table.insert(tbInfos, {
-                        userName = userName,
-                        fMarketValue = fMarketValue,
-                    })
+                    if product.Category == category and product.nMarketExpance > 0 and nQuality > 0 then
+                        -- TODO 当季度上线
+                        local fMarketValue = product.nMarketExpance * (1.3 ^ (nQuality - 1))
+                        fTotalMarketValue = fTotalMarketValue + fMarketValue
+                        table.insert(tbInfos, {
+                            userName = userName,
+                            id = id,
+                            fMarketValue = fMarketValue,
+                        })
+                    end
                 end
             end
 
             if fTotalMarketValue > 0 then
-                local nTotalMarket = tbRuntimeData.tbMarket[productName]
+                local nTotalMarket = nMarket
                 local nTotalCost = 0
                 for _, tbInfo in pairs(tbInfos) do
                     local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
-                    tbRuntimeData.tbUser[tbInfo.userName].tbMarket[productName] = tbRuntimeData.tbUser[tbInfo.userName].tbMarket[productName] + nCost
+                    tbRuntimeData.tbUser[tbInfo.userName].tbProduct[tbInfo.id].nMarket = tbRuntimeData.tbUser[tbInfo.userName].tbProduct[tbInfo.id].nMarket + nCost
                     nTotalCost = nTotalCost + nCost
-                    print("user: " .. tostring(tbInfo.userName) .. " product: " .. tostring(productName) .. " Add Market: " .. tostring(nCost) .. 
-                    " TotalMarket: " .. tostring(nTotalMarket) .. " MarketValue: " .. tostring(tbInfo.fMarketValue) .. " TotalMarketValue: " .. tostring(fTotalMarketValue))
+                    print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
                 end
 
-                tbRuntimeData.tbMarket[productName] = tbRuntimeData.tbMarket[productName] - nTotalCost
+                tbRuntimeData.tbMarket[category] = tbRuntimeData.tbMarket[category] - nTotalCost
             end
         end
     end
 
     -- 清除
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.tbMarketingExpense = {}
+        for id, product in pairs(tbUser.tbProduct) do
+            product.nMarketExpance = 0
+        end
     end
---]]
 end
 
 -- 获得收益

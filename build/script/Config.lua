@@ -224,6 +224,7 @@ tbInitTables = {
         nRenovatedWorkLoad = 0,                     --已翻新工作量
         fRenovatedQuality = 0,                      --已翻新工作量的累积品质
         nMarket = 0,                                --市场份额
+        nMarketExpance = 0,                         --市场营销费用
     },
 
     --新发布产品初始表
