@@ -425,4 +425,12 @@ function DoYearReport(user)
     --tbUser.tbYearReport.nProfitBeforeTax = tbUser.tbYearReport.nGrossProfit
 end
 
+function IsPlatformProduct(product)
+    return product.Category == "P"
+end
+
+function IsPlatformCategory(category)
+    return category == "P"
+end
+
 print("load SandTable.lua success")
