@@ -27,8 +27,6 @@ local tbRuntimeData = {
     tbLoginAccount = {},    -- 已登录账号列表
     tbUser = {              -- 玩家运行时数据
         --[[default = {
-            -- 提示
-            szTitle = "",
             -- 市场营销投入
             tbMarketingExpense = {
                 a1 = { 2, 1, 1},

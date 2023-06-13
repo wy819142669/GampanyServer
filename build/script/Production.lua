@@ -80,11 +80,11 @@ function Production:PostSeason()
     for _, user in pairs(tbRuntimeData.tbUser) do
         for _, product in pairs(user.tbProduct) do
             -- 玩家没有执行上线操作前, 都需要执行UpdateWrokload函数
-            if product.Sate <= tbProductState.nEnabled then
+            if product.State <= tbProductState.nEnabled then
                 Production:UpdateWrokload(product, user, {targetState = tbProductState.nEnabled})
-            elseif product.Sate == tbProductState.nPublished then
+            elseif product.State == tbProductState.nPublished then
                 Production:UpdatePublished(product, user)
-            elseif product.Sate == tbProductState.nRenovating then            
+            elseif product.State == tbProductState.nRenovating then            
                 Production:UpdateRenovating(product, user)
                 Production:UpdatePublished(product, user)
             end

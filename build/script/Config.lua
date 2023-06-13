@@ -182,8 +182,6 @@ tbInitTables = {
         tbYearReport = { },         -- 当年报告
         tbHistoryYearReport = {},   -- 历史年报
 
-        -- 提示
-        szTitle = "",
         -- 系统消息
         tbSysMsg = {},
         tbTips = {},
@@ -219,7 +217,7 @@ tbInitTables = {
     --新立项产品初始表
     tbInitNewProduct = {
         --Category = "A",                           --产品品类，数据在立项时动态设置
-        Sate = tbConfig.tbProductState.nBuilding,   --产品状态
+        State = tbConfig.tbProductState.nBuilding,   --产品状态
         tbManpower = {0,0,0,0,0},                   --团队人员
         nFinishedWorkLoad = 0,                      --已完成工作量
         fFinishedQuality = 0,                       --已完成工作量的累积品质
