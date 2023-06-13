@@ -103,6 +103,7 @@ tbConfig = {
             --==市场运营相关配置==
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 250, --市场总份额
         },
         B = {
             --==研发相关配置==
@@ -114,6 +115,7 @@ tbConfig = {
             --==市场运营相关配置==
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 150, --市场总份额
         },
         C = {
             --==研发相关配置==
@@ -125,6 +127,7 @@ tbConfig = {
             --==市场运营相关配置==
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 350, --市场总份额
         },
         D = {
             --==研发相关配置==
@@ -136,6 +139,7 @@ tbConfig = {
             --==市场运营相关配置==
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 450, --市场总份额
         },
     },
 }
@@ -177,8 +181,7 @@ tbInitTables = {
         -- 系统消息
         tbSysMsg = {},
         tbTips = {},
-         -- 市场营销投入
-        tbMarketingExpense = {},    --todo tobe delete
+
          -- 订单
         tbOrder = {
             --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
@@ -186,10 +189,6 @@ tbInitTables = {
 
         -- 待收款
         tbReceivables = {0, 0, 0, 0},
-
-        -- 市场投标计划
-        tbMarketingExpense = {  --todo tobe delete
-        },
     },
 
     --年报初始表
@@ -220,6 +219,7 @@ tbInitTables = {
         fFinishedQuality = 0,                       --已完成工作量的累积品质
         nRenovatedWorkLoad = 0,                     --已翻新工作量
         fRenovatedQuality = 0,                      --已翻新工作量的累积品质
+        nMarket = 0,                                --市场份额
     },
 
     --新发布产品初始表，此表中key的值必须等于tbConfig.tbProductCategory中罗列的值

@@ -59,6 +59,7 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.tbUser = {}
     runtime.tbCutdownProduct = {}
     runtime.tbManpowerInMarket = {0, 0, 0, 0, 0}
+    runtime.tbMarket = {}
     return "success", true
 end
 

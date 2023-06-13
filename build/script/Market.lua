@@ -68,9 +68,13 @@ end
 
 
 function MarketMgr:DoStart()
+    local tbRuntimeData = GetTableRuntime()
+    
+    tbRuntimeData.tbMarket = {}
     tbPublishedProduct = { }
-    for k, _ in pairs(tbConfig.tbProductCategory) do
+    for k, product in pairs(tbConfig.tbProductCategory) do
         tbPublishedProduct[k] = {}
+        tbRuntimeData.tbMarket[k] = product.nTotalMarket;
     end
 end
 
@@ -80,7 +84,6 @@ end
 
 -- 份额流失
 function Market.LossMarket()
-    --[[todo 越子重构中
     local tbRuntimeData = GetTableRuntime()
     
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
@@ -91,13 +94,12 @@ function Market.LossMarket()
             if fLossRate < 0 then
                 fLossRate = 0
             end
-
-            local nLossMarket = math.floor(tbUser.tbMarket[id] * fLossRate)
-            tbUser.tbMarket[id] = tbUser.tbMarket[id] - nLossMarket;
+            
+            local nLossMarket = math.floor(tbProduct.nMarket * fLossRate)
+            tbProduct.nMarket = tbProduct.nMarket - nLossMarket;
             tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
         end
     end
-    --]]
 end
 
 -- 品类份额转移
