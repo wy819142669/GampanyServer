@@ -10,11 +10,11 @@ function Develop.NewProduct(tbParam, user)
         return "立项需要指明品类", false
     end
 
-    Develop.CreateUserProduct(tbParam.Category, user)
+    Production:CreateUserProduct(tbParam.Category, user)
     return "success", true
 end
 
-function Develop.CreateUserProduct(category, user)
+function Production:CreateUserProduct(category, user)
     local product = Lib.copyTab(tbInitTables.tbInitNewProduct)
     product.Category = category
     local id = Production:NewProductId()

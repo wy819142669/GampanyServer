@@ -210,11 +210,11 @@ function HR.Reassign(tbParam, user)
             product.tbManpower[i] = tbParam.Staffs[i]
          end
     end
-    HumanResources.UpdateJobManpower(user)
+    HumanResources:UpdateJobManpower(user)
     return "success", true
 end
 
-function HumanResources.SettleDepart()
+function HumanResources:SettleDepart()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         if user.tbDepartManpower then
@@ -254,12 +254,12 @@ function HumanResources.SettleDepart()
                     user.tbDepartManpower[i] = 0
                 end
             end
-            HumanResources.UpdateJobManpower(user)
+            HumanResources:UpdateJobManpower(user)
         end
     end
 end
 
-function HumanResources.SettlePoach()
+function HumanResources:SettlePoach()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         if user.tbPoach and user.tbPoach.bSuccess then
@@ -272,7 +272,7 @@ function HumanResources.SettlePoach()
 end
 
 -- 人才市场予以处理各企业的招聘计划
-function HumanResources.SettleHire()
+function HumanResources:SettleHire()
     -- tbManpowerInMarket = { 0, 0, 0, 0, 0 } -- 人才市场各等级人数，元素个数需要等于tbConfig.nManpowerMaxExpLevel
     -- tbUser.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
     local tbRuntimeData = GetTableRuntime()
@@ -357,7 +357,7 @@ function HumanResources.SettleHire()
     end
 end
 
-function HumanResources.AddNewManpower()
+function HumanResources:AddNewManpower()
     local tbRuntimeData = GetTableRuntime()
     local nCurSeason = tbRuntimeData.nCurSeason
     if nCurSeason ~= 1 and nCurSeason ~= 3 then
@@ -378,7 +378,7 @@ function HumanResources.AddNewManpower()
     end
 end
 
-function HumanResources.SettleFire()
+function HumanResources:SettleFire()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         for i = 1, tbConfig.nManpowerMaxExpLevel do
@@ -393,7 +393,7 @@ function HumanResources.SettleFire()
     end
 end
 
-function HumanResources.SettleTrain()
+function HumanResources:SettleTrain()
     local tbRuntimeData = GetTableRuntime()
     for name, user in pairs(tbRuntimeData.tbUser) do
         if user.tbTrainManpower then
@@ -422,16 +422,16 @@ function HumanResources.SettleTrain()
                     --若有多余，那是本季度离职的人
                 end
             end
-            HumanResources.UpdateJobManpower(user)
+            HumanResources:UpdateJobManpower(user)
         end
         user.tbTrainManpower = nil
     end
 end
 
-function HumanResources.UpdateAllUserManpower()
+function HumanResources:UpdateAllUserManpower()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
-        HumanResources.UpdateJobManpower(user)
+        HumanResources:UpdateJobManpower(user)
         user.nTotalManpower = 0
         for i = 1, tbConfig.nManpowerMaxExpLevel do
             user.nTotalManpower = user.nTotalManpower + user.tbIdleManpower[i] + user.tbFireManpower[i] + user.tbJobManpower[i]
@@ -439,7 +439,7 @@ function HumanResources.UpdateAllUserManpower()
     end
 end
 
-function HumanResources.UpdateJobManpower(user)
+function HumanResources:UpdateJobManpower(user)
     user.tbJobManpower = {0, 0, 0, 0, 0}
     for _, product in pairs(user.tbProduct) do
         for i = 1, tbConfig.nManpowerMaxExpLevel do
@@ -448,7 +448,7 @@ function HumanResources.UpdateJobManpower(user)
     end
 end
 
-function HumanResources.RecordProductManpower()
+function HumanResources:RecordProductManpower()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         for _, product in pairs(user.tbProduct) do
@@ -460,7 +460,7 @@ function HumanResources.RecordProductManpower()
     end
 end
 
-function HumanResources.PayOffSalary()
+function HumanResources:PayOffSalary()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         local nCost = user.nTotalManpower * tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)

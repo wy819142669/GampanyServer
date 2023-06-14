@@ -121,8 +121,8 @@ tbConfig = {
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
-            fProductRetentionRate = 0.5,    --产品基础留存率
             --==市场运营相关配置==
+            fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 150, --市场总份额
@@ -133,8 +133,8 @@ tbConfig = {
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
-            fProductRetentionRate = 0.5,    --产品基础留存率
             --==市场运营相关配置==
+            fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 40,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 350, --市场总份额
@@ -145,8 +145,8 @@ tbConfig = {
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
-            fProductRetentionRate = 0.5,    --产品基础留存率
             --==市场运营相关配置==
+            fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 50,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 450, --市场总份额

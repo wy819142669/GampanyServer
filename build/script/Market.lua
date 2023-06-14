@@ -98,7 +98,7 @@ function MarketMgr:OnCloseProduct(id, product)
 end
 
 -- 份额流失
-function Market.LossMarket()
+function MarketMgr:LossMarket()
     local tbRuntimeData = GetTableRuntime()
     
     local DoLossFunc = function (tbProductList)
@@ -126,7 +126,7 @@ function Market.LossMarket()
 end
 
 -- 品类份额转移
-function Market.LossMarketByQuality()
+function MarketMgr:LossMarketByQuality()
     local tbRuntimeData = GetTableRuntime()
     local tbCurrentTotalMarket = {}
     local tbInfos = {}
@@ -261,7 +261,7 @@ function Market.LossMarketByQuality()
 end
 
 -- 份额分配
-function Market.DistributionMarket()
+function MarketMgr:DistributionMarket()
     local tbRuntimeData = GetTableRuntime()
 
     for category, nMarket in pairs(tbRuntimeData.tbMarket) do
@@ -326,7 +326,7 @@ function Market.DistributionMarket()
 end
 
 -- 获得收益
-function Market.GainRevenue()
+function MarketMgr:GainRevenue()
     local tbRuntimeData = GetTableRuntime()
 
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
@@ -357,22 +357,22 @@ function Market.GainRevenue()
     end
 end
 
-function Market.SettleMarket()
+function MarketMgr:SettleMarket()
 
     -- 份额流失
-    Market.LossMarket()
+    MarketMgr:LossMarket()
 
     -- 品类份额转移
-    Market.LossMarketByQuality()
+    MarketMgr:LossMarketByQuality()
 
     -- 份额分配
-    Market.DistributionMarket()
+    MarketMgr:DistributionMarket()
 
     -- 获得收益 
-    Market.GainRevenue()
+    MarketMgr:GainRevenue()
 end
 
-function Market.UpdateNpc()
+function MarketMgr:UpdateNpc()
     for _, tbProduct in pairs(Market.tbNpc.tbProduct) do
         tbProduct.nMarketExpance = 0
     end
@@ -418,7 +418,7 @@ function Market.UpdateNpc()
 end
 
 function Market.NewNpcProduct(category, nQuality)
-    local id, product = Develop.CreateUserProduct(category, Market.tbNpc)
+    local id, product = Production:CreateUserProduct(category, Market.tbNpc)
     product.nQuality = nQuality or 2
     product.nMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
     product.State = tbConfig.tbProductState.nPublished
