@@ -15,7 +15,7 @@ function Develop.NewProduct(tbParam, user)
 end
 
 
-function Production:CreateUserProduct(category, user, workLoadRatio)    
+function Production:CreateUserProduct(category, user, workLoadRatio)
     local product = Lib.copyTab(tbInitTables.tbInitNewProduct)
     local categoryConfig = tbConfig.tbProductCategory[category]
     local id = Production:NewProductId()
@@ -183,7 +183,7 @@ function Production:GetQuality(product)
         end
     end
 
-    return totalQuality, totalMan
+    return math.floor(totalQuality + 0.5), math.floor(totalMan + 0.5)
 end
 
 
@@ -237,4 +237,16 @@ function Production:UpdatePublished(product)
 
     -- 不能超过初始品质
     product.nQuality = math.min(product.nQuality + addQuality, product.nQuality)
+end
+
+function Production:RecordProductState()
+    local tbRuntimeData = GetTableRuntime()
+    for _, user in pairs(tbRuntimeData.tbUser) do
+        for _, product in pairs(user.tbProduct) do
+            product.OriginalState = product.State
+        end
+        for _, product in pairs(user.tbClosedProduct) do
+            product.OriginalState = product.State
+        end
+    end
 end
