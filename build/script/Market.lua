@@ -14,8 +14,6 @@ function Market.Publish(tbParam, user)
     end
     if product.State == tbConfig.tbProductState.nPublished then
         return "already published", false
-    elseif product.State == tbConfig.tbProductState.nRenovating and not Production:IsRenovateComplete(product) then
-        return "renovate not completed", false
     elseif product.State ~= tbConfig.tbProductState.nEnabled then
         return "progress not enough", false
     end
@@ -25,8 +23,12 @@ function Market.Publish(tbParam, user)
         product[k] = v
     end
 
-    Production:Publish(product)
-    tbPublishedProduct[product.Category][tbParam.Id] = product
+    -- 不是翻新项目才添加
+    if not product.SourceProductId then
+        tbPublishedProduct[product.Category][tbParam.Id] = product
+    end
+
+    Production:Publish(product, user)
     
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true

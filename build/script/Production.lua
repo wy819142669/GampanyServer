@@ -14,10 +14,14 @@ function Develop.NewProduct(tbParam, user)
     return "success", true
 end
 
-function Production:CreateUserProduct(category, user)
+
+function Production:CreateUserProduct(category, user, workLoadRatio)    
     local product = Lib.copyTab(tbInitTables.tbInitNewProduct)
-    product.Category = category
+    local categoryConfig = tbConfig.tbProductCategory[category]
     local id = Production:NewProductId()
+    product.Id = id
+    product.nNeedWorkLoad = math.ceil(categoryConfig.nWorkLoad * (workLoadRatio or 1))
+    product.Category = category
     user.tbProduct[id] = product
 
     return id, product
@@ -36,6 +40,11 @@ function Develop.CloseProduct(tbParam, user)
         return "success", true
     end
 
+    -- 关闭翻新项目
+    if product.RenovateProductId then
+        Develop.CloseProduct({Id = product.RenovateProductId}, user)
+    end
+
     MarketMgr:OnCloseProduct(tbParam.Id, product)
 
     --该产品在岗人员全部回到空闲状态
@@ -47,6 +56,31 @@ function Develop.CloseProduct(tbParam, user)
     product.State = tbProductState.nClosed
     user.tbClosedProduct[tbParam.Id] = product
     user.tbProduct[tbParam.Id] = nil
+
+    return "success", true
+end
+
+-- 结束翻新 {FuncName = "Develop", Operate = "StopRenovate", Id=1 }
+function Develop.StopRenovate(tbParam, user)
+    local product
+    if tbParam.Id then
+        product = user.tbProduct[tbParam.Id]
+    end
+    if not product then
+        return "未找到产品：" .. tbParam.Id, false
+    end
+    
+    print("StopRenovate", product.State, product.State ~= tbProductState.nRenovating, product.RenovateProductId)
+    if product.State ~= tbProductState.nRenovating or not product.RenovateProductId then
+        return "不在翻新状态中", false
+    end
+
+    local targetProductId = product.RenovateProductId
+    product.RenovateProductId = nil
+    Develop.CloseProduct({Id = targetProductId}, user)
+
+    product.State = tbProductState.nPublished
+
     return "success", true
 end
 
@@ -59,17 +93,19 @@ function Develop.Renovate(tbParam, user)
     if product == nil then
         return "未找到欲翻新的产品：" .. tbParam.Id, false
     end
+
     if product.State == tbProductState.nRenovating then
         return "success", true
-    elseif product.State ~= tbProductState.nEnabled or product.State ~= tbProductState.nPublished then
+    elseif product.State ~= tbProductState.nPublished then
         return "未完成的产品不能翻新：" .. tbParam.Id, false
     end
+
+    -- 新建项目并创建双方链接
+    local newId, newProduct = Production:CreateUserProduct(product.Category, user, tbConfig.fRenovateWorkLoadRatio)
+    product.RenovateProductId = newId
+    newProduct.SourceProductId = tbParam.Id
+
     product.State = tbProductState.nRenovating
-
-    -- 翻新时清空初始值，当翻新完成后替换当前值。
-    product.nRenovatedWorkLoad = 0
-    product.fRenovatedQuality = 0
-
     return "success", true
 end
 
@@ -88,11 +124,8 @@ function Production:PostSeason()
         for _, product in pairs(user.tbProduct) do
             -- 玩家没有执行上线操作前, 都需要执行UpdateWrokload函数
             if product.State <= tbProductState.nEnabled then
-                Production:UpdateWrokload(product, user, {targetState = tbProductState.nEnabled})
-            elseif product.State == tbProductState.nPublished then
-                Production:UpdatePublished(product, user)
-            elseif product.State == tbProductState.nRenovating then            
-                Production:UpdateRenovating(product, user)
+                Production:UpdateWrokload(product, user)
+            elseif product.State >= tbProductState.nPublished then
                 Production:UpdatePublished(product, user)
             end
         end
@@ -100,29 +133,27 @@ function Production:PostSeason()
 end
 
 -- 首次发布和翻新发布都通过此函数设置品质与状态
-function Production:Publish(product)
-    local curQuality = product.fCurQuality
-    local oldState = product.State
-    if oldState == tbProductState.nEnabled then
-        curQuality = product.fFinishedQuality / product.nFinishedWorkLoad
-    elseif oldState == tbProductState.nRenovating then
-        curQuality = product.fRenovatedQuality / product.nRenovatedWorkLoad
+function Production:Publish(product, user)
+    local state = product.State
+    if state ~= tbProductState.nEnabled then
+        return
     end
 
-    product.fFinishedQuality = curQuality
-    product.fCurQuality = curQuality -- todo: remove fCurQuality
-    product.nQuality = math.floor(product.fCurQuality)
+    local quality = math.floor(product.fFinishedQuality / product.nFinishedWorkLoad)
+    product.fFinishedQuality = quality
+    product.nQuality = quality
     product.State = tbProductState.nPublished
-end
 
--- 判断当前产品是否翻新完成
-function Production:IsRenovateComplete(product)
-    if product.State ~= tbProductState.nRenovating then
-        return false
+    -- 合并数据
+    if product.SourceProductId then
+        local sourceProduct = user.tbProduct[product.SourceProductId]
+        sourceProduct.RenovateProductId = nil
+        sourceProduct.nQuality = quality
+        sourceProduct.fFinishedQuality = quality
+        sourceProduct.State = tbProductState.nPublished
+
+        Develop.CloseProduct({Id = product.Id}, user)
     end
-
-    local category = tbConfig.tbProductCategory[product.Category]
-    return product.nRenovatedWorkLoad >= math.ceil(category.nWorkLoad * tbConfig.fRenovateWorkLoadRatio)
 end
 
 function Production:GetQuality(product)
@@ -155,35 +186,26 @@ function Production:GetQuality(product)
     return totalQuality, totalMan
 end
 
--- UpdateWrokload函数会被研发和翻新两个阶段复用, 所以有冲突的变量都需要通过options传入
--- options = {
---     workLoadKey = nil,       product中与当前阶段相关的 人力 变量的key
---     qualityKey = nil,        product中与当前阶段相关的 质量 变量的key
---     workLoadRatio = nil,     所需人力比例, 默认值为1, 翻新时通过传入参数控制比例
---     targetState = nil,       不传递targetState在工时满足后不自动切换状态
--- }
-function Production:UpdateWrokload(product, user, options)
-    local category = tbConfig.tbProductCategory[product.Category]
-    local totalQuality, totalMan = self:GetQuality(product)
-    options = options or {}
-    local workLoadKey = options.workLoadKey or "nFinishedWorkLoad"
-    local qualityKey = options.qualityKey or "fFinishedQuality"
-    product[workLoadKey] = product[workLoadKey] + totalMan
-    product[qualityKey] = product[qualityKey] + totalQuality
 
-    -- 向上取整
-    local workLoadRatio = options.workLoadRatio or 1
-    if product[workLoadKey] < math.ceil(category.nWorkLoad * workLoadRatio) then
+function Production:UpdateWrokload(product, user)
+    local totalQuality, totalMan = self:GetQuality(product)
+    local newWorkLoadValue = product.nFinishedWorkLoad + totalMan
+    local newQualityValue = product.fFinishedQuality + totalQuality
+
+    product.nFinishedWorkLoad = newWorkLoadValue
+    product.fFinishedQuality = newQualityValue
+
+    if newWorkLoadValue < product.nNeedWorkLoad then
         return
     end
 
-    --====产品研发完成, 翻新过程中人力满足后不自动切换成上线状态, 需要玩家手动执行上线操作====
-    if options.targetState then
-        product.State = options.targetState
+    if product.State ~= tbProductState.nEnabled then
+        product.State = tbProductState.nEnabled
     end
 
     --====把多余的人手（超过category.nMaintainTeam），自动释放====
     totalMan = 0
+    local category = tbConfig.tbProductCategory[product.Category]
     for i = tbConfig.nManpowerMaxExpLevel, 1, -1 do
         if product.tbManpower[i] > 0 then
             if totalMan >= category.nMaintainTeam then
@@ -214,15 +236,5 @@ function Production:UpdatePublished(product)
     end
 
     -- 不能超过初始品质
-    product.fCurQuality = math.min(product.fCurQuality + addQuality, product.fCurQuality) -- todo:remove fCurQuality
-    product.nQuality = math.floor(product.fCurQuality)
-end
-
-function Production:UpdateRenovating(product, user)
-    local options = {
-        workLoadKey = "nRenovatedWorkLoad",       
-        qualityKey = "fRenovatedQuality",        
-        workLoadRatio = tbConfig.fRenovateWorkLoadRatio,
-    }
-    self:UpdateWrokload(product, user, options)
+    product.nQuality = math.min(product.nQuality + addQuality, product.nQuality)
 end

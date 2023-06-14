@@ -230,12 +230,11 @@ tbInitTables = {
     --新立项产品初始表
     tbInitNewProduct = {
         --Category = "A",                           --产品品类，数据在立项时动态设置
-        State = tbConfig.tbProductState.nBuilding,   --产品状态
+        State = tbConfig.tbProductState.nBuilding,  --产品状态
         tbManpower = {0,0,0,0,0},                   --团队人员
+        nNeedWorkLoad = 0,                          --所需工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
         fFinishedQuality = 0,                       --已完成工作量的累积品质
-        nRenovatedWorkLoad = 0,                     --已翻新工作量
-        fRenovatedQuality = 0,                      --已翻新工作量的累积品质
         nMarket = 0,                                --市场份额
         nMarketExpance = 0,                         --市场营销费用
     },
