@@ -231,12 +231,13 @@ function Production:UpdatePublished(product)
     local category = tbConfig.tbProductCategory[product.Category]
     local totalQuality, totalMan = self:GetQuality(product)
     -- 人力投入大于理想人员规模和当前品质大于等于初始品质
-    if totalMan >= category.nIdeaTeam and totalQuality >= product.fFinishedQuality then
+    if totalMan >= category.nMaintainTeam and totalQuality / totalMan >= product.fFinishedQuality then
         addQuality = 1
     end
 
     -- 不能超过初始品质
-    product.nQuality = math.min(product.nQuality + addQuality, product.nQuality)
+    product.nQuality = math.min(product.nQuality + addQuality, product.fFinishedQuality)
+    product.nQuality = math.max(1, product.nQuality)
 end
 
 function Production:RecordProductState()
