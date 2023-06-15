@@ -220,7 +220,7 @@ function Production:UpdateWrokload(product, user)
                 user.tbIdleManpower[i] = user.tbIdleManpower[i] + exceed
                 user.tbJobManpower[i] = user.tbJobManpower[i] - exceed
                 totalMan = totalMan + product.tbManpower[i]
-                product.tbManpower[i] = category.nMaintainTeam - totalMan                                           
+                product.tbManpower[i] = product.tbManpower[i] - exceed
             end
         end
     end
