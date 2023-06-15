@@ -36,18 +36,6 @@ tbConfig = {
         nClosed = 5,         -- 关闭
     },
 
-    tbProduct = {           --todo 待被整理
-        a1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3, },
-        a2 = { minManpower = 40, maxManpower = 120, maxProgress = 4, addMarketCost = 8,},
-        b1 = { minManpower = 20, maxManpower = 60, maxProgress = 3, addMarketCost = 3,},
-        b2 = { minManpower = 40, maxManpower = 120, maxProgress = 6, addMarketCost = 12,},
-        d1 = { minManpower = 40, maxManpower = 120, maxProgress = 4, addMarketCost = 8,},
-        d2 = { minManpower = 80, maxManpower = 240, maxProgress = 6, addMarketCost = 24,},
-        e1 = { minManpower = 60, maxManpower = 180, maxProgress = 4, addMarketCost = 12,},
-        e2 = { minManpower = 120, maxManpower = 360, maxProgress = 8, addMarketCost = 48,},
-    },
-    --tbProductSort = {"a1", "a2", "b1", "b2", "d1", "d2", "e1", "e2"},
-    --tbYearStep = {},
     tbOrder = { -- 订单
     },
 
