@@ -400,6 +400,7 @@ function MarketMgr:UpdateNpc()
         if nProductNum > nNpcProductNum and nProductNum < tbConfig.tbNpc.nMaxProductNum and nNpcProductNum < tbConfig.tbNpc.nMinNpcProductNum then
             local nAvgQuality = math.ceil(math.min(nTotalQuality / nProductNum, nUserMaxQuality))
             local product = Market.NewNpcProduct(category, nAvgQuality)
+            print("NewNpcProduct:", product.nID)
             tbProductList[product.nID] = product
         end
     end
@@ -413,6 +414,7 @@ function MarketMgr:UpdateNpc()
         if tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpance < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
+            MarketMgr:OnCloseProduct(id, tbProduct)
         end
 
         tbProduct.nLastMarketIncome = nil
