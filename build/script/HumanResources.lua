@@ -11,6 +11,7 @@ function HR.RaiseSalary(tbParam, user)
     end
     user.nSalaryLevel = user.nSalaryLevel + 1
     local szReturnMsg = "薪水标准提升至:" .. tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
+    user.bStepDone = true  -- 调薪完自动结束当前步骤
     return szReturnMsg, true
 end
 
