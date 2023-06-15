@@ -26,6 +26,7 @@ tbConfig = {
     fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
     fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
     fRenovateWorkLoadRatio = 0.7,   --翻新所需人力比例
+    fQualityPerManpowerLevel = 2.0, --每人力等级可以提供的品质点数，人力1~5级， 产品2~10级
 
     -- 产品状态
     tbProductState = {

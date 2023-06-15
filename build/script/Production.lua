@@ -183,7 +183,7 @@ function Production:GetQuality(product)
         end
     end
 
-    return math.floor(totalQuality + 0.5), math.floor(totalMan + 0.5)
+    return math.floor(totalQuality * tbConfig.fQualityPerManpowerLevel + 0.5), math.floor(totalMan + 0.5)
 end
 
 
