@@ -76,13 +76,16 @@ function HR.CommitFire(tbParam, user)
     return msg, true
 end
 
--- 培训 {FuncName = "HR", Operate = "CommitTrain", tbTrain = { 2, 1, 1, 0}}
+-- 培训 {FuncName = "HR", Operate = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
 function HR.CommitTrain(tbParam, user)
     local result = "success"
 
+    -- 最高级别员工若设置培训人数会被直接忽略
+    tbParam.tbTrain[tbConfig.nManpowerMaxExpLevel] = 0
+
     -- 如果有旧的提交记录，则undo
     local nTotalNum = 0
-    if user.tbTrainManpower then
+    if user.tbTrainManpower then   --user.tbTrainManpower存储时还是存五级，当最高级处理时被忽略
         for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
             nTotalNum = nTotalNum + user.tbTrainManpower[i]
         end
@@ -93,7 +96,7 @@ function HR.CommitTrain(tbParam, user)
 
     --计算最多允许培训的人员数目
     local tbMax = Lib.copyTab(user.tbIdleManpower)
-    for i = 1, tbConfig.nManpowerMaxExpLevel do
+    for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
         tbMax[i] = tbMax[i] + user.tbFireManpower[i]
         tbMax[i] = tbMax[i] + user.tbJobManpower[i]
         tbMax[i] = math.max(1, math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel))
@@ -119,7 +122,7 @@ function HR.CommitTrain(tbParam, user)
             return "没有足够的费用进行培训", false
         end
         user.nCash = user.nCash - nCost
-        user.tbTrainManpower = tbParam.tbTrain
+        user.tbTrainManpower = tbParam.tbTrain  --user.tbTrainManpower存储时还是存五级，当最高级处理时被忽略
         result = "成功设置培训"
     end
     return result, true
