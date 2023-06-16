@@ -76,14 +76,14 @@ function HR.CommitFire(tbParam, user)
     return msg, true
 end
 
--- 培训 {FuncName = "HR", Operate = "CommitTrain", tbTrain = { 2, 1, 1, 0, 0}}
+-- 培训 {FuncName = "HR", Operate = "CommitTrain", tbTrain = { 2, 1, 1, 0}}
 function HR.CommitTrain(tbParam, user)
     local result = "success"
 
     -- 如果有旧的提交记录，则undo
     local nTotalNum = 0
     if user.tbTrainManpower then
-        for i = 1, tbConfig.nManpowerMaxExpLevel do
+        for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
             nTotalNum = nTotalNum + user.tbTrainManpower[i]
         end
         user.nCash = user.nCash + nTotalNum * tbConfig.nSalary
@@ -101,7 +101,7 @@ function HR.CommitTrain(tbParam, user)
     tbMax[tbConfig.nManpowerMaxExpLevel] = 0
 
     nTotalNum = 0
-    for i = 1, tbConfig.nManpowerMaxExpLevel do
+    for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
         nTotalNum = nTotalNum + tbParam.tbTrain[i]
         if tbParam.tbTrain[i] > tbMax[i] then
             return string.format("%d级员工最多只能培训%d个", i, tbMax[i]), false
