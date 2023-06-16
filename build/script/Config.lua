@@ -25,7 +25,6 @@ tbConfig = {
     --==== 产品研发相关设置，只读不写 ====
     fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
     fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
-    fRenovateWorkLoadRatio = 0.7,   --翻新所需人力比例
     fQualityPerManpowerLevel = 2.0, --每人力等级可以提供的品质点数，人力1~5级， 产品2~10级
 
     -- 产品状态
@@ -34,7 +33,8 @@ tbConfig = {
         nEnabled = 2,        -- 可上线（完成研发）
         nPublished = 3,      -- 发布
         nRenovating = 4,     -- 翻新
-        nClosed = 5,         -- 关闭
+        nRenovateDone = 5,   -- 翻新工作量已完成
+        nClosed = 6,         -- 关闭
     },
 
     tbOrder = { -- 订单
@@ -97,42 +97,46 @@ tbConfig = {
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
-            nMaintainTeam = 10, --上线运营时需要维护团队规模
-            fProductRetentionRate = 0.5,    --产品基础留存率
+            nRenovationWorkload = 30,        --翻新时的工作量
+            nMaintainTeam = 10,             --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            nBaseARPU = 10,     --基础ARPU
-            nMaxMarketScale = 30,  --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 250, --市场总份额
+            fProductRetentionRate = 0.5,    --产品基础留存率
+            nBaseARPU = 10,                 --基础ARPU
+            nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 250,             --市场总份额
         },
         B = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
-            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            nRenovationWorkload = 30,        --翻新时的工作量
+            nMaintainTeam = 10,             --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
-            nBaseARPU = 10,     --基础ARPU
-            nMaxMarketScale = 20,  --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 150, --市场总份额
+            nBaseARPU = 10,                 --基础ARPU
+            nMaxMarketScale = 20,           --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 150,             --市场总份额
         },
         C = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
-            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            nRenovationWorkload = 30,        --翻新时的工作量
+            nMaintainTeam = 10,             --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
-            nBaseARPU = 10,     --基础ARPU
-            nMaxMarketScale = 40,  --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 350, --市场总份额
+            nBaseARPU = 10,                 --基础ARPU
+            nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 350,             --市场总份额
         },
         D = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
+            nRenovationWorkload = 30,        --翻新时的工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
@@ -145,7 +149,8 @@ tbConfig = {
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
             nWorkLoad = 40,     --工作量
-            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            nRenovationWorkload = 30,        --翻新时的工作量
+            nMaintainTeam = 10,             --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
             bIsPlatform = true,
         },
@@ -221,7 +226,7 @@ tbInitTables = {
         --Category = "A",                           --产品品类，数据在立项时动态设置
         State = tbConfig.tbProductState.nBuilding,  --产品状态
         tbManpower = {0,0,0,0,0},                   --团队人员
-        nNeedWorkLoad = 0,                          --所需工作量
+        nNeedWorkLoad = 0,                          --研发或翻新需要完成的工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
         fFinishedQuality = 0,                       --已完成工作量的累积品质
         nMarket = 0,                                --市场份额

@@ -14,16 +14,14 @@ function Develop.NewProduct(tbParam, user)
     return "success", true
 end
 
-
-function Production:CreateUserProduct(category, user, workLoadRatio)
+function Production:CreateUserProduct(category, user)
     local product = Lib.copyTab(tbInitTables.tbInitNewProduct)
     local categoryConfig = tbConfig.tbProductCategory[category]
     local id = Production:NewProductId()
     product.Id = id
-    product.nNeedWorkLoad = math.ceil(categoryConfig.nWorkLoad * (workLoadRatio or 1))
+    product.nNeedWorkLoad = categoryConfig.nWorkLoad
     product.Category = category
     user.tbProduct[id] = product
-
     return id, product
 end
 
@@ -101,7 +99,7 @@ function Develop.Renovate(tbParam, user)
     end
 
     -- 新建项目并创建双方链接
-    local newId, newProduct = Production:CreateUserProduct(product.Category, user, tbConfig.fRenovateWorkLoadRatio)
+    local newId, newProduct = Production:CreateUserProduct(product.Category, user)
     product.RenovateProductId = newId
     newProduct.SourceProductId = tbParam.Id
 
@@ -186,7 +184,6 @@ function Production:GetQuality(product)
     return math.floor(totalQuality * tbConfig.fQualityPerManpowerLevel + 0.5), math.floor(totalMan + 0.5)
 end
 
-
 function Production:UpdateWrokload(product, user)
     local totalQuality, totalMan = self:GetQuality(product)
     local newWorkLoadValue = product.nFinishedWorkLoad + totalMan
@@ -199,8 +196,10 @@ function Production:UpdateWrokload(product, user)
         return
     end
 
-    if product.State ~= tbProductState.nEnabled then
+    if product.State == tbProductState.nBuilding then 
         product.State = tbProductState.nEnabled
+    elseif product.State == tbProductState.nRenovating then
+        product.State = tbProductState.nRenovateDone
     end
 
     --====把多余的人手（超过category.nMaintainTeam），自动释放====
