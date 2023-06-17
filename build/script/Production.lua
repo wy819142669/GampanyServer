@@ -9,7 +9,6 @@ function Develop.NewProduct(tbParam, user)
     if tbParam.Category == nil then
         return "立项需要指明品类", false
     end
-
     Production:CreateUserProduct(tbParam.Category, user)
     return "success", true
 end
@@ -39,10 +38,6 @@ function Develop.CloseProduct(tbParam, user)
     end
 
     -- 关闭翻新项目
-    if product.RenovateProductId then
-        Develop.CloseProduct({Id = product.RenovateProductId}, user)
-    end
-
     MarketMgr:OnCloseProduct(tbParam.Id, product)
 
     --该产品在岗人员全部回到空闲状态
@@ -58,29 +53,7 @@ function Develop.CloseProduct(tbParam, user)
     return "success", true
 end
 
--- 结束翻新 {FuncName = "Develop", Operate = "StopRenovate", Id=1 }
-function Develop.StopRenovate(tbParam, user)
-    local product
-    if tbParam.Id then
-        product = user.tbProduct[tbParam.Id]
-    end
-    if not product then
-        return "未找到产品：" .. tbParam.Id, false
-    end
-    
-    print("StopRenovate", product.State, product.State ~= tbProductState.nRenovating, product.RenovateProductId)
-    if product.State ~= tbProductState.nRenovating or not product.RenovateProductId then
-        return "不在翻新状态中", false
-    end
-
-    local targetProductId = product.RenovateProductId
-    product.RenovateProductId = nil
-    Develop.CloseProduct({Id = targetProductId}, user)
-
-    product.State = tbProductState.nPublished
-
-    return "success", true
-end
+-- 对翻新完成的产品，执行发布操作，结束翻新
 
 -- 开始翻新产品 {FuncName = "Develop", Operate = "Renovate", Id=1 }
 function Develop.Renovate(tbParam, user)
@@ -95,15 +68,11 @@ function Develop.Renovate(tbParam, user)
     if product.State == tbProductState.nRenovating then
         return "success", true
     elseif product.State ~= tbProductState.nPublished then
-        return "未完成的产品不能翻新：" .. tbParam.Id, false
+        return "未发布的产品不能翻新：" .. tbParam.Id, false
     end
-
-    -- 新建项目并创建双方链接
-    local newId, newProduct = Production:CreateUserProduct(product.Category, user)
-    product.RenovateProductId = newId
-    newProduct.SourceProductId = tbParam.Id
-
     product.State = tbProductState.nRenovating
+    product.nFinishedWorkLoad = 0
+    product.fFinishedQuality = 0
     return "success", true
 end
 
@@ -121,7 +90,7 @@ function Production:PostSeason()
     for _, user in pairs(tbRuntimeData.tbUser) do
         for _, product in pairs(user.tbProduct) do
             -- 玩家没有执行上线操作前, 都需要执行UpdateWrokload函数
-            if product.State <= tbProductState.nEnabled then
+            if product.State <= tbProductState.nEnabled or product.State == tbProductState.nRenovating or product.State == tbProductState.nRenovateDone then
                 Production:UpdateWrokload(product, user)
             elseif product.State >= tbProductState.nPublished then
                 Production:UpdatePublished(product, user)
@@ -133,25 +102,14 @@ end
 -- 首次发布和翻新发布都通过此函数设置品质与状态
 function Production:Publish(product, user)
     local state = product.State
-    if state ~= tbProductState.nEnabled then
-        return
-    end
+    --在Market.Publish中已对产品状态做过检查，此处略过
+    --product.State == tbConfig.tbProductState.nEnabled or product.State == tbConfig.tbProductState.nRenovateDone
 
     local quality = math.floor(product.fFinishedQuality / product.nFinishedWorkLoad)
     product.fFinishedQuality = quality
+    product.nOrigQuality= quality
     product.nQuality = quality
     product.State = tbProductState.nPublished
-
-    -- 合并数据
-    if product.SourceProductId then
-        local sourceProduct = user.tbProduct[product.SourceProductId]
-        sourceProduct.RenovateProductId = nil
-        sourceProduct.nQuality = quality
-        sourceProduct.fFinishedQuality = quality
-        sourceProduct.State = tbProductState.nPublished
-
-        Develop.CloseProduct({Id = product.Id}, user)
-    end
 end
 
 function Production:GetQuality(product)
@@ -239,6 +197,7 @@ function Production:UpdatePublished(product)
     product.nQuality = math.max(1, product.nQuality)
 end
 
+--[[
 function Production:RecordProductState()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
@@ -250,3 +209,4 @@ function Production:RecordProductState()
         end
     end
 end
+--]]

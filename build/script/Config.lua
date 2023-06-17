@@ -236,10 +236,11 @@ tbInitTables = {
     --新发布产品初始表
     tbInitPublishedProduct = {
         nMarketExpance = 1,         --市场营销费用，至少为1
-        nLastMarketExpance = 1,      --最后一个季度/上季度市场营销费用
-        nLastMarketScale = 0,        --最后一个季度/上季度市场规模
-        nLastARPU = 0,               --最后一个季度/上季度ARPU
-        nLastMarketIncome = 0,       --最后一个季度/上季度收入
+        nLastMarketExpance = 1,     --最后一个季度/上季度市场营销费用
+        nLastMarketScale = 0,       --最后一个季度/上季度市场规模
+        nLastARPU = 0,              --最后一个季度/上季度ARPU
+        nLastMarketIncome = 0,      --最后一个季度/上季度收入
+        nOrigQuality = 0,           --产品研发或翻新完时的初始质量
         fCurQuality = 0,            --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
     },
 }

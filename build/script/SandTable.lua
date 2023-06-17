@@ -311,7 +311,6 @@ function DoPreSeason()
     MarketMgr:UpdateNpc()              -- Npc调整
 
     HumanResources:RecordProductManpower() -- 记录季度开始时的人力
-    Production:RecordProductState() -- 记录季度开始时的产品状态
 end
 
 -- 每个季度结束后的自动处理

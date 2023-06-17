@@ -12,19 +12,15 @@ function Market.Publish(tbParam, user)
     if not product then
         return "product not exist", false
     end
-    if product.State == tbConfig.tbProductState.nPublished then
-        return "already published", false
-    elseif product.State ~= tbConfig.tbProductState.nEnabled then
-        return "progress not enough", false
+    if product.State ~= tbConfig.tbProductState.nEnabled and product.State ~= tbConfig.tbProductState.nRenovateDone then
+        return "product state don't match", false
     end
 
-    --复制已发布产品的数据初始化项
-    for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
-        product[k] = v
-    end
-
-    -- 不是翻新项目才添加
-    if not product.SourceProductId then
+    --==== 对于新发布的产品，不是翻新项目 ====
+    if product.State == tbConfig.tbProductState.nEnabled then
+        for k, v in pairs(tbInitTables.tbInitPublishedProduct) do   --复制已发布产品的数据初始化项
+            product[k] = v
+        end
         tbPublishedProduct[product.Category][tbParam.Id] = product
     end
 
@@ -39,6 +35,9 @@ end
 function Market.Marketing(tbParam, user)
     print("Marketing")
     local nTotalExpense = 0
+
+    --todo 如果是当季度已经设置过市场费用，要先还原
+
     for _, tbProduct in pairs(tbParam.Product) do
         product = user.tbProduct[tbProduct.Id]
 
@@ -46,7 +45,7 @@ function Market.Marketing(tbParam, user)
             return "product not exist", false
         end
 
-        if product.State ~= tbConfig.tbProductState.nPublished then
+        if product.State ~= tbConfig.tbProductState.nPublished or product.State ~= tbConfig.tbProductState.nRenovating or product.State ~= tbConfig.tbProductState.nRenovateDone then
             return "product hasn't been published yet", false
         end
 
@@ -66,10 +65,8 @@ function Market.Marketing(tbParam, user)
     for _, tbProduct in pairs(tbParam.Product) do
         user.tbProduct[tbProduct.Id].nMarketExpance = tbProduct.Expense
     end
-    
     return "success", true
 end
-
 
 function MarketMgr:DoStart()
     local tbRuntimeData = GetTableRuntime()
