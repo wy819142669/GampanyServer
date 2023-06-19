@@ -96,6 +96,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
+            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,     --工作量
             nRenovationWorkload = 30,        --翻新时的工作量
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
@@ -109,6 +111,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
+            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,     --工作量
             nRenovationWorkload = 30,        --翻新时的工作量
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
@@ -122,6 +126,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
+            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,     --工作量
             nRenovationWorkload = 30,        --翻新时的工作量
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
@@ -135,6 +141,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
+            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,     --工作量
             nRenovationWorkload = 30,        --翻新时的工作量
             nMaintainTeam = 10, --上线运营时需要维护团队规模
@@ -148,6 +156,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 8,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
+            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,     --工作量
             nRenovationWorkload = 30,        --翻新时的工作量
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
@@ -155,6 +165,12 @@ tbConfig = {
             bIsPlatform = true,
         },
     },
+}
+
+tbConfig.tbPublishedState = {       -- 已发布状态
+    tbConfig.tbProductState.nPublished,
+    tbConfig.tbProductState.nRenovating,
+    tbConfig.tbProductState.nRenovateDone,
 }
 
 --====所有已发布的产品（不包含已关闭的）（的引用），分品类组织====
@@ -229,19 +245,16 @@ tbInitTables = {
         nNeedWorkLoad = 0,                          --研发或翻新需要完成的工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
         fFinishedQuality = 0,                       --已完成工作量的累积品质
-        nMarket = 0,                                --市场份额
-        nMarketExpance = 0,                         --市场营销费用
     },
 
     --新发布产品初始表
     tbInitPublishedProduct = {
-        nMarketExpance = 1,         --市场营销费用，至少为1
         nLastMarketExpance = 1,     --最后一个季度/上季度市场营销费用
         nLastMarketScale = 0,       --最后一个季度/上季度市场规模
         nLastARPU = 0,              --最后一个季度/上季度ARPU
         nLastMarketIncome = 0,      --最后一个季度/上季度收入
         nOrigQuality = 0,           --产品研发或翻新完时的初始质量
-        fCurQuality = 0,            --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
+        nQuality = 0,               --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
     },
 }
 

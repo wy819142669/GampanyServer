@@ -92,7 +92,7 @@ function Production:PostSeason()
             -- 玩家没有执行上线操作前, 都需要执行UpdateWrokload函数
             if product.State <= tbProductState.nEnabled or product.State == tbProductState.nRenovating or product.State == tbProductState.nRenovateDone then
                 Production:UpdateWrokload(product, user)
-            elseif product.State >= tbProductState.nPublished then
+            elseif Production:IsPublished(product) then
                 Production:UpdatePublished(product, user)
             end
         end
@@ -116,16 +116,21 @@ function Production:GetQuality(product)
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan = 0
     local totalQuality = 0
+
+    local bInRenovate = product.State == tbConfig.tbProductState.nRenovating
+    local nMinTeam = bInRenovate and category.nRenovateMinTeam or category.nMinTeam
+    local nIdeaTeam = bInRenovate and category.nRenovateIdeaTeam or category.nIdeaTeam
+
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         totalMan = totalMan + product.tbManpower[i]
         totalQuality = totalQuality + product.tbManpower[i] * i
     end
-    if totalMan < category.nMinTeam then
+    if totalMan < nMinTeam then
         totalMan = totalMan * tbConfig.fSmallTeamRatio
         totalQuality = totalQuality * tbConfig.fSmallTeamRatio
-    elseif totalMan > category.nIdeaTeam then
-        local exceed = totalMan - category.nIdeaTeam
-        totalMan = category.nIdeaTeam + exceed * tbConfig.fBigTeamRatio
+    elseif totalMan > nIdeaTeam then
+        local exceed = totalMan - nIdeaTeam
+        totalMan = nIdeaTeam + exceed * tbConfig.fBigTeamRatio
         --团队超出理想规模时，优先保留级别高员工贡献的质量
         for i = 1, tbConfig.nManpowerMaxExpLevel do
             if product.tbManpower[i] > 0 then
@@ -188,13 +193,17 @@ function Production:UpdatePublished(product)
     local category = tbConfig.tbProductCategory[product.Category]
     local totalQuality, totalMan = self:GetQuality(product)
     -- 人力投入大于理想人员规模和当前品质大于等于初始品质
-    if totalMan >= category.nMaintainTeam and totalQuality / totalMan >= product.fFinishedQuality then
+    if totalMan >= category.nMaintainTeam and totalQuality / totalMan >= product.nOrigQuality then
         addQuality = 1
     end
 
     -- 不能超过初始品质
-    product.nQuality = math.min(product.nQuality + addQuality, product.fFinishedQuality)
+    product.nQuality = math.min(product.nQuality + addQuality, product.nOrigQuality)
     product.nQuality = math.max(1, product.nQuality)
+end
+
+function Production:IsPublished(product)
+    return table.contain_value(tbConfig.tbPublishedState, product.State)
 end
 
 --[[

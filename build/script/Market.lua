@@ -45,7 +45,7 @@ function Market.Marketing(tbParam, user)
             return "product not exist", false
         end
 
-        if product.State ~= tbConfig.tbProductState.nPublished or product.State ~= tbConfig.tbProductState.nRenovating or product.State ~= tbConfig.tbProductState.nRenovateDone then
+        if not Production:IsPublished(product) then
             return "product hasn't been published yet", false
         end
 
@@ -63,7 +63,7 @@ function Market.Marketing(tbParam, user)
     user.nCash = user.nCash - nTotalExpense
 
     for _, tbProduct in pairs(tbParam.Product) do
-        user.tbProduct[tbProduct.Id].nMarketExpance = tbProduct.Expense
+        user.tbProduct[tbProduct.Id].nLastMarketExpance = tbProduct.Expense
     end
     return "success", true
 end
@@ -102,7 +102,7 @@ function MarketMgr:LossMarket()
     
     local DoLossFunc = function (tbProductList)
         for id, tbProduct in pairs(tbProductList) do
-            if tbProduct.nMarket and tbProduct.nMarket > 0 then
+            if tbProduct.nLastMarketScale and tbProduct.nLastMarketScale > 0 then
                 local nQuality = tbProduct.nQuality or 0
                 local category = tbConfig.tbProductCategory[tbProduct.Category]
                 local fLossRate = (1.0 - category.fProductRetentionRate - 0.01 * nQuality)
@@ -110,8 +110,8 @@ function MarketMgr:LossMarket()
                     fLossRate = 0
                 end
                 
-                local nLossMarket = math.floor(tbProduct.nMarket * fLossRate)
-                tbProduct.nMarket = tbProduct.nMarket - nLossMarket;
+                local nLossMarket = math.floor(tbProduct.nLastMarketScale * fLossRate)
+                tbProduct.nLastMarketScale = tbProduct.nLastMarketScale - nLossMarket;
                 tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
             end
         end
@@ -148,8 +148,8 @@ function MarketMgr:LossMarketByQuality()
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for id, product in pairs(tbUser.tbProduct) do
             if IsPlatformCategory(product.Category) == false then
-                tbCurrentTotalMarket[product.Category] = tbCurrentTotalMarket[product.Category] + product.nMarket
-                if product.State == tbConfig.tbProductState.nPublished then
+                if Production:IsPublished(product) then
+                    tbCurrentTotalMarket[product.Category] = tbCurrentTotalMarket[product.Category] + product.nLastMarketScale
                     local nQuality = product.nQuality or 0
                     if tbInfos[product.Category].nHighestQuality < nQuality then
                         tbInfos[product.Category].nHighestQuality = nQuality
@@ -271,9 +271,9 @@ function MarketMgr:DistributionMarket()
                 for id, product in pairs(tbUser.tbProduct) do
                     local nQuality = product.nQuality or 0
 
-                    if product.Category == category and product.nMarketExpance > 0 and nQuality > 0 then
+                    if Production:IsPublished(product) and product.Category == category and product.nLastMarketExpance > 0 and nQuality > 0 then
                         -- TODO 当季度上线
-                        local fMarketValue = product.nMarketExpance * (1.3 ^ (nQuality - 1))
+                        local fMarketValue = product.nLastMarketExpance * (1.3 ^ (nQuality - 1))
                         fTotalMarketValue = fTotalMarketValue + fMarketValue
                         table.insert(tbInfos, {
                             userName = userName,
@@ -286,10 +286,9 @@ function MarketMgr:DistributionMarket()
 
             for id, product in pairs(Market.tbNpc.tbProduct) do
                 local nQuality = product.nQuality or 0
-
-                if product.Category == category and product.nMarketExpance > 0 and nQuality > 0 then
+                if Production:IsPublished(product) and product.Category == category and product.nLastMarketExpance > 0 and nQuality > 0 then
                     -- TODO 当季度上线
-                    local fMarketValue = product.nMarketExpance * (1.3 ^ (nQuality - 1))
+                    local fMarketValue = product.nLastMarketExpance * (1.3 ^ (nQuality - 1))
                     fTotalMarketValue = fTotalMarketValue + fMarketValue
                     table.insert(tbInfos, {
                         userName = tbConfig.tbNpc.szName,
@@ -305,7 +304,7 @@ function MarketMgr:DistributionMarket()
                 for _, tbInfo in pairs(tbInfos) do
                     local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
                     local tbUser = tbRuntimeData.tbUser[tbInfo.userName] or Market.tbNpc
-                    tbUser.tbProduct[tbInfo.id].nMarket = tbUser.tbProduct[tbInfo.id].nMarket + nCost
+                    tbUser.tbProduct[tbInfo.id].nLastMarketScale = tbUser.tbProduct[tbInfo.id].nLastMarketScale + nCost
                     nTotalCost = nTotalCost + nCost
                     print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
                 end
@@ -318,8 +317,7 @@ function MarketMgr:DistributionMarket()
     -- 清除
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for id, product in pairs(tbUser.tbProduct) do
-            product.nLastMarketExpance = product.nMarketExpance
-            product.nMarketExpance = 0
+            product.nLastMarketExpance = 0
         end
     end
 end
@@ -330,10 +328,10 @@ function MarketMgr:GainRevenue()
 
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for id, product in pairs(tbUser.tbProduct) do
-            if product.nMarket > 0 and product.State == tbConfig.tbProductState.nPublished then
+            if Production:IsPublished(product) and product.nLastMarketScale > 0 then
                 local nQuality = product.nQuality or 0
                 local fARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality)
-                local nIncome = math.floor(product.nMarket * fARPU)
+                local nIncome = math.floor(product.nLastMarketScale * fARPU)
                 
                 product.nLastMarketIncome = nIncome
                 tbUser.nCash = tbUser.nCash + nIncome
@@ -344,10 +342,10 @@ function MarketMgr:GainRevenue()
     end
 
     for id, product in pairs(Market.tbNpc.tbProduct) do
-        if product.nMarket > 0 and product.State == tbConfig.tbProductState.nPublished then
+        if Production:IsPublished(product) and product.nLastMarketScale > 0 then
             local nQuality = product.nQuality or 0
             local fARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality)
-            local nIncome = math.floor(product.nMarket * fARPU)
+            local nIncome = math.floor(product.nLastMarketScale * fARPU)
             
             product.nLastMarketIncome = nIncome
 
@@ -373,7 +371,7 @@ end
 
 function MarketMgr:UpdateNpc()
     for _, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        tbProduct.nMarketExpance = 0
+        tbProduct.nLastMarketExpance = 0
     end
 
     for category, tbProductList in pairs(tbPublishedProduct) do
@@ -403,12 +401,12 @@ function MarketMgr:UpdateNpc()
     end
 
     for id, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        if tbProduct.State == tbConfig.tbProductState.nPublished and tbProduct.nMarketExpance == 0 then
-            tbProduct.nMarketExpance = tbConfig.tbNpcMarketExpance[tbProduct.Category].nContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+        if Production:IsPublished(tbProduct) and tbProduct.nLastMarketExpance == 0 then
+            tbProduct.nLastMarketExpance = tbConfig.tbNpcMarketExpance[tbProduct.Category].nContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
 
-        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpance:", tbProduct.nMarketExpance)
-        if tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpance < tbConfig.tbNpc.fCloseWhenGainRatioLess then
+        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nLastMarketExpance:", tbProduct.nLastMarketExpance)
+        if tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nLastMarketExpance < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
             MarketMgr:OnCloseProduct(id, tbProduct)
@@ -421,10 +419,14 @@ end
 function Market.NewNpcProduct(category, nQuality)
     local id, product = Production:CreateUserProduct(category, Market.tbNpc)
     product.nQuality = nQuality or 2
-    product.nMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+    product.nLastMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
     product.State = tbConfig.tbProductState.nPublished
     product.bIsNpc = true
     product.nID = id
+
+    for k, v in pairs(tbInitTables.tbInitPublishedProduct) do   --复制已发布产品的数据初始化项
+        product[k] = v
+    end
 
     return product
 end
