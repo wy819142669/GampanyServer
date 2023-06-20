@@ -338,6 +338,7 @@ function MarketMgr:GainRevenue()
 
                 print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nIncome))
             end
+            product.bNewProduct = false
         end
     end
 
@@ -351,6 +352,7 @@ function MarketMgr:GainRevenue()
 
             print(tbConfig.tbNpc.szName .. " " .. tostring(id) .. " nLastMarketIncome = " .. tostring(nIncome))
         end
+        product.bNewProduct = false
     end
 end
 
@@ -370,10 +372,6 @@ function MarketMgr:SettleMarket()
 end
 
 function MarketMgr:UpdateNpc()
-    for _, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        tbProduct.nLastMarketExpance = 0
-    end
-
     for category, tbProductList in pairs(tbPublishedProduct) do
         local nProductNum = 0
         local nNpcProductNum = 0
@@ -401,12 +399,12 @@ function MarketMgr:UpdateNpc()
     end
 
     for id, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        if Production:IsPublished(tbProduct) and tbProduct.nLastMarketExpance == 0 then
+        if Production:IsPublished(tbProduct) and not tbProduct.bNewProduct then
             tbProduct.nLastMarketExpance = tbConfig.tbNpcMarketExpance[tbProduct.Category].nContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
 
-        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nLastMarketExpance:", tbProduct.nLastMarketExpance)
-        if tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nLastMarketExpance < tbConfig.tbNpc.fCloseWhenGainRatioLess then
+        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nLastMarketExpance:", tbProduct.nLastMarketExpance, "tbProduct.bNewProduct:", tbProduct.bNewProduct)
+        if not tbProduct.bNewProduct and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nLastMarketExpance < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
             MarketMgr:OnCloseProduct(id, tbProduct)
@@ -418,8 +416,6 @@ end
 
 function Market.NewNpcProduct(category, nQuality)
     local id, product = Production:CreateUserProduct(category, Market.tbNpc)
-    product.nQuality = nQuality or 2
-    product.nLastMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
     product.State = tbConfig.tbProductState.nPublished
     product.bIsNpc = true
     product.nID = id
@@ -427,6 +423,9 @@ function Market.NewNpcProduct(category, nQuality)
     for k, v in pairs(tbInitTables.tbInitPublishedProduct) do   --复制已发布产品的数据初始化项
         product[k] = v
     end
+
+    product.nLastMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+    product.nQuality = nQuality or 2
 
     return product
 end
