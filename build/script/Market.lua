@@ -73,7 +73,8 @@ function MarketMgr:DoStart()
 
     Market.tbNpc = { tbProduct = {} }
     tbRuntimeData.tbMarket = {}
-    tbPublishedProduct = { }
+    tbRuntimeData.tbPublishedProduct = {}
+    tbPublishedProduct = tbRuntimeData.tbPublishedProduct
     for category, product in pairs(tbConfig.tbProductCategory) do
         tbPublishedProduct[category] = {}
         if IsPlatformCategory(category) == false then

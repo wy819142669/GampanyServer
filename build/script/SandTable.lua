@@ -52,7 +52,10 @@ local tbRuntimeData = {
 
     tbNpc = {
         tbProduc = {}
-    }
+    },
+
+    tbMarket = {},
+    tbPublishedProduct = {},
 }
 
 local tbFunc = {
@@ -159,105 +162,6 @@ function tbFunc.Action.Market(tbParam)
         return func(tbParam, user)
     end
     return "invalid Market operate", false
-end
-
---todo: to delete
-tbFunc.finalAction = {}
-
-function tbFunc.finalAction.SettleOrder()
-    --[[
-        tbOrder = { -- 订单cfg
-        [1] =  {  -- Y1
-            a1 = {
-                { n = 4, arpu = 6.6}, { n = 3, arpu = 6.3 }, { n = 2, arpu = 6 }, { n = 2, arpu = 5.7 }, -- 国内
-                {}, -- 日韩
-                {}, -- 欧美
-            },
-
-        tbOrder = {
-            a1 = {{ cfg = {}, done = false}, {cfg = {}, done = true}}
-        }
-
-    ]]
-
-    local tbProductName = {}
-    local tbOrderCfg = tbRuntimeData.tbOrder[tbRuntimeData.nCurYear]
-    for productName, tbMarketOrder in pairs(tbOrderCfg) do
-        --print("productName:" .. productName)
-
-        for marketIndex, tbOrderList in ipairs(tbMarketOrder) do
-            --print("----------------------------------------------------------")
-            --print("marketIndex:" .. tostring(marketIndex))
-
-            local sortedUserList = {}
-            local nExpenseCount = 0
-            for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-                --print("userName:" .. userName)
-                if tbUser.tbMarketingExpense[productName] then
-                    local expense = tbUser.tbMarketingExpense[productName][marketIndex] or 0
-                    table.insert(sortedUserList, {
-                        user = userName,
-                        count = expense,
-                        rand = math.random(100),
-                    })
-
-                    if tbUser.tbMarketingExpense[productName][marketIndex] then
-                        nExpenseCount = nExpenseCount + expense
-                    end
-                    --print("nExpenseCount"..tostring(nExpenseCount))
-                end
-            end
-
-            table.sort(sortedUserList, function (x, y)
-                if x.count == y.count then
-                    return x.rand > y.rand
-                end
-
-                return x.count > y.count
-            end)
-
-            local nIndex = 1
-           -- print("#tbOrderList:"..tostring(#tbOrderList))
-            while #tbOrderList > 0 do
-                --print(" #tbOrderList")
-                local tbOrder =  tbOrderList[1]
-
-                if nExpenseCount == 0 then break end
-
-                if nIndex > #sortedUserList or sortedUserList[nIndex].count == 0 then
-                    --nIndex = 1 -- 改成每个产品最多一个订单
-                    break
-                end
-                
-                local tbUser = tbRuntimeData.tbUser[sortedUserList[nIndex].user]
-                tbUser.tbOrder[productName] = tbUser.tbOrder[productName] or {}
-                table.insert(tbUser.tbOrder[productName], {
-                    market = marketIndex,
-                    expense = sortedUserList[nIndex].count,
-                    cfg = tbOrder,
-                    done = false
-                })
-                tbProductName[productName] = true
-
-                nExpenseCount = nExpenseCount - 1
-                nIndex = nIndex + 1
-
-                table.remove(tbOrderList, 1)
-            end
-        end
-    end
-
-    for productName, _ in pairs(tbProductName) do
-        local productType = string.sub(productName, 1, 1)
-        local productLevel = string.sub(productName, 2, 2)
-        if productLevel == "2" then
-            tbRuntimeData.tbCutdownProduct[productType.."1"] = true
-        end
-    end
-
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.tbMarketingExpense = {}
-    end
 end
 
 tbFunc.Action.funcDoOperate = {}
