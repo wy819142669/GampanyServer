@@ -159,10 +159,13 @@ function Production:UpdateWrokload(product, user)
         return
     end
 
+    local szMsg = ""
     if product.State == tbProductState.nBuilding then 
         product.State = tbProductState.nEnabled
+        szMsg = "产品%d研发完成，多余的%d人手已经释放到待岗区"
     elseif product.State == tbProductState.nRenovating then
         product.State = tbProductState.nRenovateDone
+        szMsg = "产品%d翻新完成，多余的%d人手已经释放到待岗区"
     end
 
     --====把多余的人手（超过category.nMaintainTeam），自动释放====
@@ -186,10 +189,15 @@ function Production:UpdateWrokload(product, user)
             end
         end
     end
+
+    if szMsg ~= "" then
+        table.insert(user.tbSysMsg, string.format(szMsg, product.Id, totalMan - category.nMaintainTeam))
+    end
 end
 
-function Production:UpdatePublished(product)
+function Production:UpdatePublished(product, user)
     local addQuality = -1
+    local nLastQuality = product.nQuality
     local category = tbConfig.tbProductCategory[product.Category]
     local totalQuality, totalMan = self:GetQuality(product)
     -- 人力投入大于理想人员规模和当前品质大于等于初始品质
@@ -200,6 +208,10 @@ function Production:UpdatePublished(product)
     -- 不能超过初始品质
     product.nQuality = math.min(product.nQuality + addQuality, product.nOrigQuality)
     product.nQuality = math.max(1, product.nQuality)
+
+    if product.nQuality ~= nLastQuality then
+        table.insert(user.tbSysMsg, string.format("已发布产品品质由%d变更为%d", nLastQuality, product.nQuality))
+    end
 end
 
 function Production:IsPublished(product)

@@ -101,7 +101,7 @@ end
 function MarketMgr:LossMarket()
     local tbRuntimeData = GetTableRuntime()
     
-    local DoLossFunc = function (tbProductList)
+    local DoLossFunc = function (tbUser, tbProductList)
         for id, tbProduct in pairs(tbProductList) do
             if tbProduct.nLastMarketScale and tbProduct.nLastMarketScale > 0 then
                 local nQuality = tbProduct.nQuality or 0
@@ -114,15 +114,19 @@ function MarketMgr:LossMarket()
                 local nLossMarket = math.floor(tbProduct.nLastMarketScale * fLossRate)
                 tbProduct.nLastMarketScale = tbProduct.nLastMarketScale - nLossMarket;
                 tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
+
+                if tbUser.tbSysMsg then
+                    table.insert(tbUser.tbSysMsg, string.format("产品%d 流失用户 %d", id, nLossMarket))
+                end
             end
         end
     end
 
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        DoLossFunc(tbUser.tbProduct)
+        DoLossFunc(tbUser, tbUser.tbProduct)
     end
 
-    DoLossFunc(Market.tbNpc.tbProduct)
+    DoLossFunc(Market.tbNpc, Market.tbNpc.tbProduct)
 end
 
 -- 品类份额转移
@@ -306,6 +310,10 @@ function MarketMgr:DistributionMarket()
                     local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
                     local tbUser = tbRuntimeData.tbUser[tbInfo.userName] or Market.tbNpc
                     tbUser.tbProduct[tbInfo.id].nLastMarketScale = tbUser.tbProduct[tbInfo.id].nLastMarketScale + nCost
+
+                    if tbUser.tbSysMsg then
+                        table.insert(tbUser.tbSysMsg, string.format("产品%d 新获得用户 %d", tbInfo.id, nCost))
+                    end
                     nTotalCost = nTotalCost + nCost
                     print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
                 end
@@ -336,6 +344,8 @@ function MarketMgr:GainRevenue()
                 
                 product.nLastMarketIncome = nIncome
                 tbUser.nCash = tbUser.nCash + nIncome
+
+                table.insert(tbUser.tbSysMsg, string.format("产品%d 获得收益 %d", id, nIncome))
 
                 print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nIncome))
             end
