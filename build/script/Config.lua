@@ -171,7 +171,22 @@ tbConfig = {
     },
 }
 
+tbConfig.tbDevelopingState = {      -- 研发进行中状态
+    tbConfig.tbProductState.nBuilding,
+    tbConfig.tbProductState.nEnabled,
+    tbConfig.tbProductState.nRenovating,
+    tbConfig.tbProductState.nRenovateDone,
+}
+
 tbConfig.tbPublishedState = {       -- 已发布状态
+    tbConfig.tbProductState.nPublished,
+    tbConfig.tbProductState.nRenovating,
+    tbConfig.tbProductState.nRenovateDone,
+}
+
+tbConfig.tbUnClosedState = {       -- 未关闭状态
+    tbConfig.tbProductState.nBuilding,
+    tbConfig.tbProductState.nEnabled,
     tbConfig.tbProductState.nPublished,
     tbConfig.tbProductState.nRenovating,
     tbConfig.tbProductState.nRenovateDone,
