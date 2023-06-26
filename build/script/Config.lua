@@ -163,7 +163,22 @@ tbConfig = {
     },
 }
 
+tbConfig.tbDevelopingState = {      -- 研发进行中状态
+    tbConfig.tbProductState.nBuilding,
+    tbConfig.tbProductState.nEnabled,
+    tbConfig.tbProductState.nRenovating,
+    tbConfig.tbProductState.nRenovateDone,
+}
+
 tbConfig.tbPublishedState = {       -- 已发布状态
+    tbConfig.tbProductState.nPublished,
+    tbConfig.tbProductState.nRenovating,
+    tbConfig.tbProductState.nRenovateDone,
+}
+
+tbConfig.tbUnClosedState = {       -- 未关闭状态
+    tbConfig.tbProductState.nBuilding,
+    tbConfig.tbProductState.nEnabled,
     tbConfig.tbProductState.nPublished,
     tbConfig.tbProductState.nRenovating,
     tbConfig.tbProductState.nRenovateDone,
@@ -179,8 +194,8 @@ tbInitTables = {
 
     --玩家运行数据初始表
     tbInitUserData = {
-        -- 当前步骤已经操作完，防止重复操作
-        bStepDone = false,
+        nDataVersion = 0,   -- 玩家数据版本号，一旦发生数据更新后，版本号就会改变
+        bStepDone = false,  -- 当前步骤已经操作完，防止重复操作
 
         --==== 人力相关数据项 ====
         nSalaryLevel = 1,       -- 薪水等级

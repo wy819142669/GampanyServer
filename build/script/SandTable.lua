@@ -69,6 +69,8 @@ function Action(jsonParam)
     local bRet = false
     if func then
         szMsg, bRet, tbCustomData = func(tbParam)
+        --简单处理，只要收到客户端来的指令就认为数据变更了
+        DoUpdateGamerDataVersion(tbParam.Account)
     else
         szMsg = "invalid action FuncName"
     end
@@ -201,6 +203,7 @@ function NextStepIfAllGamersDone(forceAllDone)
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.bStepDone = false
 	end
+    DoUpdateGamerDataVersion(nil)
     print("=============== Year:".. tbRuntimeData.nCurYear .. " Season:" .. tbRuntimeData.nCurSeason .. "  ===============")
 end
 
@@ -249,6 +252,15 @@ function DoPreYear()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbYearReport = Lib.copyTab(tbInitTables.tbInitReport)    --清空年报
         tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
+    end
+end
+
+-- 更新玩家数据版本
+function DoUpdateGamerDataVersion(accoount)
+    for key, user in pairs(tbRuntimeData.tbUser) do
+        if account == nil or key == account then
+            user.nDataVersion = user.nDataVersion + 1
+        end
     end
 end
 
