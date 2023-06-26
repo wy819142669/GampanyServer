@@ -25,7 +25,7 @@ function Market.Publish(tbParam, user)
     end
 
     Production:Publish(product, user)
-    
+
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
 end
@@ -35,8 +35,7 @@ end
 function Market.Marketing(tbParam, user)
     print("Marketing")
     local nTotalExpense = 0
-
-    --todo 如果是当季度已经设置过市场费用，要先还原
+    local nPreTotalExpense = 0
 
     for _, tbProduct in pairs(tbParam.Product) do
         product = user.tbProduct[tbProduct.Id]
@@ -49,18 +48,19 @@ function Market.Marketing(tbParam, user)
             return "product hasn't been published yet", false
         end
 
-        if tbProduct.Expense < 1 then
+        if tbProduct.Expense < 0 then
             return "market expense error", false
         end
 
-        nTotalExpense = nTotalExpense + tbProduct.Expense
+        nPreTotalExpense    = nPreTotalExpense + product.nLastMarketExpance
+        nTotalExpense       = nTotalExpense + tbProduct.Expense
     end 
 
-    if user.nCash < nTotalExpense then
+    if user.nCash + nPreTotalExpense < nTotalExpense then
         return "cash not enough", false
     end
     
-    user.nCash = user.nCash - nTotalExpense
+    user.nCash = user.nCash + nPreTotalExpense - nTotalExpense
 
     for _, tbProduct in pairs(tbParam.Product) do
         user.tbProduct[tbProduct.Id].nLastMarketExpance = tbProduct.Expense
@@ -277,8 +277,12 @@ function MarketMgr:DistributionMarket()
                     local nQuality = product.nQuality or 0
 
                     if Production:IsPublished(product) and product.Category == category and product.nLastMarketExpance > 0 and nQuality > 0 then
-                        -- TODO 当季度上线
+                        
                         local fMarketValue = product.nLastMarketExpance * (1.3 ^ (nQuality - 1))
+                        if product.bNewProduct then
+                            fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
+                        end
+
                         fTotalMarketValue = fTotalMarketValue + fMarketValue
                         table.insert(tbInfos, {
                             userName = userName,
@@ -292,8 +296,12 @@ function MarketMgr:DistributionMarket()
             for id, product in pairs(Market.tbNpc.tbProduct) do
                 local nQuality = product.nQuality or 0
                 if Production:IsPublished(product) and product.Category == category and product.nLastMarketExpance > 0 and nQuality > 0 then
-                    -- TODO 当季度上线
+                    
                     local fMarketValue = product.nLastMarketExpance * (1.3 ^ (nQuality - 1))
+                    if product.bNewProduct then
+                        fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
+                    end
+
                     fTotalMarketValue = fTotalMarketValue + fMarketValue
                     table.insert(tbInfos, {
                         userName = tbConfig.tbNpc.szName,

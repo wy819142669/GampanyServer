@@ -106,6 +106,7 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 250,             --市场总份额
+            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
         },
         B = {
             --==研发相关配置==
@@ -121,6 +122,7 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 20,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 150,             --市场总份额
+            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
         },
         C = {
             --==研发相关配置==
@@ -136,6 +138,7 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 350,             --市场总份额
+            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
         },
         D = {
             --==研发相关配置==
@@ -151,6 +154,7 @@ tbConfig = {
             nBaseARPU = 10,     --基础ARPU
             nMaxMarketScale = 50,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 450, --市场总份额
+            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
         },
         P = { --==中台项目==，设置项与产品项的有些不同
             --==研发相关配置==
@@ -249,7 +253,7 @@ tbInitTables = {
 
     --新发布产品初始表
     tbInitPublishedProduct = {
-        nLastMarketExpance = 1,     --最后一个季度/上季度市场营销费用
+        nLastMarketExpance = 0,     --最后一个季度/上季度市场营销费用
         nLastMarketScale = 0,       --最后一个季度/上季度市场规模
         nLastARPU = 0,              --最后一个季度/上季度ARPU
         nLastMarketIncome = 0,      --最后一个季度/上季度收入
