@@ -238,12 +238,8 @@ end
 -- 每年结束后的自动处理
 function DoPostYear()
     for _, user in pairs(tbRuntimeData.tbUser) do
-        DoPayTax(user)
         DoYearReport(user)
-    end
-    --以下内容拷贝自原本的 tbFunc.finalAction.NewYear
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
---        tbUser.tbOrder = {}
+        DoPayTax(user)
     end
 end
 
@@ -256,7 +252,7 @@ function DoPreYear()
 end
 
 -- 更新玩家数据版本
-function DoUpdateGamerDataVersion(accoount)
+function DoUpdateGamerDataVersion(account)
     for key, user in pairs(tbRuntimeData.tbUser) do
         if account == nil or key == account then
             user.nDataVersion = user.nDataVersion + 1
@@ -266,28 +262,23 @@ end
 
 --年尾扣税
 function DoPayTax(user)
-    user.tbYearReport.nTax = math.floor(user.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5)
-    user.tbYearReport.nTax = user.tbYearReport.nTax < 0 and 0 or user.tbYearReport.nTax
     user.nCash = user.nCash - user.tbYearReport.nTax
-    user.tbYearReport.nNetProfit = user.tbYearReport.nProfitBeforeTax - user.tbYearReport.nTax
 end
 
 --处理年报
 function DoYearReport(user)
     user.tbYearReport.nBalance = user.nCash
-    -- todo to be finished
-    -- tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + tbUser.nSeverancePackage
---    for _, v in ipairs(tbUser.tbLaborCost) do
---        tbUser.tbYearReport.nLaborCosts = tbUser.tbYearReport.nLaborCosts + v
---    end
+    user.tbYearReport.nGrossProfit = user.tbYearReport.nTurnover
+                                    - user.tbYearReport.nLaborCosts
+                                    - user.tbYearReport.nMarketingExpense
 
-    --tbUser.tbYearReport.nMarketingExpense = tbUser.nMarketingExpense
-    --tbUser.tbYearReport.nGrossProfit = tbUser.tbYearReport.nTurnover
-    --                                    - tbUser.tbYearReport.nLaborCosts
-    --                                    - tbUser.tbYearReport.nMarketingExpense
-    --                                    - tbUser.tbYearReport.nSGA
+    user.tbYearReport.nProfitBeforeTax = user.tbYearReport.nGrossProfit
 
-    --tbUser.tbYearReport.nProfitBeforeTax = tbUser.tbYearReport.nGrossProfit
+    user.tbYearReport.nTax = math.max(0, math.floor(user.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5))
+
+    user.tbYearReport.nNetProfit = user.tbYearReport.nProfitBeforeTax - user.tbYearReport.nTax
+
+    user.tbYearReport.nBalance = user.nCash - user.tbYearReport.nTax
 end
 
 function IsPlatformProduct(product)

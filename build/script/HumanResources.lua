@@ -29,6 +29,7 @@ function HR.CommitHire(tbParam, user)
 
     if user.tbHire then
         user.nCash = user.nCash + user.tbHire.nExpense
+        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts - user.tbHire.nExpense
         user.tbHire = nil
     end
     if tbParam.nExpense > user.nCash then
@@ -38,6 +39,7 @@ function HR.CommitHire(tbParam, user)
     local szReturnMsg
     if tbParam.nExpense > 0 and tbParam.nNum > 0 then
         user.nCash = user.nCash - tbParam.nExpense
+        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + tbParam.nExpense
         user.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
         szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
     else
@@ -90,6 +92,7 @@ function HR.CommitTrain(tbParam, user)
             nTotalNum = nTotalNum + user.tbTrainManpower[i]
         end
         user.nCash = user.nCash + nTotalNum * tbConfig.nSalary
+        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts - nTotalNum * tbConfig.nSalary
         user.tbTrainManpower = nil
         result = "成功取消培训计划"
     end
@@ -122,6 +125,7 @@ function HR.CommitTrain(tbParam, user)
             return "没有足够的费用进行培训", false
         end
         user.nCash = user.nCash - nCost
+        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + nCost
         user.tbTrainManpower = tbParam.tbTrain  --user.tbTrainManpower存储时还是存五级，当最高级处理时被忽略
         result = "成功设置培训"
     end
@@ -188,6 +192,7 @@ function HR.Poach(tbParam, user)
     end
 
     user.nCash = user.nCash - nCost
+    user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + nCost
     user.tbPoach = {
         TargetUser = tbParam.TargetUser,
         nLevel = lvl,
@@ -470,6 +475,7 @@ function HumanResources:PayOffSalary()
         local nCost = user.nTotalManpower * tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
         nCost = math.floor(nCost + 0.5)
         user.nCash = user.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
+        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + nCost
         table.insert(user.tbSysMsg, string.format("支付薪水：%d", nCost))
     end
 end

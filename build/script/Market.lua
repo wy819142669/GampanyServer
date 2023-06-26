@@ -21,7 +21,10 @@ function Market.Publish(tbParam, user)
         for k, v in pairs(tbInitTables.tbInitPublishedProduct) do   --复制已发布产品的数据初始化项
             product[k] = v
         end
-        tbPublishedProduct[product.Category][tbParam.Id] = product
+
+        if not product.bIsPlatform then
+            tbPublishedProduct[product.Category][tbParam.Id] = product
+        end
     end
 
     Production:Publish(product, user)
@@ -61,6 +64,7 @@ function Market.Marketing(tbParam, user)
     end
     
     user.nCash = user.nCash + nPreTotalExpense - nTotalExpense
+    user.tbYearReport.nMarketingExpense = user.tbYearReport.nMarketingExpense - nPreTotalExpense + nTotalExpense
 
     for _, tbProduct in pairs(tbParam.Product) do
         user.tbProduct[tbProduct.Id].nLastMarketExpance = tbProduct.Expense
@@ -352,6 +356,7 @@ function MarketMgr:GainRevenue()
                 
                 product.nLastMarketIncome = nIncome
                 tbUser.nCash = tbUser.nCash + nIncome
+                tbUser.tbYearReport.nTurnover = tbUser.tbYearReport.nTurnover + nIncome
 
                 table.insert(tbUser.tbSysMsg, string.format("产品%d 获得收益 %d", id, nIncome))
 

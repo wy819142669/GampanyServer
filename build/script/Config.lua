@@ -237,8 +237,6 @@ tbInitTables = {
         nLaborCosts = 0,
         -- 销售费用
         nMarketingExpense = 0,
-        -- 行政+本地化费用
-        nSGA = 0,
         -- 营业利润
         nGrossProfit = 0,
         

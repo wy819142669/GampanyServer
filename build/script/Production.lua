@@ -20,6 +20,7 @@ function Production:CreateUserProduct(category, user)
     product.Id = id
     product.nNeedWorkLoad = categoryConfig.nWorkLoad
     product.Category = category
+    product.bIsPlatform = categoryConfig.bIsPlatform
     user.tbProduct[id] = product
     return id, product
 end
