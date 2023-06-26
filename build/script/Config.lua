@@ -187,8 +187,8 @@ tbInitTables = {
 
     --玩家运行数据初始表
     tbInitUserData = {
-        -- 当前步骤已经操作完，防止重复操作
-        bStepDone = false,
+        nDataVersion = 0,   -- 玩家数据版本号，一旦发生数据更新后，版本号就会改变
+        bStepDone = false,  -- 当前步骤已经操作完，防止重复操作
 
         --==== 人力相关数据项 ====
         nSalaryLevel = 1,       -- 薪水等级
