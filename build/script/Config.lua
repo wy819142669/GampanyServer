@@ -58,26 +58,6 @@ tbConfig = {
     --- 品类份额转移
     nLossMarket = 25,
 
-    --- npc市场营销费用
-    tbNpcMarketExpance = {
-        A = {
-            nInitialExpenses = 200,
-            nContinuousExpenses = 50,
-        },
-        B = {
-            nInitialExpenses = 400,
-            nContinuousExpenses = 100,
-        },
-        C = {
-            nInitialExpenses = 1200,
-            nContinuousExpenses = 150,
-        },
-        D = {
-            nInitialExpenses = 2000,
-            nContinuousExpenses = 250,
-        },
-    },
-
     -- npc配置
     tbNpc = {
         nInitialProductNum = 2,  -- 初始市场npc产品数
@@ -107,6 +87,9 @@ tbConfig = {
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 250,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            --==Npc相关配置==
+            nNpcInitialExpenses = 200,
+            nNpcContinuousExpenses = 50,
         },
         B = {
             --==研发相关配置==
@@ -123,6 +106,9 @@ tbConfig = {
             nMaxMarketScale = 20,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 150,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            --==Npc相关配置==
+            nNpcInitialExpenses = 400,
+            nNpcContinuousExpenses = 100,
         },
         C = {
             --==研发相关配置==
@@ -139,6 +125,9 @@ tbConfig = {
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 350,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            --==Npc相关配置==
+            nNpcInitialExpenses = 1200,
+            nNpcContinuousExpenses = 150,
         },
         D = {
             --==研发相关配置==
@@ -155,6 +144,9 @@ tbConfig = {
             nMaxMarketScale = 50,  --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 450, --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            --==Npc相关配置==
+            nNpcInitialExpenses = 2000,
+            nNpcContinuousExpenses = 250,
         },
         P = { --==中台项目==，设置项与产品项的有些不同
             --==研发相关配置==

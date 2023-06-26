@@ -419,7 +419,7 @@ function MarketMgr:UpdateNpc()
 
     for id, tbProduct in pairs(Market.tbNpc.tbProduct) do
         if Production:IsPublished(tbProduct) and not tbProduct.bNewProduct then
-            tbProduct.nLastMarketExpance = tbConfig.tbNpcMarketExpance[tbProduct.Category].nContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+            tbProduct.nLastMarketExpance = tbConfig.tbProductCategory[tbProduct.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
 
         print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nLastMarketExpance:", tbProduct.nLastMarketExpance, "tbProduct.bNewProduct:", tbProduct.bNewProduct)
@@ -443,7 +443,7 @@ function Market.NewNpcProduct(category, nQuality)
         product[k] = v
     end
 
-    product.nLastMarketExpance = tbConfig.tbNpcMarketExpance[category].nInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+    product.nLastMarketExpance = tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
     product.nQuality = nQuality or 2
 
     return product
