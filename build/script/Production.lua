@@ -211,7 +211,7 @@ function Production:UpdatePublished(product, user)
     product.nQuality = math.max(1, product.nQuality)
 
     if product.nQuality ~= nLastQuality then
-        table.insert(user.tbSysMsg, string.format("已发布产品品质由%d变更为%d", nLastQuality, product.nQuality))
+        table.insert(user.tbSysMsg, string.format("已发布产品%s%d品质由%d变更为%d", product.Category, product.Id, nLastQuality, product.nQuality))
     end
 end
 
