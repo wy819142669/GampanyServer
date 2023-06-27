@@ -260,6 +260,7 @@ tbInitTables = {
     tbInitPublishedProduct = {
         nLastMarketExpance = 0,     --最后一个季度/上季度市场营销费用
         nLastMarketScale = 0,       --最后一个季度/上季度市场规模
+        nLastMarketScalePct = 0,    --最后一个季度/上季度市场规模在同品类中的占比（百分数）
         nLastARPU = 0,              --最后一个季度/上季度ARPU
         nLastMarketIncome = 0,      --最后一个季度/上季度收入
         nOrigQuality = 0,           --产品研发或翻新完时的初始质量
