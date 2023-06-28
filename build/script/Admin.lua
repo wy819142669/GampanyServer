@@ -48,16 +48,14 @@ function tbAdminFunc.DoReset(tbParam)
     Production:Reset()
 
     local runtime = GetTableRuntime()
-    --runtime.nDataVersion = 0
 
     runtime.bPlaying = false
-    runtime.nCurYear = 1
-    runtime.nCurSeason = 1
+    runtime.nCurYear = 0
+    runtime.nCurSeason = 0
 
     runtime.nGamerCount = 0
     runtime.tbLoginAccount = {}
     runtime.tbUser = {}
-    runtime.tbCutdownProduct = {}
     runtime.tbManpowerInMarket = {0, 0, 0, 0, 0}
     runtime.tbMarket = {}
     return "success", true
@@ -73,8 +71,6 @@ function tbAdminFunc.DoStart(tbParam)
     end
 
     math.randomseed(os.time())
-    --runtime.nDataVersion = 1
-    --runtime.nGameID = runtime.nGameID + 1
     runtime.bPlaying = true
     runtime.nCurYear = tbParam.Year or 1
     runtime.nCurSeason = 0
@@ -86,7 +82,6 @@ function tbAdminFunc.DoStart(tbParam)
     InitManpowerData()
     MarketMgr:DoStart()
 
-    runtime.tbOrder = Lib.copyTab(tbConfig.tbOrder)
     return "success", true
 end
 

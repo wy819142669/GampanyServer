@@ -12,43 +12,18 @@ require("Market")
 require("HumanResources")
 
 local tbRuntimeData = {
-    --[[未实际启用，暂时注释掉
-    nDataVersion = 1,
-    nGameID = 0,
-    --]]
-
     --==== 游戏整体运行信息 ====
     bPlaying = false,
-    nCurYear = 1,       -- 当前年份
-    nCurSeason = 1,     -- 当前季度, 取值未0~4, 0表示新年开始时且1季度开始前
+    nCurYear = 0,       -- 当前年份, 取值为0时，表示游戏未开始
+    nCurSeason = 0,     -- 当前季度, 取值为0~4, 0表示新年开始时且1季度开始前
 
     --==== 玩家相关信息 ====
     nGamerCount = 0,
     tbLoginAccount = {},    -- 已登录账号列表
-    tbUser = {              -- 玩家运行时数据
-        --[[default = {
-            -- 市场营销投入
-            tbMarketingExpense = {
-                a1 = { 2, 1, 1},
-                a2 = { 5, 3, 3},
-                b1 = { 20, 40, 3},
-            }
-            -- 订单
-            tbOrder = {
-                a1 = {{ cfg = {}, market = 1, done = false}, {cfg = {}, market = 2, done = true}}
-            },
-            -- 代收款
-            tbReceivables = {0, 0, 0, 0},
-        }--]]
-    },
+    tbUser = { },           -- 玩家运行时数据，数据说明见tbInitTables.tbInitUserData
 
     --==== 人才市场相关信息 ====
     tbManpowerInMarket = { 0, 0, 0, 0, 0 }, -- 人才市场各等级人数。元素个数需要等于tbConfig.nManpowerMaxExpLevel
-
-    tbCutdownProduct = {
-        -- a1 = true,
-        -- b1 = true,
-    },
 
     tbNpc = {
         tbProduc = {}

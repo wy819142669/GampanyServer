@@ -1,9 +1,5 @@
 tbConfig = {
-    --[[未实际启用，暂时注释掉
-    nLuaVersion = 1,
-    --]]
-
-    --==== 游戏整体性设置与控制 ====
+    --==== 游戏整体性设置与控制，只读不写 ====
     nMaxGamerCount = 9,     --最多允许容纳的玩家的数目，因为界面没有做灵活适配，所以限制数目上限
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
     szAdminPassword = "",   --管理者登录密码
@@ -27,7 +23,7 @@ tbConfig = {
     fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
     fQualityPerManpowerLevel = 2.0, --每人力等级可以提供的品质点数，人力1~5级， 产品2~10级
 
-    -- 产品状态
+    --==== 产品所有状态罗列，只读不写 ====
     tbProductState = {
         nBuilding = 1,       -- 研发中
         nEnabled = 2,        -- 可上线（完成研发）
@@ -35,9 +31,6 @@ tbConfig = {
         nRenovating = 4,     -- 翻新
         nRenovateDone = 5,   -- 翻新工作量已完成
         nClosed = 6,         -- 关闭
-    },
-
-    tbOrder = { -- 订单
     },
 
     --==== 人力相关系统设置数据，只读不写 ====
@@ -55,8 +48,8 @@ tbConfig = {
     },
     fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
-    --- 品类份额转移
-    nLossMarket = 25,
+    --==== 产品市场运营相关，只读不写 ====
+    nLossMarket = 25,   --- 品类份额转移
 
     -- npc配置
     tbNpc = {
@@ -219,14 +212,6 @@ tbInitTables = {
         -- 系统消息
         tbSysMsg = {},
         tbTips = {},
-
-         -- 订单
-        tbOrder = {
-            --a1 = {{ cfg = { n = 2, arpu = 2}, done = false}}
-        },
-
-        -- 待收款
-        tbReceivables = {0, 0, 0, 0},
     },
 
     --年报初始表
