@@ -10,7 +10,7 @@ function HR.RaiseSalary(tbParam, user)
         return "仅在年初可以调薪", false
     end
     user.nSalaryLevel = user.nSalaryLevel + 1
-    local szReturnMsg = "薪水标准提升至:" .. tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
+    local szReturnMsg = "薪水标准提升至:" .. GameLogic:HR_GetSalary(user.nSalaryLevel)
     user.bStepDone = true  -- 调薪完自动结束当前步骤
     return szReturnMsg, true
 end
@@ -28,8 +28,7 @@ function HR.CommitHire(tbParam, user)
     end
 
     if user.tbHire then
-        user.nCash = user.nCash + user.tbHire.nExpense
-        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts - user.tbHire.nExpense
+        GameLogic:FIN_Unpay(user, tbConfig.tbFinClassify.HR, user.tbHire.nExpense)
         user.tbHire = nil
     end
     if tbParam.nExpense > user.nCash then
@@ -38,8 +37,7 @@ function HR.CommitHire(tbParam, user)
 
     local szReturnMsg
     if tbParam.nExpense > 0 and tbParam.nNum > 0 then
-        user.nCash = user.nCash - tbParam.nExpense
-        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + tbParam.nExpense
+        GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.HR, tbParam.nExpense)
         user.tbHire = { nNum = tbParam.nNum, nExpense = tbParam.nExpense }
         szReturnMsg = string.format("招聘投标：%d人，花费：%d", tbParam.nNum, tbParam.nExpense)
     else
@@ -91,8 +89,7 @@ function HR.CommitTrain(tbParam, user)
         for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
             nTotalNum = nTotalNum + user.tbTrainManpower[i]
         end
-        user.nCash = user.nCash + nTotalNum * tbConfig.nSalary
-        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts - nTotalNum * tbConfig.nSalary
+        GameLogic:FIN_Unpay(user, tbConfig.tbFinClassify.HR, nTotalNum * tbConfig.nSalary)
         user.tbTrainManpower = nil
         result = "成功取消培训计划"
     end
@@ -100,8 +97,7 @@ function HR.CommitTrain(tbParam, user)
     --计算最多允许培训的人员数目
     local tbMax = Lib.copyTab(user.tbIdleManpower)
     for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
-        tbMax[i] = tbMax[i] + user.tbFireManpower[i]
-        tbMax[i] = tbMax[i] + user.tbJobManpower[i]
+        tbMax[i] = tbMax[i] + user.tbFireManpower[i] + user.tbJobManpower[i]
         tbMax[i] = math.max(1, math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel))
     end
     tbMax[tbConfig.nManpowerMaxExpLevel] = 0
@@ -109,7 +105,7 @@ function HR.CommitTrain(tbParam, user)
     nTotalNum = 0
     for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
         nTotalNum = nTotalNum + tbParam.tbTrain[i]
-        if tbParam.tbTrain[i] > tbMax[i] then
+        if tbParam.tbTrain[i] > tbMax[i] or tbParam.tbTrain[i] < 0 then
             return string.format("%d级员工最多只能培训%d个", i, tbMax[i]), false
         end
     end
@@ -119,15 +115,12 @@ function HR.CommitTrain(tbParam, user)
         if nTotalNum > nMaxTotalNum then
             return string.format("最多只能培训%d人", nMaxTotalNum), false
         end
-
-        local nCost = nTotalNum * tbConfig.nSalary
-        if nCost > user.nCash then
+        if GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.HR, nTotalNum * tbConfig.nSalary) then
+            user.tbTrainManpower = tbParam.tbTrain  --user.tbTrainManpower存储时还是存五级，当最高级处理时被忽略
+            result = "成功设置培训"
+        else
             return "没有足够的费用进行培训", false
-        end
-        user.nCash = user.nCash - nCost
-        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + nCost
-        user.tbTrainManpower = tbParam.tbTrain  --user.tbTrainManpower存储时还是存五级，当最高级处理时被忽略
-        result = "成功设置培训"
+        end       
     end
     return result, true
 end
@@ -191,8 +184,7 @@ function HR.Poach(tbParam, user)
         nCost = math.max(nCost, 1)
     end
 
-    user.nCash = user.nCash - nCost
-    user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + nCost
+    GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.HR, nCost)
     user.tbPoach = {
         TargetUser = tbParam.TargetUser,
         nLevel = lvl,
@@ -472,10 +464,12 @@ end
 function HumanResources:PayOffSalary()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
-        local nCost = user.nTotalManpower * tbConfig.nSalary * (1 + (user.nSalaryLevel - 1) * tbConfig.fSalaryRatioPerLevel)
+        local nCost = user.nTotalManpower * GameLogic:HR_GetSalary(user.nSalaryLevel)
         nCost = math.floor(nCost + 0.5)
-        user.nCash = user.nCash - nCost  -- 先允许负数， 让游戏继续跑下去
-        user.tbYearReport.nLaborCosts = user.tbYearReport.nLaborCosts + nCost
-        table.insert(user.tbSysMsg, string.format("支付薪水：%d", nCost))
+        if GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Salary_Dev, nCost) then
+            table.insert(user.tbSysMsg, string.format("支付薪水：%d", nCost))
+        else
+            --todo 破产
+        end
     end
 end
