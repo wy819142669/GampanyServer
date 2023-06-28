@@ -120,7 +120,7 @@ function MarketMgr:LossMarket()
                 tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
 
                 if tbUser.tbSysMsg then
-                    table.insert(tbUser.tbSysMsg, string.format("产品%d 流失用户 %d", id, nLossMarket))
+                    table.insert(tbUser.tbSysMsg, string.format("产品%s 流失用户 %d", tbProduct.szName, nLossMarket))
                 end
             end
         end
@@ -291,6 +291,7 @@ function MarketMgr:DistributionMarket()
                         table.insert(tbInfos, {
                             userName = userName,
                             id = id,
+                            name = product.szName,
                             fMarketValue = fMarketValue,
                         })
                     end
@@ -310,6 +311,7 @@ function MarketMgr:DistributionMarket()
                     table.insert(tbInfos, {
                         userName = tbConfig.tbNpc.szName,
                         id = id,
+                        name = product.szName,
                         fMarketValue = fMarketValue,
                     })
                 end
@@ -324,7 +326,7 @@ function MarketMgr:DistributionMarket()
                     tbUser.tbProduct[tbInfo.id].nLastMarketScale = tbUser.tbProduct[tbInfo.id].nLastMarketScale + nCost
 
                     if tbUser.tbSysMsg then
-                        table.insert(tbUser.tbSysMsg, string.format("产品%d 新获得用户 %d", tbInfo.id, nCost))
+                        table.insert(tbUser.tbSysMsg, string.format("产品%s 新获得用户 %d", tbInfo.name, nCost))
                     end
                     nTotalCost = nTotalCost + nCost
                     print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
@@ -358,7 +360,7 @@ function MarketMgr:GainRevenue()
                 tbUser.nCash = tbUser.nCash + nIncome
                 tbUser.tbYearReport.nTurnover = tbUser.tbYearReport.nTurnover + nIncome
 
-                table.insert(tbUser.tbSysMsg, string.format("产品%d 获得收益 %d", id, nIncome))
+                table.insert(tbUser.tbSysMsg, string.format("产品%s 获得收益 %d", product.szName, nIncome))
 
                 print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nIncome))
             end

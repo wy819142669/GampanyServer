@@ -239,6 +239,7 @@ tbInitTables = {
         nNeedWorkLoad = 0,                          --研发或翻新需要完成的工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
         fFinishedQuality = 0,                       --已完成工作量的累积品质
+        szName = "",
     },
 
     --新发布产品初始表

@@ -21,6 +21,7 @@ function Production:CreateUserProduct(category, user)
     product.nNeedWorkLoad = categoryConfig.nWorkLoad
     product.Category = category
     product.bIsPlatform = categoryConfig.bIsPlatform
+    product.szName = category .. tostring(id)
     user.tbProduct[id] = product
     return id, product
 end
@@ -163,10 +164,10 @@ function Production:UpdateWrokload(product, user)
     local szMsg = ""
     if product.State == tbProductState.nBuilding then 
         product.State = tbProductState.nEnabled
-        szMsg = "产品%d研发完成，多余的%d人手已经释放到待岗区"
+        szMsg = "产品%s研发完成，多余的%d人手已经释放到待岗区"
     elseif product.State == tbProductState.nRenovating then
         product.State = tbProductState.nRenovateDone
-        szMsg = "产品%d翻新完成，多余的%d人手已经释放到待岗区"
+        szMsg = "产品%s翻新完成，多余的%d人手已经释放到待岗区"
     end
 
     --====把多余的人手（超过category.nMaintainTeam），自动释放====
@@ -192,7 +193,7 @@ function Production:UpdateWrokload(product, user)
     end
 
     if szMsg ~= "" then
-        table.insert(user.tbSysMsg, string.format(szMsg, product.Id, totalMan - category.nMaintainTeam))
+        table.insert(user.tbSysMsg, string.format(szMsg, product.szName, totalMan - category.nMaintainTeam))
     end
 end
 
@@ -211,7 +212,7 @@ function Production:UpdatePublished(product, user)
     product.nQuality = math.max(1, product.nQuality)
 
     if product.nQuality ~= nLastQuality then
-        table.insert(user.tbSysMsg, string.format("已发布产品%s%d品质由%d变更为%d", product.Category, product.Id, nLastQuality, product.nQuality))
+        table.insert(user.tbSysMsg, string.format("已发布产品%s品质由%d变更为%d", product.szName, nLastQuality, product.nQuality))
     end
 end
 

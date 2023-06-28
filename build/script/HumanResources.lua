@@ -415,7 +415,7 @@ function HumanResources:SettleTrain()
                                 user.tbTrainManpower[i] = user.tbTrainManpower[i] - nLevelUpCount
                                 product.tbManpower[i] = product.tbManpower[i] - nLevelUpCount
                                 product.tbManpower[i + 1] = product.tbManpower[i + 1] + nLevelUpCount
-                                table.insert(user.tbSysMsg, string.format("%s%d项目的%d名%d级员工晋升到%d级", product.Category, id, nLevelUpCount, i, i + 1))
+                                table.insert(user.tbSysMsg, string.format("%s项目的%d名%d级员工晋升到%d级", product.szName, nLevelUpCount, i, i + 1))
                             end
                         end
                     end
