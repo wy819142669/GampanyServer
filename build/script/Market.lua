@@ -343,6 +343,23 @@ function MarketMgr:DistributionMarket()
             product.nLastMarketExpance = 0
         end
     end
+
+    -- 统计百分比
+    local tbCategoryMarket = {}
+    for _, tbProductList in pairs(tbPublishedProduct) do
+        for _, tbProduct in pairs(tbProductList) do
+            tbCategoryMarket[tbProduct.Category] = tbCategoryMarket[tbProduct.Category] or 0
+            tbCategoryMarket[tbProduct.Category] = tbCategoryMarket[tbProduct.Category] + tbProduct.nLastMarketScale
+        end
+    end
+
+    for _, tbProductList in pairs(tbPublishedProduct) do
+        for _, tbProduct in pairs(tbProductList) do
+            if tbCategoryMarket[tbProduct.Category] and tbCategoryMarket[tbProduct.Category] > 0 then
+                tbProduct.nLastMarketScalePct = math.floor(tbProduct.nLastMarketScale * 100 / tbCategoryMarket[tbProduct.Category])
+            end
+        end
+    end
 end
 
 -- 获得收益
@@ -356,6 +373,7 @@ function MarketMgr:GainRevenue()
                 local fARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality)
                 local nIncome = math.floor(product.nLastMarketScale * fARPU)
                 
+                product.fLastARPU = fARPU
                 product.nLastMarketIncome = nIncome
                 tbUser.nCash = tbUser.nCash + nIncome
                 tbUser.tbYearReport.nTurnover = tbUser.tbYearReport.nTurnover + nIncome
