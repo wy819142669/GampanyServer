@@ -256,12 +256,4 @@ function DoYearReport(user)
     user.tbYearReport.nBalance = user.nCash - user.tbYearReport.nTax
 end
 
-function IsPlatformProduct(product)
-    return product.Category == "P"
-end
-
-function IsPlatformCategory(category)
-    return category == "P"
-end
-
 print("load SandTable.lua success")

@@ -96,3 +96,13 @@ end
 function GameLogic:PROD_IsInMarket(product)
     return product.Category ~= "P" and table.contain_value(tbConfig.tbPublishedState, product.State)
 end
+
+--是否是中台产品
+function GameLogic:PROD_IsPlatform(product)
+    return product.Category == "P"
+end
+
+--是否是中台品类
+function GameLogic:PROD_IsPlatformC(category)
+    return category == "P"
+end

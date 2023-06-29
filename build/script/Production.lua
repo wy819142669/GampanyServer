@@ -35,11 +35,7 @@ function Develop.CloseProduct(tbParam, user)
     if product == nil then
         return "未找到欲关闭的产品：" .. tbParam.Id, false
     end
-    if product.State == tbProductState.nClosed then
-        return "success", true
-    end
 
-    -- 关闭翻新项目
     MarketMgr:OnCloseProduct(tbParam.Id, product)
 
     --该产品在岗人员全部回到空闲状态
@@ -55,8 +51,6 @@ function Develop.CloseProduct(tbParam, user)
     return "success", true
 end
 
--- 对翻新完成的产品，执行发布操作，结束翻新
-
 -- 开始翻新产品 {FuncName = "Develop", Operate = "Renovate", Id=1 }
 function Develop.Renovate(tbParam, user)
     local product = nil
@@ -67,7 +61,7 @@ function Develop.Renovate(tbParam, user)
         return "未找到欲翻新的产品：" .. tbParam.Id, false
     end
 
-    if product.State == tbProductState.nRenovating then
+    if product.State == tbProductState.nRenovating or product.State == tbProductState.nRenovateDone then
         return "success", true
     elseif product.State ~= tbProductState.nPublished then
         return "未发布的产品不能翻新：" .. tbParam.Id, false
@@ -92,8 +86,7 @@ end
 function Production:GetProductLoopSequence(tbProductList)
     local tbResult = {}
     for _, tbProduct in pairs(tbProductList) do
-        local tbConfig = tbConfig.tbProductCategory[tbProduct.Category]
-        if tbConfig.bIsPlatform then
+        if GameLogic:PROD_IsPlatform(tbProduct) then
             -- 优先处理
             table.insert(tbResult, 1, tbProduct)
         else

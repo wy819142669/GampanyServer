@@ -81,7 +81,7 @@ function MarketMgr:DoStart()
     tbPublishedProduct = tbRuntimeData.tbPublishedProduct
     for category, product in pairs(tbConfig.tbProductCategory) do
         tbPublishedProduct[category] = {}
-        if IsPlatformCategory(category) == false then
+        if GameLogic:PROD_IsPlatformC(category) == false then
             tbRuntimeData.tbMarket[category] = product.nTotalMarket;
         end
 
@@ -143,7 +143,7 @@ function MarketMgr:LossMarketByQuality()
     --math.randomseed(os.time())
     
     for category, _ in pairs(tbConfig.tbProductCategory) do
-        if IsPlatformCategory(category) == false then
+        if GameLogic:PROD_IsPlatformC(category) == false then
             tbCurrentTotalMarket[category] = tbRuntimeData.tbMarket[category]
 
             tbInfos[category] = {
@@ -156,7 +156,7 @@ function MarketMgr:LossMarketByQuality()
 
     for userName, tbUser in pairs(tbRuntimeData.tbUser) do
         for id, product in pairs(tbUser.tbProduct) do
-            if IsPlatformCategory(product.Category) == false then
+            if GameLogic:PROD_IsPlatform(product) == false then
                 if Production:IsPublished(product) then
                     tbCurrentTotalMarket[product.Category] = tbCurrentTotalMarket[product.Category] + product.nLastMarketScale
                     local nQuality = product.nQuality or 0
@@ -250,7 +250,7 @@ function MarketMgr:LossMarketByQuality()
     local nMaxMarket      = 0
 
     for Category, ProductCategory in pairs(tbConfig.tbProductCategory) do
-        if IsPlatformCategory(Category) == false then
+        if GameLogic:PROD_IsPlatformC(Category) == false then
             nMaxMarket = nMaxMarket + ProductCategory.nTotalMarket
         end
     end
