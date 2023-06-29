@@ -211,7 +211,7 @@ function Production:UpdateWrokload(product, user)
         end
     end
 
-    if szMsg ~= "" then
+    if szMsg ~= "" and totalMan - category.nMaintainTeam > 0 then
         table.insert(user.tbSysMsg, string.format(szMsg, product.szName, totalMan - category.nMaintainTeam))
     end
 end
