@@ -87,10 +87,27 @@ function Production:NewProductId()
     return nNewProductId
 end
 
+-- 此函数用来控制季度结算时遍历产品的顺序，为了避免出现一个季度产品对质量加成不一致的问题, 对于中台产品要统一结算时机
+-- 当前是方式是优先处理中台，这样后续遍历的产品就会被中台的质量分所影响
+function Production:GetProductLoopSequence(tbProductList)
+    local tbResult = {}
+    for _, tbProduct in pairs(tbProductList) do
+        local tbConfig = tbConfig.tbProductCategory[tbProduct.Category]
+        if tbConfig.bIsPlatform then
+            -- 优先处理
+            table.insert(tbResult, 1, tbProduct)
+        else
+            table.insert(tbResult, tbProduct)
+        end
+    end
+
+    return tbResult
+end
+
 function Production:PostSeason()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
-        for _, product in pairs(user.tbProduct) do
+        for _, product in pairs(self:GetProductLoopSequence(user.tbProduct)) do
             -- 玩家没有执行上线操作前, 都需要执行UpdateWrokload函数
             if product.State <= tbProductState.nEnabled or product.State == tbProductState.nRenovating or product.State == tbProductState.nRenovateDone then
                 Production:UpdateWrokload(product, user)
@@ -114,7 +131,7 @@ function Production:Publish(product, user)
     product.State = tbProductState.nPublished
 end
 
-function Production:GetQuality(product)
+function Production:GetQuality(product, user)
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan = 0
     local totalQuality = 0
@@ -145,12 +162,21 @@ function Production:GetQuality(product)
             end
         end
     end
+    
+    totalQuality, totalMan = totalQuality * tbConfig.fQualityPerManpowerLevel, totalMan
 
-    return math.floor(totalQuality * tbConfig.fQualityPerManpowerLevel + 0.5), math.floor(totalMan + 0.5)
+    -- 非中台部门要计算中台加成
+    if not category.bIsPlatform then
+        local fQualityRate, fManPowerRate = self:MiddlePlatformQuality(user)
+        totalQuality, totalMan = totalQuality * (1 + fQualityRate), totalMan * (1 + fManPowerRate)
+    end
+
+    -- 四舍五入
+    return math.floor(totalQuality + 0.5), math.floor(totalMan + 0.5)
 end
 
 function Production:UpdateWrokload(product, user)
-    local totalQuality, totalMan = self:GetQuality(product)
+    local totalQuality, totalMan = self:GetQuality(product, user)
     local newWorkLoadValue = product.nFinishedWorkLoad + totalMan
     local newQualityValue = product.fFinishedQuality + totalQuality
 
@@ -201,7 +227,8 @@ function Production:UpdatePublished(product, user)
     local addQuality = -1
     local nLastQuality = product.nQuality
     local category = tbConfig.tbProductCategory[product.Category]
-    local totalQuality, totalMan = self:GetQuality(product)
+    local totalQuality, totalMan = self:GetQuality(product, user)
+
     -- 人力投入大于理想人员规模和当前品质大于等于初始品质
     if totalMan >= category.nMaintainTeam and totalQuality / totalMan >= product.nOrigQuality then
         addQuality = 1
@@ -218,6 +245,17 @@ end
 
 function Production:IsPublished(product)
     return table.contain_value(tbConfig.tbPublishedState, product.State)
+end
+
+function Production:MiddlePlatformQuality(user)
+    for _, product in pairs(user.tbProduct) do
+        local config = tbConfig.tbProductCategory[product.Category]
+        if config.bIsPlatform and self:IsPublished(product) then
+            return config.fQualityRate * product.nQuality, config.fManPowerRate * product.nQuality
+        end
+    end
+    
+    return 0, 0
 end
 
 --[[

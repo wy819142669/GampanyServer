@@ -161,6 +161,8 @@ tbConfig = {
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
             bIsPlatform = true,
+            fQualityRate = 0.05,
+            fManPowerRate = 0.05,
         },
     },
 }
