@@ -62,9 +62,9 @@ function Market.Marketing(tbParam, user)
     if user.nCash + nPreTotalExpense < nTotalExpense then
         return "cash not enough", false
     end
-    
-    user.nCash = user.nCash + nPreTotalExpense - nTotalExpense
-    user.tbYearReport.nMarketingExpense = user.tbYearReport.nMarketingExpense - nPreTotalExpense + nTotalExpense
+
+    GameLogic:FIN_Unpay(user, tbConfig.tbFinClassify.Mkt, nPreTotalExpense)
+    GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Mkt, nTotalExpense)
 
     for _, tbProduct in pairs(tbParam.Product) do
         user.tbProduct[tbProduct.Id].nLastMarketExpance = tbProduct.Expense
@@ -375,9 +375,7 @@ function MarketMgr:GainRevenue()
                 
                 product.fLastARPU = fARPU
                 product.nLastMarketIncome = nIncome
-                tbUser.nCash = tbUser.nCash + nIncome
-                tbUser.tbYearReport.nTurnover = tbUser.tbYearReport.nTurnover + nIncome
-
+                GameLogic:FIN_Revenue(tbUser, tbConfig.tbFinClassify.Revenue, nIncome)
                 table.insert(tbUser.tbSysMsg, string.format("产品%s 获得收益 %d", product.szName, nIncome))
 
                 print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nIncome))

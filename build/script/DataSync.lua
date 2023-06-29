@@ -45,6 +45,11 @@ function GameLogic:HR_GetSalary(level)
     return (tbConfig.nSalary * (1 + (level - 1) * tbConfig.fSalaryRatioPerLevel))
 end
 
+--计算税额
+function GameLogic:FIN_Tax(profit)
+    return math.max(0, math.floor(profit * tbConfig.fTaxRate + 0.5))
+end
+
 --企业付款
 function GameLogic:FIN_Pay(user, classify, amount)
     if amount < 0 or user.nCash < amount then
@@ -79,16 +84,22 @@ end
 function GameLogic:FIN_ModifyReport(report, classify, amount)
     if classify == tbConfig.tbFinClassify.Revenue then -- 销售收入
         report.nTurnover = report.nTurnover + amount
+        report.nGrossProfit = report.nGrossProfit + amount
     elseif classify == tbConfig.tbFinClassify.Tax then -- 税负
         report.nTax = report.nTax + amount
+        report.nNetProfit = report.nGrossProfit - report.nTax
     elseif classify == tbConfig.tbFinClassify.Mkt then -- 市场
         report.nMarketingExpense = report.nMarketingExpense + amount
+        report.nGrossProfit = report.nGrossProfit - amount
     elseif classify == tbConfig.tbFinClassify.HR then -- 人事（招募、挖人、培训、空闲人员薪酬）
         report.nLaborCosts = report.nLaborCosts + amount
+        report.nGrossProfit = report.nGrossProfit - amount
     elseif classify == tbConfig.tbFinClassify.Salary_Dev then -- 薪酬(非发布产品)
         report.nSalaryDev = report.nSalaryDev + amount
+        report.nGrossProfit = report.nGrossProfit - amount
     elseif classify == tbConfig.tbFinClassify.Salary_Pub then -- 薪酬(已发布产品，不包含平台)
         report.nSalaryPub = report.nSalaryPub + amount
+        report.nGrossProfit = report.nGrossProfit - amount
     end
 end
 

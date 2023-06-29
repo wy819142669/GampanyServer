@@ -45,8 +45,6 @@ end
 
 -- 重置 {FuncName = "DoReset"}
 function tbAdminFunc.DoReset(tbParam)
-    Production:Reset()
-
     local runtime = GetTableRuntime()
 
     runtime.bPlaying = false
@@ -79,8 +77,7 @@ function tbAdminFunc.DoStart(tbParam)
         Administration:NewUser(userName)
     end
 
-    InitManpowerData()
-    MarketMgr:DoStart()
+    SandTableStart()
 
     return "success", true
 end

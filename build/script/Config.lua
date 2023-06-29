@@ -236,7 +236,6 @@ tbInitTables = {
         nSalaryPub = 0,         -- 上线项目的薪酬成本
         nMarketingExpense = 0,  -- 销售费用
         nGrossProfit = 0,       -- 营业利润
-        nProfitBeforeTax = 0,   -- 税前利润
         nTax = 0,               -- 税款
         nNetProfit = 0,         -- 净利润
         nBalance = 0,           -- 结余现金

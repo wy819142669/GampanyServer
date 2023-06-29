@@ -68,8 +68,10 @@ function GetTableRuntime()
     return tbRuntimeData
 end
 
-function InitManpowerData()
+function SandTableStart()
+    Production:Reset()
     HumanResources:UpdateAllUserManpower()
+    MarketMgr:DoStart()
 end
 
 --------------------接口实现---------------------------------------
@@ -185,12 +187,12 @@ end
 -- 每个季度开始前的自动处理
 function DoPreSeason()
     HumanResources:AddNewManpower() -- 新人才进入人才市场
-    HumanResources:SettleDepart()  --办理离职（交付流失员工）
+    HumanResources:SettleDepart()   -- 办理离职（交付流失员工）
     HumanResources:SettleFire()     -- 解雇人员离职
     HumanResources:SettleTrain()    -- 培训中的员工升级
     HumanResources:SettlePoach()    -- 成功挖掘的人才入职
     HumanResources:SettleHire()     -- 人才市场招聘结果
-    MarketMgr:UpdateNpc()              -- Npc调整
+    MarketMgr:UpdateNpc()           -- Npc调整
 
     HumanResources:RecordProductManpower() -- 记录季度开始时的人力
 end
@@ -200,21 +202,18 @@ function DoPostSeason()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbSysMsg = {}
     end
-                    -- 推进研发进度
-                    -- 更新产品品质
-                    -- 流失份额、各品类市场份额刷新、更新市场竞标结果
-                    -- 获取收益
     MarketMgr:SettleMarket()  -- 更新市场竞标结果 -- 获取上个季度市场收益
-
+    Production:PostSeason()         -- 推进研发进度,更新产品品质
     HumanResources:PayOffSalary()   -- 支付薪水
-    Production:PostSeason()         -- 推进研发进度
 end
 
 -- 每年结束后的自动处理
 function DoPostYear()
     for _, user in pairs(tbRuntimeData.tbUser) do
-        DoYearReport(user)
-        DoPayTax(user)
+        --年尾扣税
+        GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Tax, GameLogic:FIN_Tax(user.tbYearReport.nGrossProfit))
+        --记录一年最后的账上结余
+        user.tbYearReport.nBalance = user.nCash - user.tbYearReport.nTax
     end
 end
 
@@ -233,27 +232,6 @@ function DoUpdateGamerDataVersion(account)
             user.nDataVersion = user.nDataVersion + 1
         end
     end
-end
-
---年尾扣税
-function DoPayTax(user)
-    user.nCash = user.nCash - user.tbYearReport.nTax
-end
-
---处理年报
-function DoYearReport(user)
-    user.tbYearReport.nBalance = user.nCash
-    user.tbYearReport.nGrossProfit = user.tbYearReport.nTurnover
-                                    - user.tbYearReport.nLaborCosts
-                                    - user.tbYearReport.nMarketingExpense
-
-    user.tbYearReport.nProfitBeforeTax = user.tbYearReport.nGrossProfit
-
-    user.tbYearReport.nTax = math.max(0, math.floor(user.tbYearReport.nProfitBeforeTax * tbConfig.fTaxRate + 0.5))
-
-    user.tbYearReport.nNetProfit = user.tbYearReport.nProfitBeforeTax - user.tbYearReport.nTax
-
-    user.tbYearReport.nBalance = user.nCash - user.tbYearReport.nTax
 end
 
 print("load SandTable.lua success")
