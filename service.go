@@ -33,6 +33,7 @@ func doQuery(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
 	bodyString := string(body)
+
 	//fmt.Printf("got / doQuery request %v \n", bodyString)  //注释掉此行，免得操作请求日志淹没在大量的更新请求日志中，调试时有需要再打开
 
 	ret := CallLua("Query", bodyString)
