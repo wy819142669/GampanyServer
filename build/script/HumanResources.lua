@@ -364,7 +364,6 @@ function HumanResources:AddNewManpower()
     if nCurSeason ~= 1 and nCurSeason ~= 3 then
         return  -- 只有第一三季度，人才市场才会增加新人
     end
-    print("AddNewManpower", tbRuntimeData.nCurYear, nCurSeason, #tbConfig.tbNewManpowerPerYear)
     if tbRuntimeData.nCurYear <= #tbConfig.tbNewManpowerPerYear then
         local tbNewManpower = tbConfig.tbNewManpowerPerYear[tbRuntimeData.nCurYear]
         for i = 1, tbConfig.nManpowerMaxExpLevel do
@@ -440,6 +439,23 @@ function HumanResources:UpdateAllUserManpower()
     end
 end
 
+function HumanResources:GetManByPositon(user)
+    local dev = 0
+    local pub = 0
+    for _, product in pairs(user.tbProduct) do
+        local num = 0
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
+            num = num + product.tbManpower[i]
+        end
+        if GameLogic:PROD_IsInMarket(product) then
+            pub = pub + num
+        else
+            dev = dev + num
+        end
+    end
+    return dev, pub, (user.nTotalManpower - dev - pub)
+end
+
 function HumanResources:UpdateJobManpower(user)
     user.tbJobManpower = {0, 0, 0, 0, 0}
     for _, product in pairs(user.tbProduct) do
@@ -461,15 +477,28 @@ function HumanResources:RecordProductManpower()
     end
 end
 
+function HumanResources:SalaryByPosition(user, amount)
+    local dev, pub, idle = HumanResources:GetManByPositon(user)
+    local total = user.nTotalManpower
+    return (amount * dev / total), (amount * pub / total), (amount * idle / total)
+end
+
 function HumanResources:PayOffSalary()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         local nCost = user.nTotalManpower * GameLogic:HR_GetSalary(user.nSalaryLevel)
         nCost = math.floor(nCost + 0.5)
-        if GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Salary_Dev, nCost) then
-            table.insert(user.tbSysMsg, string.format("支付薪水：%d", nCost))
-        else
-            --todo 破产
+        if nCost > 0 then
+            if GameLogic:FIN_Pay(user, nil, nCost) then
+                table.insert(user.tbSysMsg, string.format("支付薪水：%d", nCost))
+                -- 分类记账
+                local dev, pub, idle = HumanResources:SalaryByPosition(user, nCost)                
+                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, dev)
+                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Pub, pub)
+                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)
+            else
+                --todo 破产
+            end
         end
     end
 end

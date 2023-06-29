@@ -51,7 +51,7 @@ function GameLogic:FIN_Pay(user, classify, amount)
         return false
     end
     user.nCash = user.nCash - amount
-    GameLogic:ModifyReport(user.tbYearReport, classify, amount)
+    GameLogic:FIN_ModifyReport(user.tbYearReport, classify, amount)
     return true
 end
 
@@ -61,7 +61,7 @@ function GameLogic:FIN_Unpay(user, classify, amount)
         return false
     end
     user.nCash = user.nCash + amount
-    GameLogic:ModifyReport(user.tbYearReport, classify, -amount)
+    GameLogic:FIN_ModifyReport(user.tbYearReport, classify, -amount)
     return true
 end
 
@@ -71,19 +71,28 @@ function GameLogic:FIN_Revenue(user, amount)
         return false
     end
     user.nCash = user.nCash + amount
-    GameLogic:ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Revenue, amount)
+    GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Revenue, amount)
     return true
 end
 
 --根据现金异动修改财报
-function GameLogic:ModifyReport(report, classify, amount)
+function GameLogic:FIN_ModifyReport(report, classify, amount)
     if classify == tbConfig.tbFinClassify.Revenue then -- 销售收入
+        report.nTurnover = report.nTurnover + amount
     elseif classify == tbConfig.tbFinClassify.Tax then -- 税负
+        report.nTax = report.nTax + amount
     elseif classify == tbConfig.tbFinClassify.Mkt then -- 市场
-    elseif classify == tbConfig.tbFinClassify.HR then -- 人事（招募、挖人、培训）
+        report.nMarketingExpense = report.nMarketingExpense + amount
+    elseif classify == tbConfig.tbFinClassify.HR then -- 人事（招募、挖人、培训、空闲人员薪酬）
         report.nLaborCosts = report.nLaborCosts + amount
     elseif classify == tbConfig.tbFinClassify.Salary_Dev then -- 薪酬(非发布产品)
-        report.nLaborCosts = report.nLaborCosts + amount
+        report.nSalaryDev = report.nSalaryDev + amount
     elseif classify == tbConfig.tbFinClassify.Salary_Pub then -- 薪酬(已发布产品，不包含平台)
+        report.nSalaryPub = report.nSalaryPub + amount
     end
+end
+
+--是否是发布到市场中的产品
+function GameLogic:PROD_IsInMarket(product)
+    return product.Category ~= "P" and table.contain_value(tbConfig.tbPublishedState, product.State)
 end

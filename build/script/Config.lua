@@ -10,7 +10,7 @@ tbConfig = {
         Revenue = 1,        -- 销售收入
         Tax = 2,            -- 税负
         Mkt = 3,            -- 市场
-        HR = 4,             -- 人事（招募、挖人、培训） 
+        HR = 4,             -- 人事（招募、挖人、培训、空闲人员薪酬）
         Salary_Dev = 5,     -- 薪酬(非发布产品)
         Salary_Pub = 6,     -- 薪酬(已发布产品，不包含平台)
     },
@@ -227,15 +227,12 @@ tbInitTables = {
 
     --年报初始表
     tbInitReport = {
-        -- 收入
-        nTurnover = 0,
-        -- 人力费用
-        nLaborCosts = 0,
-        -- 销售费用
-        nMarketingExpense = 0,
-        -- 营业利润
-        nGrossProfit = 0,
-        
+        nTurnover = 0,          -- (销售)收入
+        nLaborCosts = 0,        -- 人力费用，人事相关（人事（招募、挖人、培训、空闲人员薪酬））
+        nSalaryDev = 0,         -- 研发项目与平台的薪酬成本
+        nSalaryPub = 0,         -- 上线项目的薪酬成本
+        nMarketingExpense = 0,  -- 销售费用
+        nGrossProfit = 0,       -- 营业利润
         nProfitBeforeTax = 0,   -- 税前利润
         nTax = 0,               -- 税款
         nNetProfit = 0,         -- 净利润
