@@ -31,6 +31,8 @@ tbConfig = {
     fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
     fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
     fQualityPerManpowerLevel = 2.0, --每人力等级可以提供的品质点数，人力1~5级， 产品2~10级
+    fPlatformManPowerRate = 0.05,   --中台对人力的影响参数
+    fPlatformQualityRate = 0.05,    --中台对质量的影响参数
 
     --==== 产品所有状态罗列，只读不写 ====
     tbProductState = {
@@ -161,8 +163,6 @@ tbConfig = {
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
             bIsPlatform = true,
-            fQualityRate = 0.05,
-            fManPowerRate = 0.05,
         },
     },
 }
@@ -214,6 +214,9 @@ tbInitTables = {
         --==== 所有产品列表 ====
         tbProduct = { },        -- 所有未关闭的产品
         tbClosedProduct = { },  -- 所有已关闭的产品
+
+        --==== 研发相关 ====
+        nPlatformQuality = 0,   -- 已发布中台的当前质量（0表示无已发布的中台）
 
         --==== 财务数 ====
         nCash = 1000,               -- 现金
