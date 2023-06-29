@@ -101,10 +101,12 @@ function Production:PostSeason()
     local tbRuntimeData = GetTableRuntime()
     for _, user in pairs(tbRuntimeData.tbUser) do
         for _, product in pairs(self:GetProductLoopSequence(user.tbProduct)) do
-            -- 玩家没有执行上线操作前, 都需要执行UpdateWrokload函数
-            if product.State <= tbProductState.nEnabled or product.State == tbProductState.nRenovating or product.State == tbProductState.nRenovateDone then
-                Production:UpdateWrokload(product, user)
-            elseif Production:IsPublished(product) then
+            -- 研发/翻新中都需要执行UpdateWorkload函数
+            if GameLogic:PROD_IsDeveloping(product) then
+                Production:UpdateWorkload(product, user)
+            end
+            -- 发布后都需要团队维持质量
+            if GameLogic:PROD_IsPublished(product) then
                 Production:UpdatePublished(product, user)
             end
         end
@@ -113,7 +115,6 @@ end
 
 -- 首次发布和翻新发布都通过此函数设置品质与状态
 function Production:Publish(product, user)
-    local state = product.State
     --在Market.Publish中已对产品状态做过检查，此处略过
     --product.State == tbConfig.tbProductState.nEnabled or product.State == tbConfig.tbProductState.nRenovateDone
 
@@ -122,21 +123,28 @@ function Production:Publish(product, user)
     product.nOrigQuality= quality
     product.nQuality = quality
     product.State = tbProductState.nPublished
+    if GameLogic:PROD_IsPlatform(product) then
+        user.nPlatformQuality = quality
+    end
 end
 
-function Production:GetQuality(product, user)
-    local category = tbConfig.tbProductCategory[product.Category]
+function Production:GetTeamScaleQuality(product)
     local totalMan = 0
     local totalQuality = 0
-
-    local bInRenovate = product.State == tbConfig.tbProductState.nRenovating
-    local nMinTeam = bInRenovate and category.nRenovateMinTeam or category.nMinTeam
-    local nIdeaTeam = bInRenovate and category.nRenovateIdeaTeam or category.nIdeaTeam
-
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         totalMan = totalMan + product.tbManpower[i]
         totalQuality = totalQuality + product.tbManpower[i] * i
     end
+    return totalMan, totalQuality
+end
+
+function Production:GetDevelopingQuality(product, user)
+    local category = tbConfig.tbProductCategory[product.Category]
+    local bInRenovate = product.State == tbConfig.tbProductState.nRenovating
+    local nMinTeam = bInRenovate and category.nRenovateMinTeam or category.nMinTeam
+    local nIdeaTeam = bInRenovate and category.nRenovateIdeaTeam or category.nIdeaTeam
+    local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
+
     if totalMan < nMinTeam then
         totalMan = totalMan * tbConfig.fSmallTeamRatio
         totalQuality = totalQuality * tbConfig.fSmallTeamRatio
@@ -156,11 +164,11 @@ function Production:GetQuality(product, user)
         end
     end
     
-    totalQuality, totalMan = totalQuality * tbConfig.fQualityPerManpowerLevel, totalMan
+    totalQuality = totalQuality * tbConfig.fQualityPerManpowerLevel
 
     -- 非中台部门要计算中台加成
     if not category.bIsPlatform then
-        local fQualityRate, fManPowerRate = self:MiddlePlatformQuality(user)
+        local fManPowerRate, fQualityRate = self:GetPlatformEffect(user)
         totalQuality, totalMan = totalQuality * (1 + fQualityRate), totalMan * (1 + fManPowerRate)
     end
 
@@ -168,15 +176,12 @@ function Production:GetQuality(product, user)
     return math.floor(totalQuality + 0.5), math.floor(totalMan + 0.5)
 end
 
-function Production:UpdateWrokload(product, user)
-    local totalQuality, totalMan = self:GetQuality(product, user)
-    local newWorkLoadValue = product.nFinishedWorkLoad + totalMan
-    local newQualityValue = product.fFinishedQuality + totalQuality
+function Production:UpdateWorkload(product, user)
+    local totalQuality, totalMan = self:GetDevelopingQuality(product, user)
+    product.nFinishedWorkLoad = product.nFinishedWorkLoad + totalMan
+    product.fFinishedQuality = product.fFinishedQuality + totalQuality
 
-    product.nFinishedWorkLoad = newWorkLoadValue
-    product.fFinishedQuality = newQualityValue
-
-    if newWorkLoadValue < product.nNeedWorkLoad then
+    if product.nFinishedWorkLoad < product.nNeedWorkLoad then
         return
     end
 
@@ -187,31 +192,34 @@ function Production:UpdateWrokload(product, user)
     elseif product.State == tbProductState.nRenovating then
         product.State = tbProductState.nRenovateDone
         szMsg = "产品%s翻新完成，多余的%d人手已经释放到待岗区"
+    else
+        return --之前就已经完成了，还重新配上多余人手，则保持不做释放多余人手
     end
 
     --====把多余的人手（超过category.nMaintainTeam），自动释放====
     totalMan = 0
     local category = tbConfig.tbProductCategory[product.Category]
-    for i = tbConfig.nManpowerMaxExpLevel, 1, -1 do
-        if product.tbManpower[i] > 0 then
+    for i = tbConfig.nManpowerMaxExpLevel, 1, -1 do --优先保留高等级的，释放低等级的
+        local num = product.tbManpower[i]
+        if num > 0 then
             if totalMan >= category.nMaintainTeam then
-                user.tbIdleManpower[i] = user.tbIdleManpower[i] + product.tbManpower[i]
-                user.tbJobManpower[i] = user.tbJobManpower[i] - product.tbManpower[i]
-                totalMan = totalMan + product.tbManpower[i]
+                user.tbIdleManpower[i] = user.tbIdleManpower[i] + num
+                user.tbJobManpower[i] = user.tbJobManpower[i] - num
+                totalMan = totalMan + num
                 product.tbManpower[i] = 0
-            elseif totalMan + product.tbManpower[i] <= category.nMaintainTeam then
-                totalMan = totalMan + product.tbManpower[i]
+            elseif totalMan + num <= category.nMaintainTeam then
+                totalMan = totalMan + num
             else
-                local exceed = totalMan + product.tbManpower[i] - category.nMaintainTeam
+                local exceed = totalMan + num - category.nMaintainTeam
                 user.tbIdleManpower[i] = user.tbIdleManpower[i] + exceed
                 user.tbJobManpower[i] = user.tbJobManpower[i] - exceed
-                totalMan = totalMan + product.tbManpower[i]
-                product.tbManpower[i] = product.tbManpower[i] - exceed
+                totalMan = totalMan + num
+                product.tbManpower[i] = num - exceed
             end
         end
     end
 
-    if szMsg ~= "" then
+    if totalMan > category.nMaintainTeam and szMsg ~= "" then
         table.insert(user.tbSysMsg, string.format(szMsg, product.szName, totalMan - category.nMaintainTeam))
     end
 end
@@ -220,18 +228,24 @@ function Production:UpdatePublished(product, user)
     local addQuality = -1
     local nLastQuality = product.nQuality
     local category = tbConfig.tbProductCategory[product.Category]
-    local totalQuality, totalMan = self:GetQuality(product, user)
+    local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
 
-    -- 人力投入大于理想人员规模和当前品质大于等于初始品质
-    if totalMan >= category.nMaintainTeam and totalQuality / totalMan >= product.nOrigQuality then
-        addQuality = 1
+    if totalMan >= category.nMaintainTeam then
+        if product.nQuality == product.nOrigQuality then
+            return
+        end
+        if totalQuality / totalMan >= product.nOrigQuality then
+            addQuality = 1  --维护团队的等级不低于原始质量等级，则恢复质量
+        end
     end
 
-    -- 不能超过初始品质
-    product.nQuality = math.min(product.nQuality + addQuality, product.nOrigQuality)
+    product.nQuality = math.min(product.nQuality + addQuality, product.nOrigQuality)    -- 不能超过初始品质
     product.nQuality = math.max(1, product.nQuality)
 
     if product.nQuality ~= nLastQuality then
+        if GameLogic:PROD_IsPlatform(product) then
+            user.nPlatformQuality = product.nQuality
+        end
         table.insert(user.tbSysMsg, string.format("已发布产品%s品质由%d变更为%d", product.szName, nLastQuality, product.nQuality))
     end
 end
@@ -240,27 +254,6 @@ function Production:IsPublished(product)
     return table.contain_value(tbConfig.tbPublishedState, product.State)
 end
 
-function Production:MiddlePlatformQuality(user)
-    for _, product in pairs(user.tbProduct) do
-        local config = tbConfig.tbProductCategory[product.Category]
-        if config.bIsPlatform and self:IsPublished(product) then
-            return config.fQualityRate * product.nQuality, config.fManPowerRate * product.nQuality
-        end
-    end
-    
-    return 0, 0
+function Production:GetPlatformEffect(user)
+    return tbConfig.fPlatformManPowerRate * user.nPlatformQuality, tbConfig.fPlatformQualityRate * user.nPlatformQuality
 end
-
---[[
-function Production:RecordProductState()
-    local tbRuntimeData = GetTableRuntime()
-    for _, user in pairs(tbRuntimeData.tbUser) do
-        for _, product in pairs(user.tbProduct) do
-            product.OriginalState = product.State
-        end
-        for _, product in pairs(user.tbClosedProduct) do
-            product.OriginalState = product.State
-        end
-    end
-end
---]]

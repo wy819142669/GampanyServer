@@ -97,6 +97,16 @@ function GameLogic:PROD_IsInMarket(product)
     return product.Category ~= "P" and table.contain_value(tbConfig.tbPublishedState, product.State)
 end
 
+--是否是已发布的产品（包括市场中的，与已发布的中台）
+function GameLogic:PROD_IsPublished(product)
+    return table.contain_value(tbConfig.tbPublishedState, product.State)
+end
+
+--是否是研发中的产品（包括翻新的，包括中台）
+function GameLogic:PROD_IsDeveloping(product)
+    return table.contain_value(tbConfig.tbDevelopingState, product.State)
+end
+
 --是否是中台产品
 function GameLogic:PROD_IsPlatform(product)
     return product.Category == "P"
