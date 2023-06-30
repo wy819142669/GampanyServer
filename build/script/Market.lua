@@ -76,13 +76,13 @@ function MarketMgr:DoStart()
     local tbRuntimeData = GetTableRuntime()
 
     Market.tbNpc = { tbProduct = {} }
-    tbRuntimeData.tbMarket = {}
+    tbRuntimeData.tbMarketShareByCategory = {}
     tbRuntimeData.tbPublishedProduct = {}
     tbPublishedProduct = tbRuntimeData.tbPublishedProduct
     for category, product in pairs(tbConfig.tbProductCategory) do
         tbPublishedProduct[category] = {}
         if GameLogic:PROD_IsPlatformC(category) == false then
-            tbRuntimeData.tbMarket[category] = product.nTotalMarket;
+            tbRuntimeData.tbMarketShareByCategory[category] = product.nTotalMarket;
         end
 
         if not product.bIsPlatform then
@@ -117,7 +117,7 @@ function MarketMgr:LossMarket()
                 
                 local nLossMarket = math.floor(tbProduct.nLastMarketScale * fLossRate)
                 tbProduct.nLastMarketScale = tbProduct.nLastMarketScale - nLossMarket;
-                tbRuntimeData.tbMarket[tbProduct.Category] = tbRuntimeData.tbMarket[tbProduct.Category] + nLossMarket
+                tbRuntimeData.tbMarketShareByCategory[tbProduct.Category] = tbRuntimeData.tbMarketShareByCategory[tbProduct.Category] + nLossMarket
 
                 if tbUser.tbSysMsg then
                     table.insert(tbUser.tbSysMsg, string.format("产品%s 流失用户 %d", tbProduct.szName, nLossMarket))
@@ -144,7 +144,7 @@ function MarketMgr:LossMarketByQuality()
     
     for category, _ in pairs(tbConfig.tbProductCategory) do
         if GameLogic:PROD_IsPlatformC(category) == false then
-            tbCurrentTotalMarket[category] = tbRuntimeData.tbMarket[category]
+            tbCurrentTotalMarket[category] = tbRuntimeData.tbMarketShareByCategory[category]
 
             tbInfos[category] = {
                 nHighestQuality = 0,
@@ -257,13 +257,13 @@ function MarketMgr:LossMarketByQuality()
 
     nMaxMarket = math.floor(nMaxMarket * tbConfig.tbProductCategory[tbGainSortInfo.category].nMaxMarketScale * 0.01)
 
-    local nLossMarket = math.min(math.min(nMaxMarket - tbCurrentTotalMarket[tbGainSortInfo.category], tbConfig.nLossMarket), tbRuntimeData.tbMarket[tbLossSortInfo.category])
+    local nLossMarket = math.min(math.min(nMaxMarket - tbCurrentTotalMarket[tbGainSortInfo.category], tbConfig.nLossMarket), tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category])
     if nLossMarket < 0 then
         nLossMarket = 0
     end
 
-    tbRuntimeData.tbMarket[tbLossSortInfo.category] = tbRuntimeData.tbMarket[tbLossSortInfo.category] - nLossMarket
-    tbRuntimeData.tbMarket[tbGainSortInfo.category] = tbRuntimeData.tbMarket[tbGainSortInfo.category] + nLossMarket
+    tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category] = tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category] - nLossMarket
+    tbRuntimeData.tbMarketShareByCategory[tbGainSortInfo.category] = tbRuntimeData.tbMarketShareByCategory[tbGainSortInfo.category] + nLossMarket
 
     print("LossMarketByQuality LossMarket: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.category .. " -> " .. tbGainSortInfo.category)
 end
@@ -272,7 +272,7 @@ end
 function MarketMgr:DistributionMarket()
     local tbRuntimeData = GetTableRuntime()
 
-    for category, nMarket in pairs(tbRuntimeData.tbMarket) do
+    for category, nMarket in pairs(tbRuntimeData.tbMarketShareByCategory) do
         if nMarket > 0 then
             local tbInfos = {}
             local fTotalMarketValue = 0
@@ -332,7 +332,7 @@ function MarketMgr:DistributionMarket()
                     print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
                 end
 
-                tbRuntimeData.tbMarket[category] = tbRuntimeData.tbMarket[category] - nTotalCost
+                tbRuntimeData.tbMarketShareByCategory[category] = tbRuntimeData.tbMarketShareByCategory[category] - nTotalCost
             end
         end
     end

@@ -29,8 +29,12 @@ local tbRuntimeData = {
         tbProduc = {}
     },
 
-    tbMarket = {},
-    tbPublishedProduct = {},
+    --==== 产品市场相关 ====
+    tbMarketShareByCategory = {},   --各品类产品共享待分配的市场份额，以品类为key
+
+    tbPublishedProduct = {},        -- 所有已发布的产品（不包含已关闭的）（的引用），分品类组织
+        -- tbPublishedProduct数组：各key是 产品品类名，各value又是个数组，
+        -- tbPublishedProduct的value数组：各key就是产品id，各value就是各产品的运行时数据表(是对 tbConfig.tbUser[xx].tbProduct[id]的引用)
 }
 
 local tbFunc = {
