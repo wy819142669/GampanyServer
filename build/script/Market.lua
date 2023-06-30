@@ -101,36 +101,37 @@ function MarketMgr:OnCloseProduct(id, product)
     GetTableRuntime().tbPublishedProduct[product.Category][id] = nil
 end
 
+-- 对产品列表中每个产品进行某项处理
+function MarketMgr.ForEachProductProcess(list, process, params)
+    for id, product in pairs(list) do
+        process(id, product, params)
+    end
+end
+
 -- 份额流失
 function MarketMgr:LossMarket()
-    local tbRuntimeData = GetTableRuntime()
-    
-    local DoLossFunc = function (tbUser, tbProductList)
-        for id, tbProduct in pairs(tbProductList) do
-            if tbProduct.nLastMarketScale and tbProduct.nLastMarketScale > 0 then
-                local nQuality = tbProduct.nQuality or 0
-                local category = tbConfig.tbProductCategory[tbProduct.Category]
-                local fLossRate = (1.0 - category.fProductRetentionRate - 0.01 * nQuality)
-                if fLossRate < 0 then
-                    fLossRate = 0
-                end
-                
-                local nLossMarket = math.floor(tbProduct.nLastMarketScale * fLossRate)
-                tbProduct.nLastMarketScaleDelta = - nLossMarket
-                tbRuntimeData.tbMarketShareByCategory[tbProduct.Category] = tbRuntimeData.tbMarketShareByCategory[tbProduct.Category] + nLossMarket
+    --产品份额的自然流失（受品类流失率及自身质量影响）
+    local DoLossFunc = function (id, product, params) 
+        product.nLastMarketScaleDelta = 0
+        if product.nLastMarketScale > 0 then
+            local fLossRate = (1.0 - params.fRetentionRate - 0.01 * product.nQuality)
+            fLossRate = (fLossRate < 0) and 0 or fLossRate
+            product.nLastMarketScaleDelta = - math.floor(product.nLastMarketScale * fLossRate)
+        end
+        params.amount = params.amount - product.nLastMarketScaleDelta
+    end
 
+    local data = GetTableRuntime()
+    for c, list in pairs(data.tbPublishedProduct) do
+        local params = { fRetentionRate = tbConfig.tbProductCategory[c].fProductRetentionRate, amount = 0 }
+        MarketMgr.ForEachProductProcess(list, DoLossFunc, params)
+        data.tbMarketShareByCategory[c] = params.amount
+    end
+    --[[
                 if tbUser.tbSysMsg then
                     table.insert(tbUser.tbSysMsg, string.format("产品%s 流失用户 %d", tbProduct.szName, nLossMarket))
                 end
-            end
-        end
-    end
-
-    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        DoLossFunc(tbUser, tbUser.tbProduct)
-    end
-
-    DoLossFunc(Market.tbNpc, Market.tbNpc.tbProduct)
+    ]]
 end
 
 -- 品类份额转移
@@ -139,8 +140,6 @@ function MarketMgr:LossMarketByQuality()
     local tbCurrentTotalMarket = {}
     local tbInfos = {}
     local tbSortInfos = {}
-
-    --math.randomseed(os.time())
     
     for category, _ in pairs(tbConfig.tbProductCategory) do
         if GameLogic:PROD_IsPlatformC(category) == false then
