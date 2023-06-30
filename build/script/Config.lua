@@ -188,11 +188,6 @@ tbConfig.tbUnClosedState = {       -- 未关闭状态
     tbConfig.tbProductState.nRenovateDone,
 }
 
---====所有已发布的产品（不包含已关闭的）（的引用），分品类组织====
--- tbPublishedProduct数组：各key是 产品品类名，各value又是个数组，
--- tbPublishedProduct的value数组：各key就是产品id，各value就是各产品的运行时数据表(是对 tbConfig.tbUser[xx].tbProduct[id]的引用)
-tbPublishedProduct = { }
-
 --一些初始表/空表设置，用于服务端运行时从此复制，以形成各项初始表，因不参与日常计算，所以不放人tbConfig不需同步到客户端
 tbInitTables = {
 

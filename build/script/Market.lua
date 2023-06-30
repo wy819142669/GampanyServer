@@ -23,7 +23,7 @@ function Market.Publish(tbParam, user)
         end
 
         if not product.bIsPlatform then
-            tbPublishedProduct[product.Category][tbParam.Id] = product
+            GetTableRuntime().tbPublishedProduct[product.Category][tbParam.Id] = product
         end
     end
 
@@ -77,10 +77,10 @@ function MarketMgr:DoStart()
 
     Market.tbNpc = { tbProduct = {} }
     tbRuntimeData.tbMarketShareByCategory = {}
-    tbRuntimeData.tbPublishedProduct = {}
-    tbPublishedProduct = tbRuntimeData.tbPublishedProduct
+    local published = {}
+    tbRuntimeData.tbPublishedProduct = published
     for category, product in pairs(tbConfig.tbProductCategory) do
-        tbPublishedProduct[category] = {}
+        published[category] = {}
         if GameLogic:PROD_IsPlatformC(category) == false then
             tbRuntimeData.tbMarketShareByCategory[category] = product.nTotalMarket;
         end
@@ -93,12 +93,12 @@ function MarketMgr:DoStart()
     end
 
     for productId, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        tbPublishedProduct[tbProduct.Category][productId] = tbProduct
+        published[tbProduct.Category][productId] = tbProduct
     end
 end
 
 function MarketMgr:OnCloseProduct(id, product)
-    tbPublishedProduct[product.Category][id] = nil
+    GetTableRuntime().tbPublishedProduct[product.Category][id] = nil
 end
 
 -- 份额流失
@@ -347,14 +347,14 @@ function MarketMgr:DistributionMarket()
 
     -- 统计百分比
     local tbCategoryMarket = {}
-    for _, tbProductList in pairs(tbPublishedProduct) do
+    for _, tbProductList in pairs(GetTableRuntime().tbPublishedProduct) do
         for _, tbProduct in pairs(tbProductList) do
             tbCategoryMarket[tbProduct.Category] = tbCategoryMarket[tbProduct.Category] or 0
             tbCategoryMarket[tbProduct.Category] = tbCategoryMarket[tbProduct.Category] + tbProduct.nLastMarketScale
         end
     end
 
-    for _, tbProductList in pairs(tbPublishedProduct) do
+    for _, tbProductList in pairs(GetTableRuntime().tbPublishedProduct) do
         for _, tbProduct in pairs(tbProductList) do
             if tbCategoryMarket[tbProduct.Category] and tbCategoryMarket[tbProduct.Category] > 0 then
                 tbProduct.nLastMarketScalePct = math.floor(tbProduct.nLastMarketScale * 100 / tbCategoryMarket[tbProduct.Category])
@@ -415,7 +415,7 @@ function MarketMgr:SettleMarket()
 end
 
 function MarketMgr:UpdateNpc()
-    for category, tbProductList in pairs(tbPublishedProduct) do
+    for category, tbProductList in pairs(GetTableRuntime().tbPublishedProduct) do
         local nProductNum = 0
         local nNpcProductNum = 0
         local nTotalQuality = 0
