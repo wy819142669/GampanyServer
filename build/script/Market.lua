@@ -116,7 +116,7 @@ function MarketMgr:LossMarket()
                 end
                 
                 local nLossMarket = math.floor(tbProduct.nLastMarketScale * fLossRate)
-                tbProduct.nLastMarketScale = tbProduct.nLastMarketScale - nLossMarket;
+                tbProduct.nLastMarketScaleDelta = - nLossMarket
                 tbRuntimeData.tbMarketShareByCategory[tbProduct.Category] = tbRuntimeData.tbMarketShareByCategory[tbProduct.Category] + nLossMarket
 
                 if tbUser.tbSysMsg then
@@ -323,7 +323,9 @@ function MarketMgr:DistributionMarket()
                 for _, tbInfo in pairs(tbInfos) do
                     local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
                     local tbUser = tbRuntimeData.tbUser[tbInfo.userName] or Market.tbNpc
-                    tbUser.tbProduct[tbInfo.id].nLastMarketScale = tbUser.tbProduct[tbInfo.id].nLastMarketScale + nCost
+
+                    tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta = tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta + nCost
+                    tbUser.tbProduct[tbInfo.id].nLastMarketScale = tbUser.tbProduct[tbInfo.id].nLastMarketScale + tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta
 
                     if tbUser.tbSysMsg then
                         table.insert(tbUser.tbSysMsg, string.format("产品%s 新获得用户 %d", tbInfo.name, nCost))
