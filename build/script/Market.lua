@@ -80,12 +80,9 @@ function MarketMgr:DoStart()
     local published = {}
     tbRuntimeData.tbPublishedProduct = published
     for category, product in pairs(tbConfig.tbProductCategory) do
-        published[category] = {}
-        if GameLogic:PROD_IsPlatformC(category) == false then
+        if not GameLogic:PROD_IsPlatformC(category) then
+            published[category] = {}
             tbRuntimeData.tbMarketShareByCategory[category] = product.nTotalMarket;
-        end
-
-        if not product.bIsPlatform then
             for _ = 1, tbConfig.tbNpc.nInitialProductNum do
                 Market.NewNpcProduct(category)
             end
@@ -137,53 +134,25 @@ end
 -- 品类份额转移
 function MarketMgr:LossMarketByQuality()
     local tbRuntimeData = GetTableRuntime()
-    local tbCurrentTotalMarket = {}
-    local tbInfos = {}
     local tbSortInfos = {}
     
-    for category, _ in pairs(tbConfig.tbProductCategory) do
-        if GameLogic:PROD_IsPlatformC(category) == false then
-            tbCurrentTotalMarket[category] = tbRuntimeData.tbMarketShareByCategory[category]
-
-            tbInfos[category] = {
-                nHighestQuality = 0,
-                nProductCount = 0,
-                nTotalQuality = 0,
-            }
+     --便利计算各品类的市场总规模，产品数，最高质量，质量加总
+    local DoFunc1 = function (id, product, info)
+        info.nProductCount = info.nProductCount + 1
+        info.nScale = info.nScale + product.nLastMarketScale
+        if info.nHighestQuality < product.nQuality then
+            info.nHighestQuality = product.nQuality
         end
+        info.nTotalQuality = info.nTotalQuality + product.nQuality
+    end
+    for c, list in pairs(tbRuntimeData.tbPublishedProduct) do
+        local info = { category = c, nProductCount = 0, nScale = 0, nHighestQuality = 0, nTotalQuality = 0,}
+        MarketMgr.ForEachProductProcess(list, DoFunc1, info)
+        table.insert(tbSortInfos, info)
     end
 
-    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        for id, product in pairs(tbUser.tbProduct) do
-            if GameLogic:PROD_IsPlatform(product) == false then
-                if Production:IsPublished(product) then
-                    tbCurrentTotalMarket[product.Category] = tbCurrentTotalMarket[product.Category] + product.nLastMarketScale
-                    local nQuality = product.nQuality or 0
-                    if tbInfos[product.Category].nHighestQuality < nQuality then
-                        tbInfos[product.Category].nHighestQuality = nQuality
-                    end
-
-                    tbInfos[product.Category].nProductCount = tbInfos[product.Category].nProductCount + 1
-                    tbInfos[product.Category].nTotalQuality = tbInfos[product.Category].nTotalQuality + nQuality
-                end
-            end
-        end
-    end
-
-    for category, tbInfo in pairs(tbInfos) do
-        table.insert(tbSortInfos, {
-            category = category,
-            nHighestQuality = tbInfo.nHighestQuality,tbLossSortInfo,
-            nProductCount = tbInfo.nProductCount,
-            nTotalQuality = tbInfo.nTotalQuality,
-        })
-    end
-
-    if #tbSortInfos <= 1 then
-        return
-    end
-
-    table.sort(tbSortInfos, function(l,r)
+    --对品类信息进行排序
+    local SortFunc = function(l,r)
         if l.nTotalQuality * r.nProductCount > r.nTotalQuality * l.nProductCount then
             return true
         elseif l.nTotalQuality * r.nProductCount == r.nTotalQuality * l.nProductCount then
@@ -195,68 +164,46 @@ function MarketMgr:LossMarketByQuality()
                 end
             end
         end
-
         return false
-    end)
+    end
+    table.sort(tbSortInfos, SortFunc)
 
+    if #tbSortInfos <= 1 then
+        return
+    end
+
+    --计算确定转出的品类
     local nIndex = #tbSortInfos
-    for i = #tbSortInfos - 1, 1, -1 do
-        if tbSortInfos[i].nTotalQuality * tbSortInfos[i + 1].nProductCount > tbSortInfos[i + 1].nTotalQuality * tbSortInfos[i].nProductCount then
-            break
-        end
-
-        if tbSortInfos[i].nProductCount > tbSortInfos[i + 1].nProductCount then
-            break
-        end
-
-        if tbSortInfos[i].nHighestQuality > tbSortInfos[i + 1].nHighestQuality then
-            break
-        end
-
-        nIndex = i
+    while nIndex > 1 and not SortFunc(tbSortInfos[nIndex - 1], tbSortInfos[nIndex]) do
+        nIndex = nIndex - 1
     end
+    local nLossIndex = math.random(nIndex, #tbSortInfos)
 
-    local nLossIndex        = math.random(nIndex, #tbSortInfos)
-    local tbLossSortInfo    = tbSortInfos[nLossIndex]
-
+    --计算确定转入的品类
     nIndex = 1
-    for i = 2, #tbSortInfos do
-        if tbSortInfos[i - 1].nTotalQuality * tbSortInfos[i].nProductCount > tbSortInfos[i].nTotalQuality * tbSortInfos[i - 1].nProductCount then
-            break
-        end
-
-        if tbSortInfos[i - 1].nProductCount > tbSortInfos[i].nProductCount then
-            break
-        end
-
-        if tbSortInfos[i - 1].nHighestQuality > tbSortInfos[i].nHighestQuality then
-            break
-        end
-
-        nIndex = i
+    while nIndex < #tbSortInfos and not SortFunc(tbSortInfos[nIndex], tbSortInfos[nIndex + 1]) do
+        nIndex = nIndex + 1
     end
-
-    local nGainIndex        = math.random(1, nIndex)
+    local nGainIndex = math.random(1, nIndex)
+ 
+    --如果算得的转入转出品类为同一个，做些调整
     if nGainIndex == nLossIndex then
-        if nGainIndex > 1 then
-            nGainIndex = nGainIndex - 1
-        else
-            nGainIndex = nGainIndex + 1
-        end
+        nIndex = math.random(1, #tbSortInfos - 1)
+        nGainIndex = (nLossIndex + nIndex) % #tbSortInfos
     end
 
-    local tbGainSortInfo    = tbSortInfos[nGainIndex]
+    --计算全市场规模
     local nMaxMarket      = 0
-
-    for Category, ProductCategory in pairs(tbConfig.tbProductCategory) do
-        if GameLogic:PROD_IsPlatformC(Category) == false then
-            nMaxMarket = nMaxMarket + ProductCategory.nTotalMarket
-        end
+    for _, info in pairs(tbSortInfos) do
+        nMaxMarket = nMaxMarket + tbConfig.tbProductCategory[info.category].nTotalMarket
+        --print("info", info.category, info.nScale, info.nTotalQuality/info.nProductCount, info.nProductCount, info.nHighestQuality, info.nTotalQuality)
     end
 
+    local tbLossSortInfo    = tbSortInfos[nLossIndex]
+    local tbGainSortInfo    = tbSortInfos[nGainIndex]
     nMaxMarket = math.floor(nMaxMarket * tbConfig.tbProductCategory[tbGainSortInfo.category].nMaxMarketScale * 0.01)
 
-    local nLossMarket = math.min(math.min(nMaxMarket - tbCurrentTotalMarket[tbGainSortInfo.category], tbConfig.nLossMarket), tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category])
+    local nLossMarket = math.min(math.min(nMaxMarket - tbGainSortInfo.nScale, tbConfig.nLossMarket), tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category])
     if nLossMarket < 0 then
         nLossMarket = 0
     end
@@ -264,7 +211,7 @@ function MarketMgr:LossMarketByQuality()
     tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category] = tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category] - nLossMarket
     tbRuntimeData.tbMarketShareByCategory[tbGainSortInfo.category] = tbRuntimeData.tbMarketShareByCategory[tbGainSortInfo.category] + nLossMarket
 
-    print("LossMarketByQuality LossMarket: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.category .. " -> " .. tbGainSortInfo.category)
+    print("LossMarketByQuality: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.category .. " -> " .. tbGainSortInfo.category)
 end
 
 -- 份额分配
