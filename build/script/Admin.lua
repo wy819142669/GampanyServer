@@ -55,7 +55,7 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.tbLoginAccount = {}
     runtime.tbUser = {}
     runtime.tbManpowerInMarket = {0, 0, 0, 0, 0}
-    runtime.tbMarketShareByCategory = {}
+    runtime.tbCategoryInfo = {}
     return "success", true
 end
 

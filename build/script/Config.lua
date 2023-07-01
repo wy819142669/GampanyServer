@@ -259,6 +259,15 @@ tbInitTables = {
         nOrigQuality = 0,           --产品研发或翻新完时的初始质量
         nQuality = 0,               --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
     },
+
+    --品类初始信息
+    tbInitCategoryInfo = {
+        nCommunalMarketShare = 0,   --品类内部产品共享的市场份额
+        nLastMarketScale = 0,       --最后一个季度/上季度市场规模
+        newPublishedId = nil,       --当季度新发布的产品id列表
+        tbPublishedProduct = {},    --所有已发布的产品（不包含已关闭的）（的引用）
+                                    --各key就是产品id，各value就是各产品的运行时数据表(是对 tbConfig.tbUser[xx].tbProduct[id]的引用)
+    },
 }
 
 tbInitTables.tbInitUserData.tbYearReport = Lib.copyTab(tbInitTables.tbInitReport)

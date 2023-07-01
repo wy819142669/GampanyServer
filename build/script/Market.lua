@@ -5,10 +5,7 @@ MarketMgr = {}  --市场模块的内部函数
 
 -- 产品上线发布 {FuncName="Market", Operate="Publish", Id=1 }
 function Market.Publish(tbParam, user)
-    local product = nil
-    if tbParam.Id then
-        product = user.tbProduct[tbParam.Id]
-    end
+    local product = tbParam.Id and user.tbProduct[tbParam.Id] or nil
     if not product then
         return "product not exist", false
     end
@@ -21,15 +18,12 @@ function Market.Publish(tbParam, user)
         for k, v in pairs(tbInitTables.tbInitPublishedProduct) do   --复制已发布产品的数据初始化项
             product[k] = v
         end
-
-        if not product.bIsPlatform then
-            GetTableRuntime().tbPublishedProduct[product.Category][tbParam.Id] = product
-            GameLogic:PROD_NewPublished(tbParam.Id)
+        if not GameLogic:PROD_IsPlatform(product) then
+            GameLogic:PROD_NewPublished(tbParam.Id, product)
         end
     end
 
     Production:Publish(product, user)
-
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
 end
@@ -37,7 +31,6 @@ end
 -- 提交市场营销费用 {FuncName="Market", Operate="Marketing", Product={{Id=1, Expense=10},{Id=5, Expense=40}}}
 -- Product中数组元素说明：Id=产品id，Expense=当季市场营销费用
 function Market.Marketing(tbParam, user)
-    print("Marketing")
     local nTotalExpense = 0
     local nPreTotalExpense = 0
 
@@ -47,11 +40,9 @@ function Market.Marketing(tbParam, user)
         if not product then
             return "product not exist", false
         end
-
         if not Production:IsPublished(product) then
             return "product hasn't been published yet", false
         end
-
         if tbProduct.Expense < 0 then
             return "market expense error", false
         end
@@ -74,36 +65,32 @@ function Market.Marketing(tbParam, user)
 end
 
 function MarketMgr:DoStart()
-    local tbRuntimeData = GetTableRuntime()
+    local data = GetTableRuntime()
 
-    Market.tbNpc = { tbProduct = {} }
-    tbRuntimeData.tbMarketShareByCategory = {}
-    local published = {}
-    tbRuntimeData.tbPublishedProduct = published
+    --初始化 品类信息 与 已发布产品列表
+    data.tbCategoryInfo = {}
     for category, product in pairs(tbConfig.tbProductCategory) do
         if not GameLogic:PROD_IsPlatformC(category) then
-            published[category] = {}
-            tbRuntimeData.tbMarketShareByCategory[category] = product.nTotalMarket;
-            for _ = 1, tbConfig.tbNpc.nInitialProductNum do
-                Market.NewNpcProduct(category)
-            end
+            data.tbCategoryInfo[category] = Lib.copyTab(tbInitTables.tbInitCategoryInfo)
+            data.tbCategoryInfo[category].nCommunalMarketShare = product.nTotalMarket; --todo : remove this line
         end
     end
 
-    for productId, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        published[tbProduct.Category][productId] = tbProduct
+    --新建npc产品
+    Market.tbNpc = { tbProduct = {} }
+    for category, _ in pairs(data.tbCategoryInfo) do
+        for _ = 1, tbConfig.tbNpc.nInitialProductNum do
+            Market.NewNpcProduct(category)
+        end
+    end
+    --发布npc的产品
+    for id, product in pairs(Market.tbNpc.tbProduct) do
+        GameLogic:PROD_NewPublished(id, product)
     end
 end
 
 function MarketMgr:OnCloseProduct(id, product)
-    GetTableRuntime().tbPublishedProduct[product.Category][id] = nil
-end
-
--- 对产品列表中每个产品进行某项处理
-function MarketMgr.ForEachProductProcess(list, process, params)
-    for id, product in pairs(list) do
-        process(id, product, params)
-    end
+    GetTableRuntime().tbCategoryInfo[product.Category].tbPublishedProduct[id] = nil
 end
 
 -- 份额流失
@@ -116,14 +103,14 @@ function MarketMgr:LossMarket()
             fLossRate = (fLossRate < 0) and 0 or fLossRate
             product.nLastMarketScaleDelta = - math.floor(product.nLastMarketScale * fLossRate)
         end
-        params.amount = params.amount - product.nLastMarketScaleDelta
+        params.info.nCommunalMarketShare = params.info.nCommunalMarketShare - product.nLastMarketScaleDelta
     end
 
     local data = GetTableRuntime()
-    for c, list in pairs(data.tbPublishedProduct) do
-        local params = { fRetentionRate = tbConfig.tbProductCategory[c].fProductRetentionRate, amount = 0 }
-        MarketMgr.ForEachProductProcess(list, DoLossFunc, params)
-        data.tbMarketShareByCategory[c] = params.amount
+    for c, info in pairs(data.tbCategoryInfo) do
+        info.nCommunalMarketShare = 0
+        local params = { fRetentionRate = tbConfig.tbProductCategory[c].fProductRetentionRate, info = info }
+        GameLogic:PROD_ForEachProcess(info.tbPublishedProduct, DoLossFunc, params)
     end
     --[[
                 if tbUser.tbSysMsg then
@@ -146,9 +133,9 @@ function MarketMgr:LossMarketByQuality()
         end
         info.nTotalQuality = info.nTotalQuality + product.nQuality
     end
-    for c, list in pairs(tbRuntimeData.tbPublishedProduct) do
+    for c, ci in pairs(tbRuntimeData.tbCategoryInfo) do
         local info = { category = c, nProductCount = 0, nScale = 0, nHighestQuality = 0, nTotalQuality = 0,}
-        MarketMgr.ForEachProductProcess(list, DoFunc1, info)
+        GameLogic:PROD_ForEachProcess(ci.tbPublishedProduct, DoFunc1, info)
         table.insert(tbSortInfos, info)
     end
 
@@ -203,16 +190,18 @@ function MarketMgr:LossMarketByQuality()
 
     local tbLossSortInfo    = tbSortInfos[nLossIndex]
     local tbGainSortInfo    = tbSortInfos[nGainIndex]
+    local lossCategory      = tbRuntimeData.tbCategoryInfo[tbLossSortInfo.category]
+    local gainCategory      = tbRuntimeData.tbCategoryInfo[tbGainSortInfo.category]
 
     nMaxMarket = math.floor(nMaxMarket * tbConfig.tbProductCategory[tbGainSortInfo.category].nMaxMarketScale * 0.01)
 
-    local nLossMarket = math.min(math.min(nMaxMarket - tbGainSortInfo.nScale, tbConfig.nLossMarket), tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category])
+    local nLossMarket = math.min(math.min(nMaxMarket - tbGainSortInfo.nScale, tbConfig.nLossMarket), lossCategory.nCommunalMarketShare)
     if nLossMarket < 0 then
         nLossMarket = 0
     end
 
-    tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category] = tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category] - nLossMarket
-    tbRuntimeData.tbMarketShareByCategory[tbGainSortInfo.category] = tbRuntimeData.tbMarketShareByCategory[tbGainSortInfo.category] + nLossMarket
+    lossCategory.nCommunalMarketShare = lossCategory.nCommunalMarketShare - nLossMarket
+    gainCategory.nCommunalMarketShare = gainCategory.nCommunalMarketShare + nLossMarket
 
     print("LossMarketByQuality: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.category .. " -> " .. tbGainSortInfo.category)
 end
@@ -221,7 +210,8 @@ end
 function MarketMgr:DistributionMarket()
     local tbRuntimeData = GetTableRuntime()
 
-    for category, nMarket in pairs(tbRuntimeData.tbMarketShareByCategory) do
+    for category, info in pairs(tbRuntimeData.tbCategoryInfo) do
+        local nMarket = info.nCommunalMarketShare
         if nMarket > 0 then
             local tbInfos = {}
             local fTotalMarketValue = 0
@@ -232,7 +222,7 @@ function MarketMgr:DistributionMarket()
                     if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality > 0 then
                         
                         local fMarketValue = product.nMarketExpense * (1.3 ^ (nQuality - 1))
-                        if GameLogic:PROD_IsNewProduct(id) then
+                        if GameLogic:PROD_IsNewProduct(category, id) then
                             fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
                         end
 
@@ -252,7 +242,7 @@ function MarketMgr:DistributionMarket()
                 if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality > 0 then
                     
                     local fMarketValue = product.nMarketExpense * (1.3 ^ (nQuality - 1))
-                    if GameLogic:PROD_IsNewProduct(id) then
+                    if GameLogic:PROD_IsNewProduct(category, id) then
                         fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
                     end
 
@@ -283,7 +273,7 @@ function MarketMgr:DistributionMarket()
                     print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
                 end
 
-                tbRuntimeData.tbMarketShareByCategory[category] = tbRuntimeData.tbMarketShareByCategory[category] - nTotalCost
+                tbRuntimeData.tbCategoryInfo[category].nCommunalMarketShare = tbRuntimeData.tbCategoryInfo[category].nCommunalMarketShare - nTotalCost
             end
         end
     end
@@ -298,17 +288,17 @@ function MarketMgr:DistributionMarket()
 
     -- 统计百分比
     local tbCategoryMarket = {}
-    for _, tbProductList in pairs(GetTableRuntime().tbPublishedProduct) do
-        for _, tbProduct in pairs(tbProductList) do
-            tbCategoryMarket[tbProduct.Category] = tbCategoryMarket[tbProduct.Category] or 0
-            tbCategoryMarket[tbProduct.Category] = tbCategoryMarket[tbProduct.Category] + tbProduct.nLastMarketScale
+    for c, info in pairs(GetTableRuntime().tbCategoryInfo) do
+        for _, tbProduct in pairs(info.tbPublishedProduct) do
+            tbCategoryMarket[c] = tbCategoryMarket[c] or 0
+            tbCategoryMarket[c] = tbCategoryMarket[c] + tbProduct.nLastMarketScale
         end
     end
 
-    for _, tbProductList in pairs(GetTableRuntime().tbPublishedProduct) do
-        for _, tbProduct in pairs(tbProductList) do
-            if tbCategoryMarket[tbProduct.Category] and tbCategoryMarket[tbProduct.Category] > 0 then
-                tbProduct.nLastMarketScalePct = math.floor(tbProduct.nLastMarketScale * 100 / tbCategoryMarket[tbProduct.Category])
+    for c, info in pairs(GetTableRuntime().tbCategoryInfo) do
+        for _, tbProduct in pairs(info.tbPublishedProduct) do
+            if tbCategoryMarket[c] and tbCategoryMarket[c] > 0 then
+                tbProduct.nLastMarketScalePct = math.floor(tbProduct.nLastMarketScale * 100 / tbCategoryMarket[c])
             end
         end
     end
@@ -364,7 +354,8 @@ function MarketMgr:SettleMarket()
 end
 
 function MarketMgr:UpdateNpc()
-    for category, tbProductList in pairs(GetTableRuntime().tbPublishedProduct) do
+    for category, info in pairs(GetTableRuntime().tbCategoryInfo) do
+        tbProductList = info.tbPublishedProduct
         local nProductNum = 0
         local nNpcProductNum = 0
         local nTotalQuality = 0
@@ -391,12 +382,12 @@ function MarketMgr:UpdateNpc()
     end
 
     for id, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        if Production:IsPublished(tbProduct) and not GameLogic:PROD_IsNewProduct(id) then
+        if Production:IsPublished(tbProduct) and not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) then
             tbProduct.nMarketExpense = tbConfig.tbProductCategory[tbProduct.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
 
-        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpense:", tbProduct.nMarketExpense, "tbProduct.bNewProduct:", GameLogic:PROD_IsNewProduct(id))
-        if not GameLogic:PROD_IsNewProduct(id) and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
+        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpense:", tbProduct.nMarketExpense, "tbProduct.bNewProduct:", GameLogic:PROD_IsNewProduct(tbProduct.Category, id))
+        if not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
             MarketMgr:OnCloseProduct(id, tbProduct)

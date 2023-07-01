@@ -129,14 +129,23 @@ function GameLogic:PROD_IsPlatformC(category)
 end
 
 --是否是当季度新上线的产品
-function GameLogic:PROD_IsNewProduct(id)
-    local list = GetTableRuntime().tbNewPublishedProduct
+function GameLogic:PROD_IsNewProduct(category, id)
+    local list = GetTableRuntime().tbCategoryInfo[category].newPublishedId
     return list and table.contain_value(list, id) or false
 end
 
 --一个新产品发布了
-function GameLogic:PROD_NewPublished(id)
+function GameLogic:PROD_NewPublished(id, product)
     local data = GetTableRuntime()
-    data.tbNewPublishedProduct = data.tbNewPublishedProduct or {}
-    table.insert(data.tbNewPublishedProduct, id)
+    local info = data.tbCategoryInfo[product.Category]
+    info.tbPublishedProduct[id] = product
+    info.newPublishedId = info.newPublishedId or {}
+    table.insert(info.newPublishedId, id)
+end
+
+--对产品列表中每个产品进行某项处理
+function GameLogic:PROD_ForEachProcess(list, process, params)
+    for id, product in pairs(list) do
+        process(id, product, params)
+    end
 end

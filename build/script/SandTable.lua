@@ -30,11 +30,7 @@ local tbRuntimeData = {
     },
 
     --==== 产品市场相关 ====
-    tbMarketShareByCategory = {},   --各品类产品共享待分配的市场份额，以品类为key
-    --tbNewPublishedProduct,        --当季度新上市的产品ID数组【运行时动态产生消亡的数据】
-    tbPublishedProduct = {},        -- 所有已发布的产品（不包含已关闭的）（的引用），分品类组织
-        -- tbPublishedProduct数组：各key是 产品品类名，各value又是个数组，
-        -- tbPublishedProduct的value数组：各key就是产品id，各value就是各产品的运行时数据表(是对 tbConfig.tbUser[xx].tbProduct[id]的引用)
+    tbCategoryInfo = {},            --各品类运行时的信息，以品类为key，不包括中台，各value的数据项请参看tbInitTables.tbInitCategoryInfo
 }
 
 local tbFunc = {
@@ -209,7 +205,9 @@ function DoPostSeason()
     MarketMgr:SettleMarket()  -- 更新市场竞标结果 -- 获取上个季度市场收益
     Production:PostSeason()         -- 推进研发进度,更新产品品质
     HumanResources:PayOffSalary()   -- 支付薪水
-    tbRuntimeData.tbNewPublishedProduct = nil   --清空新产品列表
+    for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
+        info.newPublishedId = nil   --清空新产品列表
+    end
 end
 
 -- 每年结束后的自动处理
