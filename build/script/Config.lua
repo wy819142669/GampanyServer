@@ -258,7 +258,6 @@ tbInitTables = {
         nMarketExpense = 0,         --当季市场营销费用（设定）
         nOrigQuality = 0,           --产品研发或翻新完时的初始质量
         nQuality = 0,               --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
-        bNewProduct = true,         --新品， 上市第一季度享受额外市场加成
     },
 }
 

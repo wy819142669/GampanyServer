@@ -24,6 +24,7 @@ function Market.Publish(tbParam, user)
 
         if not product.bIsPlatform then
             GetTableRuntime().tbPublishedProduct[product.Category][tbParam.Id] = product
+            GameLogic:PROD_NewPublished(tbParam.Id)
         end
     end
 
@@ -168,28 +169,29 @@ function MarketMgr:LossMarketByQuality()
     end
     table.sort(tbSortInfos, SortFunc)
 
-    if #tbSortInfos <= 1 then
+    local numCategory = #tbSortInfos
+    if numCategory <= 1 then
         return
     end
 
     --计算确定转出的品类
-    local nIndex = #tbSortInfos
+    local nIndex = numCategory
     while nIndex > 1 and not SortFunc(tbSortInfos[nIndex - 1], tbSortInfos[nIndex]) do
         nIndex = nIndex - 1
     end
-    local nLossIndex = math.random(nIndex, #tbSortInfos)
+    local nLossIndex = math.random(nIndex, numCategory)
 
     --计算确定转入的品类
     nIndex = 1
-    while nIndex < #tbSortInfos and not SortFunc(tbSortInfos[nIndex], tbSortInfos[nIndex + 1]) do
+    while nIndex < numCategory and not SortFunc(tbSortInfos[nIndex], tbSortInfos[nIndex + 1]) do
         nIndex = nIndex + 1
     end
     local nGainIndex = math.random(1, nIndex)
  
     --如果算得的转入转出品类为同一个，做些调整
     if nGainIndex == nLossIndex then
-        nIndex = math.random(1, #tbSortInfos - 1)
-        nGainIndex = (nLossIndex + nIndex) % #tbSortInfos
+        nGainIndex = nGainIndex + math.random(1, numCategory - 1)
+        nGainIndex = (nGainIndex > numCategory) and (nGainIndex - numCategory) or nGainIndex
     end
 
     --计算全市场规模
@@ -201,6 +203,7 @@ function MarketMgr:LossMarketByQuality()
 
     local tbLossSortInfo    = tbSortInfos[nLossIndex]
     local tbGainSortInfo    = tbSortInfos[nGainIndex]
+
     nMaxMarket = math.floor(nMaxMarket * tbConfig.tbProductCategory[tbGainSortInfo.category].nMaxMarketScale * 0.01)
 
     local nLossMarket = math.min(math.min(nMaxMarket - tbGainSortInfo.nScale, tbConfig.nLossMarket), tbRuntimeData.tbMarketShareByCategory[tbLossSortInfo.category])
@@ -229,7 +232,7 @@ function MarketMgr:DistributionMarket()
                     if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality > 0 then
                         
                         local fMarketValue = product.nMarketExpense * (1.3 ^ (nQuality - 1))
-                        if product.bNewProduct then
+                        if GameLogic:PROD_IsNewProduct(id) then
                             fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
                         end
 
@@ -249,7 +252,7 @@ function MarketMgr:DistributionMarket()
                 if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality > 0 then
                     
                     local fMarketValue = product.nMarketExpense * (1.3 ^ (nQuality - 1))
-                    if product.bNewProduct then
+                    if GameLogic:PROD_IsNewProduct(id) then
                         fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
                     end
 
@@ -329,7 +332,6 @@ function MarketMgr:GainRevenue()
 
                 print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nIncome))
             end
-            product.bNewProduct = false
         end
     end
 
@@ -343,7 +345,6 @@ function MarketMgr:GainRevenue()
 
             print(tbConfig.tbNpc.szName .. " " .. tostring(id) .. " nLastMarketIncome = " .. tostring(nIncome))
         end
-        product.bNewProduct = false
     end
 end
 
@@ -390,12 +391,12 @@ function MarketMgr:UpdateNpc()
     end
 
     for id, tbProduct in pairs(Market.tbNpc.tbProduct) do
-        if Production:IsPublished(tbProduct) and not tbProduct.bNewProduct then
+        if Production:IsPublished(tbProduct) and not GameLogic:PROD_IsNewProduct(id) then
             tbProduct.nMarketExpense = tbConfig.tbProductCategory[tbProduct.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
 
-        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpense:", tbProduct.nMarketExpense, "tbProduct.bNewProduct:", tbProduct.bNewProduct)
-        if not tbProduct.bNewProduct and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
+        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpense:", tbProduct.nMarketExpense, "tbProduct.bNewProduct:", GameLogic:PROD_IsNewProduct(id))
+        if not GameLogic:PROD_IsNewProduct(id) and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
             MarketMgr:OnCloseProduct(id, tbProduct)

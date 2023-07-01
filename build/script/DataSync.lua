@@ -127,3 +127,16 @@ end
 function GameLogic:PROD_IsPlatformC(category)
     return category == "P"
 end
+
+--是否是当季度新上线的产品
+function GameLogic:PROD_IsNewProduct(id)
+    local list = GetTableRuntime().tbNewPublishedProduct
+    return list and table.contain_value(list, id) or false
+end
+
+--一个新产品发布了
+function GameLogic:PROD_NewPublished(id)
+    local data = GetTableRuntime()
+    data.tbNewPublishedProduct = data.tbNewPublishedProduct or {}
+    table.insert(data.tbNewPublishedProduct, id)
+end
