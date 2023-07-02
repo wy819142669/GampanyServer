@@ -128,19 +128,20 @@ function GameLogic:PROD_IsPlatformC(category)
     return category == "P"
 end
 
---是否是当季度新上线的产品
+--是否是当季度新上线的产品，返回两个布尔值，前者表示是否新产品（包括翻新），后者表示是否为翻新的新品
 function GameLogic:PROD_IsNewProduct(category, id)
-    local list = GetTableRuntime().tbCategoryInfo[category].newPublishedId
-    return list and table.contain_value(list, id) or false
+    local result = GetTableRuntime().tbCategoryInfo[category].newPublished[id]
+    if result ~= nil then
+        return true, result
+    end
+    return false, false
 end
 
 --一个新产品发布了
-function GameLogic:PROD_NewPublished(id, product)
-    local data = GetTableRuntime()
-    local info = data.tbCategoryInfo[product.Category]
+function GameLogic:PROD_NewPublished(id, product, renovate)
+    local info = GetTableRuntime().tbCategoryInfo[product.Category]
     info.tbPublishedProduct[id] = product
-    info.newPublishedId = info.newPublishedId or {}
-    table.insert(info.newPublishedId, id)
+    info.newPublished[id] = renovate
 end
 
 --对产品列表中每个产品进行某项处理

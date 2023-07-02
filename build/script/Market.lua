@@ -13,14 +13,15 @@ function Market.Publish(tbParam, user)
         return "product state don't match", false
     end
 
-    --==== 对于新发布的产品，不是翻新项目 ====
-    if product.State == tbConfig.tbProductState.nEnabled then
-        for k, v in pairs(tbInitTables.tbInitPublishedProduct) do   --复制已发布产品的数据初始化项
+    local renovate = product.State == tbConfig.tbProductState.nRenovateDone
+    --==== 对于新发布的产品(不是翻新项目), 复制已发布产品的数据初始化项 ====
+    if not renovate then
+        for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
             product[k] = v
         end
-        if not GameLogic:PROD_IsPlatform(product) then
-            GameLogic:PROD_NewPublished(tbParam.Id, product)
-        end
+    end
+    if not GameLogic:PROD_IsPlatform(product) then
+        GameLogic:PROD_NewPublished(tbParam.Id, product, renovate)
     end
 
     Production:Publish(product, user)
@@ -85,21 +86,14 @@ function MarketMgr:DoStart()
     end
     --发布npc的产品
     for id, product in pairs(Market.tbNpc.tbProduct) do
-        GameLogic:PROD_NewPublished(id, product)
+        GameLogic:PROD_NewPublished(id, product, false)
     end
 end
 
 function MarketMgr:OnCloseProduct(id, product)
     local info = GetTableRuntime().tbCategoryInfo[product.Category]
     info.tbPublishedProduct[id] = nil
-    if info.newPublishedId then
-        for i = #info.newPublishedId, 1 -1 do
-            if info.newPublishedId[i] == id then
-                table.remove(info.newPublishedId, i)
-                break
-            end
-        end
-    end
+    info.newPublished[id] = nil
     info.nCommunalMarketShare = info.nCommunalMarketShare + product.nLastMarketScale
 end
 
