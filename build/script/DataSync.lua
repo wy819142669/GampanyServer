@@ -149,3 +149,13 @@ function GameLogic:PROD_ForEachProcess(list, process, params)
         process(id, product, params)
     end
 end
+
+--更新产品的ARPU值
+function GameLogic:MKT_UpdateArpuAndIncome(product)
+    product.fLastARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * product.nQuality)
+    if product.nLastMarketScale > 0 then
+        product.nLastMarketIncome = math.floor(product.nLastMarketScale * fARPU)
+    else
+        product.nLastMarketIncome = 0
+    end
+end

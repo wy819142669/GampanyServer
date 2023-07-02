@@ -306,34 +306,26 @@ end
 
 -- 获得收益
 function MarketMgr:GainRevenue()
-    local tbRuntimeData = GetTableRuntime()
-
-    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        for id, product in pairs(tbUser.tbProduct) do
-            if Production:IsPublished(product) and product.nLastMarketScale > 0 then
-                local nQuality = product.nQuality or 0
-                local fARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality)
-                local nIncome = math.floor(product.nLastMarketScale * fARPU)
-                
-                product.fLastARPU = fARPU
-                product.nLastMarketIncome = nIncome
-                GameLogic:FIN_Revenue(tbUser, tbConfig.tbFinClassify.Revenue, nIncome)
-                table.insert(tbUser.tbSysMsg, string.format("产品%s 获得收益 %d", product.szName, nIncome))
-
-                print(userName .. " " .. tostring(id) .. " Cash += " .. tostring(nIncome))
-            end
+    local data = GetTableRuntime()
+    --更新线上产品的arpu与收入, 统计品类总规模与营收
+    for _, info in pairs(data.tbCategoryInfo) do
+        info.nTotalIncome = 0
+        for id, product in pairs(info.tbPublishedProduct) do
+            GameLogic:MKT_UpdateArpuAndIncome(product)
+            info.nTotalIncome = info.nTotalIncome + product.nLastMarketIncome
+            --print("GainRevenue", id, product.fLastARPU, product.nLastMarketScale, product.nLastMarketIncome)
         end
     end
-
-    for id, product in pairs(Market.tbNpc.tbProduct) do
-        if Production:IsPublished(product) and product.nLastMarketScale > 0 then
-            local nQuality = product.nQuality or 0
-            local fARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * nQuality)
-            local nIncome = math.floor(product.nLastMarketScale * fARPU)
-            
-            product.nLastMarketIncome = nIncome
-
-            print(tbConfig.tbNpc.szName .. " " .. tostring(id) .. " nLastMarketIncome = " .. tostring(nIncome))
+    --结算玩家收入
+    for userName, user in pairs(data.tbUser) do
+        local income = 0
+        for _, product in pairs(user.tbProduct) do
+            income = income + (product.nLastMarketIncome and product.nLastMarketIncome or 0) --非发布到市场的产品，不会有nLastMarketIncome
+        end
+        if income > 0 then
+            GameLogic:FIN_Revenue(user, tbConfig.tbFinClassify.Revenue, income)
+            table.insert(user.tbSysMsg, string.format("产品共获得收益 %d", income))
+            print(userName .. " Cash += " .. tostring(income))
         end
     end
 end
