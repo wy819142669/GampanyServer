@@ -28,15 +28,10 @@ end
 
 -- 关闭产品 {FuncName = "Develop", Operate = "CloseProduct", Id=1 }
 function Develop.CloseProduct(tbParam, user)
-    local product = nil
-    if tbParam.Id then
-        product = user.tbProduct[tbParam.Id]
-    end
+    local product = tbParam.Id and user.tbProduct[tbParam.Id] or nil
     if product == nil then
         return "未找到欲关闭的产品：" .. tbParam.Id, false
     end
-
-    MarketMgr:OnCloseProduct(tbParam.Id, product)
 
     --该产品在岗人员全部回到空闲状态
     for i = 1, tbConfig.nManpowerMaxExpLevel do
@@ -44,6 +39,11 @@ function Develop.CloseProduct(tbParam, user)
         user.tbIdleManpower[i] = user.tbIdleManpower[i] + product.tbManpower[i]
         product.tbManpower[i] = 0
     end
+
+    if GameLogic:PROD_IsInMarket(product) then
+        MarketMgr:OnCloseProduct(tbParam.Id, product)
+    end
+
     product.State = tbProductState.nClosed
     user.tbClosedProduct[tbParam.Id] = product
     user.tbProduct[tbParam.Id] = nil

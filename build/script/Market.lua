@@ -90,27 +90,32 @@ function MarketMgr:DoStart()
 end
 
 function MarketMgr:OnCloseProduct(id, product)
-    GetTableRuntime().tbCategoryInfo[product.Category].tbPublishedProduct[id] = nil
+    local info = GetTableRuntime().tbCategoryInfo[product.Category]
+    info.tbPublishedProduct[id] = nil
+    if info.newPublishedId then
+        for i = #info.newPublishedId, 1 -1 do
+            if info.newPublishedId[i] == id then
+                table.remove(info.newPublishedId, i)
+                break
+            end
+        end
+    end
+    info.nCommunalMarketShare = info.nCommunalMarketShare + product.nLastMarketScale
 end
 
--- 份额流失
+--产品份额的自然流失（受品类流失率及自身质量影响）
 function MarketMgr:LossMarket()
-    --产品份额的自然流失（受品类流失率及自身质量影响）
-    local DoLossFunc = function (id, product, params) 
-        product.nLastMarketScaleDelta = 0
-        if product.nLastMarketScale > 0 then
-            local fLossRate = (1.0 - params.fRetentionRate - 0.01 * product.nQuality)
-            fLossRate = (fLossRate < 0) and 0 or fLossRate
-            product.nLastMarketScaleDelta = - math.floor(product.nLastMarketScale * fLossRate)
+    for c, info in pairs(GetTableRuntime().tbCategoryInfo) do
+        local fRetentionRate = tbConfig.tbProductCategory[c].fProductRetentionRate
+        for id, product in pairs(info.tbPublishedProduct) do
+            product.nLastMarketScaleDelta = 0
+            if product.nLastMarketScale > 0 then
+                local fLossRate = (1.0 - fRetentionRate - 0.01 * product.nQuality)
+                fLossRate = (fLossRate < 0) and 0 or fLossRate
+                product.nLastMarketScaleDelta = - math.floor(product.nLastMarketScale * fLossRate)
+                info.nCommunalMarketShare = info.nCommunalMarketShare - product.nLastMarketScaleDelta  --各产品流失的份额，流入品类内部共享份额
+            end
         end
-        params.info.nCommunalMarketShare = params.info.nCommunalMarketShare - product.nLastMarketScaleDelta
-    end
-
-    local data = GetTableRuntime()
-    for c, info in pairs(data.tbCategoryInfo) do
-        info.nCommunalMarketShare = 0
-        local params = { fRetentionRate = tbConfig.tbProductCategory[c].fProductRetentionRate, info = info }
-        GameLogic:PROD_ForEachProcess(info.tbPublishedProduct, DoLossFunc, params)
     end
     --[[
                 if tbUser.tbSysMsg then
@@ -123,19 +128,17 @@ end
 function MarketMgr:LossMarketByQuality()
     local tbRuntimeData = GetTableRuntime()
     local tbSortInfos = {}
-    
+
      --便利计算各品类的市场总规模，产品数，最高质量，质量加总
-    local DoFunc1 = function (id, product, info)
-        info.nProductCount = info.nProductCount + 1
-        info.nScale = info.nScale + product.nLastMarketScale
-        if info.nHighestQuality < product.nQuality then
-            info.nHighestQuality = product.nQuality
-        end
-        info.nTotalQuality = info.nTotalQuality + product.nQuality
-    end
     for c, ci in pairs(tbRuntimeData.tbCategoryInfo) do
-        local info = { category = c, nProductCount = 0, nScale = 0, nHighestQuality = 0, nTotalQuality = 0,}
-        GameLogic:PROD_ForEachProcess(ci.tbPublishedProduct, DoFunc1, info)
+        local info = { category = c, nProductCount = 0, nHighestQuality = 0, nTotalQuality = 0,}
+        for id, product in pairs(ci.tbPublishedProduct) do
+            info.nProductCount = info.nProductCount + 1
+            if info.nHighestQuality < product.nQuality then
+                info.nHighestQuality = product.nQuality
+            end
+            info.nTotalQuality = info.nTotalQuality + product.nQuality            
+        end
         table.insert(tbSortInfos, info)
     end
 
@@ -195,7 +198,7 @@ function MarketMgr:LossMarketByQuality()
 
     nMaxMarket = math.floor(nMaxMarket * tbConfig.tbProductCategory[tbGainSortInfo.category].nMaxMarketScale * 0.01)
 
-    local nLossMarket = math.min(math.min(nMaxMarket - tbGainSortInfo.nScale, tbConfig.nLossMarket), lossCategory.nCommunalMarketShare)
+    local nLossMarket = math.min(math.min(nMaxMarket - gainCategory.nTotalScale, tbConfig.nLossMarket), lossCategory.nCommunalMarketShare)
     if nLossMarket < 0 then
         nLossMarket = 0
     end
@@ -278,27 +281,21 @@ function MarketMgr:DistributionMarket()
         end
     end
 
-    -- 把当次的费用记录到最后一次记录上
-    for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-        for id, product in pairs(tbUser.tbProduct) do
+    --把当次的费用记录到最后一次记录上，及统计品类总市场规模
+    for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
+        info.nTotalScale = 0
+        for _, product in pairs(info.tbPublishedProduct) do
+            info.nTotalScale = info.nTotalScale + product.nLastMarketScale
             product.nLastMarketExpense = product.nMarketExpense
             product.nMarketExpense = 0
         end
     end
 
-    -- 统计百分比
-    local tbCategoryMarket = {}
-    for c, info in pairs(GetTableRuntime().tbCategoryInfo) do
-        for _, tbProduct in pairs(info.tbPublishedProduct) do
-            tbCategoryMarket[c] = tbCategoryMarket[c] or 0
-            tbCategoryMarket[c] = tbCategoryMarket[c] + tbProduct.nLastMarketScale
-        end
-    end
-
-    for c, info in pairs(GetTableRuntime().tbCategoryInfo) do
-        for _, tbProduct in pairs(info.tbPublishedProduct) do
-            if tbCategoryMarket[c] and tbCategoryMarket[c] > 0 then
-                tbProduct.nLastMarketScalePct = math.floor(tbProduct.nLastMarketScale * 100 / tbCategoryMarket[c])
+    --计算各产品的市场占比
+    for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
+        if info.nTotalScale > 0 then
+            for _, product in pairs(info.tbPublishedProduct) do
+                product.nLastMarketScalePct = math.floor(product.nLastMarketScale * 100 / info.nTotalScale)
             end
         end
     end
@@ -307,7 +304,7 @@ end
 -- 获得收益
 function MarketMgr:GainRevenue()
     local data = GetTableRuntime()
-    --更新线上产品的arpu与收入, 统计品类总规模与营收
+    --更新线上产品的arpu与收入, 统计品类总营收
     for _, info in pairs(data.tbCategoryInfo) do
         info.nTotalIncome = 0
         for id, product in pairs(info.tbPublishedProduct) do
