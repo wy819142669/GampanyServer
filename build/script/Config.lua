@@ -93,8 +93,8 @@ tbConfig = {
             nTotalMarket = 250,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 200,
-            nNpcContinuousExpenses = 50,
+            nNpcInitialExpenses = 50,
+            nNpcContinuousExpenses = 45,
         },
         B = {
             --==研发相关配置==
@@ -112,8 +112,8 @@ tbConfig = {
             nTotalMarket = 150,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 400,
-            nNpcContinuousExpenses = 100,
+            nNpcInitialExpenses = 60,
+            nNpcContinuousExpenses = 55,
         },
         C = {
             --==研发相关配置==
@@ -131,8 +131,8 @@ tbConfig = {
             nTotalMarket = 350,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 1200,
-            nNpcContinuousExpenses = 150,
+            nNpcInitialExpenses = 70,
+            nNpcContinuousExpenses = 65,
         },
         D = {
             --==研发相关配置==
@@ -150,8 +150,8 @@ tbConfig = {
             nTotalMarket = 450,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 2000,
-            nNpcContinuousExpenses = 250,
+            nNpcInitialExpenses = 80,
+            nNpcContinuousExpenses = 75,
         },
         P = { --==中台项目==，设置项与产品项的有些不同
             --==研发相关配置==
@@ -245,7 +245,8 @@ tbInitTables = {
         nNeedWorkLoad = 0,                          --研发或翻新需要完成的工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
         nFinishedQuality = 0,                       --已完成工作量的累积品质
-
+        nOrigQuality10 = 0,                         --产品研发或翻新完时的初始质量
+        nQuality10 = 0,                             --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
         szName = "",
     },
 
@@ -258,8 +259,6 @@ tbInitTables = {
         fLastARPU = 0,              --最后一个季度/上季度ARPU
         nLastMarketIncome = 0,      --最后一个季度/上季度收入
         nMarketExpense = 0,         --当季市场营销费用（设定）
-        nOrigQuality10 = 0,         --产品研发或翻新完时的初始质量
-        nQuality10 = 0,             --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
     },
 
     --品类初始信息

@@ -142,6 +142,12 @@ function GameLogic:PROD_NewPublished(id, product, renovate)
     local info = GetTableRuntime().tbCategoryInfo[product.Category]
     info.tbPublishedProduct[id] = product
     info.newPublished[id] = renovate
+    --对于新发布的产品(不是翻新项目), 复制已发布产品的数据初始化项
+    if not renovate then
+        for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
+            product[k] = v
+        end
+    end
 end
 
 --对产品列表中每个产品进行某项处理

@@ -192,8 +192,8 @@ function DoPreSeason()
     HumanResources:SettleTrain()    -- 培训中的员工升级
     HumanResources:SettlePoach()    -- 成功挖掘的人才入职
     HumanResources:SettleHire()     -- 人才市场招聘结果
-    MarketMgr:UpdateNpc()           -- Npc调整
     MarketMgr:AutoSetMarketExpense()-- 自动设置市场费用
+    MarketMgr:UpdateNpc()           -- Npc调整
     HumanResources:RecordProductManpower() -- 记录季度开始时的人力
 end
 
@@ -202,11 +202,11 @@ function DoPostSeason()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbSysMsg = {}
     end
-    MarketMgr:SettleMarket()  -- 更新市场竞标结果 -- 获取上个季度市场收益
+    MarketMgr:SettleMarket()        -- 更新市场竞标结果 -- 获取上个季度市场收益
     Production:PostSeason()         -- 推进研发进度,更新产品品质
     HumanResources:PayOffSalary()   -- 支付薪水
     for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
-        info.newPublishedId = {}   --清空新产品列表
+        info.newPublishedId = {}    --清空新产品列表
     end
 end
 

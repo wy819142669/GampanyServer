@@ -14,17 +14,10 @@ function Market.Publish(tbParam, user)
     end
 
     local renovate = product.State == tbConfig.tbProductState.nRenovateDone
-    --==== 对于新发布的产品(不是翻新项目), 复制已发布产品的数据初始化项 ====
-    if not renovate then
-        for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
-            product[k] = v
-        end
-    end
+    Production:Publish(product, user)
     if not GameLogic:PROD_IsPlatform(product) then
         GameLogic:PROD_NewPublished(tbParam.Id, product, renovate)
     end
-
-    Production:Publish(product, user)
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
 end
@@ -79,17 +72,12 @@ function MarketMgr:DoStart()
         end
     end
 
-    --新建npc产品
+    --新建npc产品，npc产品新建时直接发布
     Market.tbNpc = { tbProduct = {} }
     for category, info in pairs(data.tbCategoryInfo) do
         for _ = 1, info.nProductIdeaCount do
-            Market.NewNpcProduct(category)
+            Market.NewNpcProduct(category, 10)
         end
-    end
-
-    --发布npc的产品
-    for id, product in pairs(Market.tbNpc.tbProduct) do
-        GameLogic:PROD_NewPublished(id, product, false)
     end
 end
 
@@ -115,93 +103,6 @@ function MarketMgr:LossMarket()
         end
     end
 end
-
---[[
--- 品类份额转移
-function MarketMgr:LossMarketByQuality()
-    local tbRuntimeData = GetTableRuntime()
-    local tbSortInfos = {}
-
-     --便利计算各品类的市场总规模，产品数，最高质量，质量加总
-    for c, ci in pairs(tbRuntimeData.tbCategoryInfo) do
-        local info = { category = c, nProductCount = 0, nHighestQuality = 0, nTotalQuality = 0,}
-        for id, product in pairs(ci.tbPublishedProduct) do
-            info.nProductCount = info.nProductCount + 1
-            if info.nHighestQuality < product.nQuality10 then
-                info.nHighestQuality = product.nQuality10
-            end
-            info.nTotalQuality = info.nTotalQuality + product.nQuality10
-        end
-        table.insert(tbSortInfos, info)
-    end
-
-    --对品类信息进行排序
-    local SortFunc = function(l,r)
-        if l.nTotalQuality * r.nProductCount > r.nTotalQuality * l.nProductCount then
-            return true
-        elseif l.nTotalQuality * r.nProductCount == r.nTotalQuality * l.nProductCount then
-            if l.nProductCount > r.nProductCount then
-                return true
-            elseif l.nProductCount == r.nProductCount then
-                if l.nHighestQuality > r.nHighestQuality then
-                    return true
-                end
-            end
-        end
-        return false
-    end
-    table.sort(tbSortInfos, SortFunc)
-
-    local numCategory = #tbSortInfos
-    if numCategory <= 1 then
-        return
-    end
-
-    --计算确定转出的品类
-    local nIndex = numCategory
-    while nIndex > 1 and not SortFunc(tbSortInfos[nIndex - 1], tbSortInfos[nIndex]) do
-        nIndex = nIndex - 1
-    end
-    local nLossIndex = math.random(nIndex, numCategory)
-
-    --计算确定转入的品类
-    nIndex = 1
-    while nIndex < numCategory and not SortFunc(tbSortInfos[nIndex], tbSortInfos[nIndex + 1]) do
-        nIndex = nIndex + 1
-    end
-    local nGainIndex = math.random(1, nIndex)
- 
-    --如果算得的转入转出品类为同一个，做些调整
-    if nGainIndex == nLossIndex then
-        nGainIndex = nGainIndex + math.random(1, numCategory - 1)
-        nGainIndex = (nGainIndex > numCategory) and (nGainIndex - numCategory) or nGainIndex
-    end
-
-    --计算全市场规模
-    local nMaxMarket      = 0
-    for _, info in pairs(tbSortInfos) do
-        nMaxMarket = nMaxMarket + tbConfig.tbProductCategory[info.category].nTotalMarket
-        --print("info", info.category, info.nScale, info.nTotalQuality/info.nProductCount, info.nProductCount, info.nHighestQuality, info.nTotalQuality)
-    end
-
-    local tbLossSortInfo    = tbSortInfos[nLossIndex]
-    local tbGainSortInfo    = tbSortInfos[nGainIndex]
-    local lossCategory      = tbRuntimeData.tbCategoryInfo[tbLossSortInfo.category]
-    local gainCategory      = tbRuntimeData.tbCategoryInfo[tbGainSortInfo.category]
-
-    nMaxMarket = math.floor(nMaxMarket * tbConfig.tbProductCategory[tbGainSortInfo.category].nMaxMarketScale * 0.01)
-
-    local nLossMarket = math.min(math.min(nMaxMarket - gainCategory.nTotalScale, tbConfig.nLossMarket), lossCategory.nCommunalMarketShare)
-    if nLossMarket < 0 then
-        nLossMarket = 0
-    end
-
-    lossCategory.nCommunalMarketShare = lossCategory.nCommunalMarketShare - nLossMarket
-    gainCategory.nCommunalMarketShare = gainCategory.nCommunalMarketShare + nLossMarket
-
-    print("LossMarketByQuality: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.category .. " -> " .. tbGainSortInfo.category)
-end
---]]
 
 function MarketMgr:GetAverageQuality10(list)
     local count = 0
@@ -243,7 +144,7 @@ function MarketMgr:CategoryShareTransfer()
             delta = math.max(0, math.floor(nMaxScale - info.nTotalScale))
         end
         info.nCommunalMarketShare = info.nCommunalMarketShare + delta
---        print("CategoryShareTransfer", c, delta, info.nCommunalMarketShare)
+        --print("CategoryShareTransfer", c, delta, info.nCommunalMarketShare)
     end
 end
 
@@ -264,6 +165,7 @@ function MarketMgr:DistributionMarket()
                     end
                     weights[id] = weight
                     fTotalWeight = fTotalWeight + weight
+                    --print("DistributionMarket", id, product.nMarketExpense, weight)
                 end
             end
 
@@ -274,7 +176,7 @@ function MarketMgr:DistributionMarket()
                     local product = info.tbPublishedProduct[id]
                     product.nLastMarketScaleDelta = product.nLastMarketScaleDelta + delta
                     info.nCommunalMarketShare = info.nCommunalMarketShare - delta
---                    print("DistributionMarket", category, id, delta, product.nMarketExpense, product.nQuality10)
+                    --print("DistributionMarket", category, id, delta, product.nMarketExpense, product.nQuality10)
                 end
             end
         end
@@ -283,7 +185,7 @@ function MarketMgr:DistributionMarket()
         for id, product in pairs(info.tbPublishedProduct) do
             --各产品根据当季度的市场规模变化量，计算当季的最后拥有的市场规模
             product.nLastMarketScale = product.nLastMarketScale + product.nLastMarketScaleDelta
---            print("DistributionMarket done", category, id, product.nLastMarketScaleDelta, product.nLastMarketScale)
+            --print("DistributionMarket done", category, id, product.nLastMarketScaleDelta, product.nLastMarketScale)
             --统计品类总市场规模
             info.nTotalScale = info.nTotalScale + product.nLastMarketScale
 
@@ -322,7 +224,6 @@ function MarketMgr:GainRevenue()
         if income > 0 then
             GameLogic:FIN_Revenue(user, income)
             table.insert(user.tbSysMsg, string.format("产品共获得收益 %d", income))
-            print(userName .. " Cash += " .. tostring(income))
         end
     end
 end
@@ -330,7 +231,6 @@ end
 function MarketMgr:SettleMarket()
     MarketMgr:LossMarket()              -- 各产品份额自然流失，归入品类内部共享待分配份额
     MarketMgr:CategoryShareTransfer()   -- 品类间份额转移：各品类的待分配份额，取一部分根据品类间的质量差距，在品类间转移
-    --MarketMgr:LossMarketByQuality()   -- 品类份额转移
     MarketMgr:DistributionMarket()      -- 各品类内部，根据产品质量情况与市场费用，分配份额
     MarketMgr:GainRevenue()             -- 获得收益
 end
@@ -345,7 +245,7 @@ function MarketMgr:AutoSetMarketExpense()
         end
     end
 
-    --再按
+    --再根据玩家财力，做必要调整，并扣除费用
     for _, user in pairs(data.tbUser) do
         local total = 0
         for _, product in pairs(user.tbProduct) do
@@ -384,9 +284,8 @@ function MarketMgr:UpdateNpc()
 
         if nProductNum > nNpcProductNum and nProductNum < tbConfig.tbNpc.nMaxProductNum and nNpcProductNum < tbConfig.tbNpc.nMinNpcProductNum then
             local nAvgQuality10 = math.ceil(math.min(nTotalQuality / nProductNum, nUserMaxQuality))
-            local product = Market.NewNpcProduct(category, nAvgQuality10)
-            print("NewNpcProduct:", product.nID)
-            tbProductList[product.nID] = product
+            local id = Market.NewNpcProduct(category, nAvgQuality10)
+            print("NewNpcProduct:", id)
         end
     end
 
@@ -410,14 +309,9 @@ function Market.NewNpcProduct(category, nQuality10)
     local id, product = Production:CreateUserProduct(category, Market.tbNpc)
     product.State = tbConfig.tbProductState.nPublished
     product.bIsNpc = true
-    product.nID = id
-
-    for k, v in pairs(tbInitTables.tbInitPublishedProduct) do   --复制已发布产品的数据初始化项
-        product[k] = v
-    end
-
+    product.nOrigQuality10 = nQuality10
+    product.nQuality10 = nQuality10
+    GameLogic:PROD_NewPublished(id, product, false)
     product.nLastMarketExpense = math.floor(tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange))
-    product.nQuality10 = nQuality10 or 20
-
-    return product
+    return id
 end
