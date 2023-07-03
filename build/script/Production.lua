@@ -68,7 +68,7 @@ function Develop.Renovate(tbParam, user)
     end
     product.State = tbProductState.nRenovating
     product.nFinishedWorkLoad = 0
-    product.fFinishedQuality = 0
+    product.nFinishedQuality = 0
     return "success", true
 end
 
@@ -118,13 +118,13 @@ function Production:Publish(product, user)
     --在Market.Publish中已对产品状态做过检查，此处略过
     --product.State == tbConfig.tbProductState.nEnabled or product.State == tbConfig.tbProductState.nRenovateDone
 
-    local quality = math.floor(product.fFinishedQuality / product.nFinishedWorkLoad)
-    product.fFinishedQuality = quality
-    product.nOrigQuality= quality
-    product.nQuality = quality
+    local quality = math.floor(product.nFinishedQuality / product.nFinishedWorkLoad * 10)
+    product.nFinishedQuality = 0
+    product.nOrigQuality10 = quality
+    product.nQuality10 = quality
     product.State = tbProductState.nPublished
     if GameLogic:PROD_IsPlatform(product) then
-        user.nPlatformQuality = quality
+        user.nPlatformQuality10 = quality
     end
 end
 
@@ -179,7 +179,7 @@ end
 function Production:UpdateWorkload(product, user)
     local totalQuality, totalMan = self:GetDevelopingQuality(product, user)
     product.nFinishedWorkLoad = product.nFinishedWorkLoad + totalMan
-    product.fFinishedQuality = product.fFinishedQuality + totalQuality
+    product.nFinishedQuality = product.nFinishedQuality + totalQuality
 
     if product.nFinishedWorkLoad < product.nNeedWorkLoad then
         return
@@ -226,28 +226,28 @@ function Production:UpdateWorkload(product, user)
 end
 
 function Production:UpdatePublished(product, user)
-    local addQuality = -1
-    local nLastQuality = product.nQuality
+    local addQuality = -10
+    local nLastQuality10 = product.nQuality10
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
 
     if totalMan >= category.nMaintainTeam then
-        if product.nQuality == product.nOrigQuality then
+        if product.nQuality10 == product.nOrigQuality10 then
             return
         end
-        if totalQuality / totalMan >= product.nOrigQuality then
-            addQuality = 1  --维护团队的等级不低于原始质量等级，则恢复质量
+        if totalQuality / totalMan * 10 >= product.nOrigQuality10 then
+            addQuality = 10  --维护团队的等级不低于原始质量等级，则恢复质量
         end
     end
 
-    product.nQuality = math.min(product.nQuality + addQuality, product.nOrigQuality)    -- 不能超过初始品质
-    product.nQuality = math.max(1, product.nQuality)
+    product.nQuality10 = math.min(product.nQuality10 + addQuality, product.nOrigQuality10)    -- 不能超过初始品质
+    product.nQuality10 = math.max(1, product.nQuality10)
 
-    if product.nQuality ~= nLastQuality then
+    if product.nQuality10 ~= nLastQuality10 then
         if GameLogic:PROD_IsPlatform(product) then
-            user.nPlatformQuality = product.nQuality
+            user.nPlatformQuality10 = product.nQuality10
         end
-        table.insert(user.tbSysMsg, string.format("已发布产品%s品质由%d变更为%d", product.szName, nLastQuality, product.nQuality))
+        table.insert(user.tbSysMsg, string.format("已发布产品%s品质由%d变更为%d", product.szName, nLastQuality10 / 10, product.nQuality10 / 10))
     end
 end
 
@@ -256,5 +256,5 @@ function Production:IsPublished(product)
 end
 
 function Production:GetPlatformEffect(user)
-    return tbConfig.fPlatformManPowerRate * user.nPlatformQuality, tbConfig.fPlatformQualityRate * user.nPlatformQuality
+    return tbConfig.fPlatformManPowerRate * user.nPlatformQuality10, tbConfig.fPlatformQualityRate * user.nPlatformQuality10
 end

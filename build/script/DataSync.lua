@@ -153,7 +153,7 @@ end
 
 --更新产品的ARPU值
 function GameLogic:MKT_UpdateArpuAndIncome(product)
-    product.fLastARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * product.nQuality)
+    product.fLastARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.01 * product.nQuality10)
     if product.nLastMarketScale > 0 then
         product.nLastMarketIncome = math.floor(product.nLastMarketScale * product.fLastARPU)
     else

@@ -104,7 +104,7 @@ function MarketMgr:LossMarket()
         for id, product in pairs(info.tbPublishedProduct) do
             product.nLastMarketScaleDelta = 0
             if product.nLastMarketScale > 0 then
-                local fLossRate = (1.0 - fRetentionRate - 0.01 * product.nQuality)
+                local fLossRate = (1.0 - fRetentionRate - 0.001 * product.nQuality10)
                 fLossRate = (fLossRate < 0) and 0 or fLossRate
                 product.nLastMarketScaleDelta = - math.floor(product.nLastMarketScale * fLossRate)
                 info.nCommunalMarketShare = info.nCommunalMarketShare - product.nLastMarketScaleDelta  --各产品流失的份额，流入品类内部共享份额
@@ -128,10 +128,10 @@ function MarketMgr:LossMarketByQuality()
         local info = { category = c, nProductCount = 0, nHighestQuality = 0, nTotalQuality = 0,}
         for id, product in pairs(ci.tbPublishedProduct) do
             info.nProductCount = info.nProductCount + 1
-            if info.nHighestQuality < product.nQuality then
-                info.nHighestQuality = product.nQuality
+            if info.nHighestQuality < product.nQuality10 then
+                info.nHighestQuality = product.nQuality10
             end
-            info.nTotalQuality = info.nTotalQuality + product.nQuality            
+            info.nTotalQuality = info.nTotalQuality + product.nQuality10
         end
         table.insert(tbSortInfos, info)
     end
@@ -214,11 +214,11 @@ function MarketMgr:DistributionMarket()
             local fTotalMarketValue = 0
             for userName, tbUser in pairs(tbRuntimeData.tbUser) do
                 for id, product in pairs(tbUser.tbProduct) do
-                    local nQuality = product.nQuality or 0
+                    local nQuality10 = product.nQuality10 or 0
 
-                    if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality > 0 then
+                    if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality10 > 0 then
                         
-                        local fMarketValue = product.nMarketExpense * (1.3 ^ (nQuality - 1))
+                        local fMarketValue = product.nMarketExpense * (1.3 ^ ((nQuality10  - 10)*0.1) )
                         if GameLogic:PROD_IsNewProduct(category, id) then
                             fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
                         end
@@ -235,10 +235,10 @@ function MarketMgr:DistributionMarket()
             end
 
             for id, product in pairs(Market.tbNpc.tbProduct) do
-                local nQuality = product.nQuality or 0
-                if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality > 0 then
+                local nQuality10 = product.nQuality10 or 0
+                if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality10 > 0 then
                     
-                    local fMarketValue = product.nMarketExpense * (1.3 ^ (nQuality - 1))
+                    local fMarketValue = product.nMarketExpense * (1.3 ^ ((nQuality10 - 10)*0.1))
                     if GameLogic:PROD_IsNewProduct(category, id) then
                         fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
                     end
@@ -348,17 +348,17 @@ function MarketMgr:UpdateNpc()
             if tbProduct.bIsNpc then
                 nNpcProductNum = nNpcProductNum + 1
             else
-                if tbProduct.nQuality > nUserMaxQuality then
-                    nUserMaxQuality = tbProduct.nQuality
+                if tbProduct.nQuality10 > nUserMaxQuality then
+                    nUserMaxQuality = tbProduct.nQuality10
                 end
             end
 
-            nTotalQuality = nTotalQuality + tbProduct.nQuality
+            nTotalQuality = nTotalQuality + tbProduct.nQuality10
         end
 
         if nProductNum > nNpcProductNum and nProductNum < tbConfig.tbNpc.nMaxProductNum and nNpcProductNum < tbConfig.tbNpc.nMinNpcProductNum then
-            local nAvgQuality = math.ceil(math.min(nTotalQuality / nProductNum, nUserMaxQuality))
-            local product = Market.NewNpcProduct(category, nAvgQuality)
+            local nAvgQuality10 = math.ceil(math.min(nTotalQuality / nProductNum, nUserMaxQuality))
+            local product = Market.NewNpcProduct(category, nAvgQuality10)
             print("NewNpcProduct:", product.nID)
             tbProductList[product.nID] = product
         end
@@ -380,7 +380,7 @@ function MarketMgr:UpdateNpc()
     end
 end
 
-function Market.NewNpcProduct(category, nQuality)
+function Market.NewNpcProduct(category, nQuality10)
     local id, product = Production:CreateUserProduct(category, Market.tbNpc)
     product.State = tbConfig.tbProductState.nPublished
     product.bIsNpc = true
@@ -391,7 +391,7 @@ function Market.NewNpcProduct(category, nQuality)
     end
 
     product.nMarketExpense = tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
-    product.nQuality = nQuality or 2
+    product.nQuality10 = nQuality10 or 20
 
     return product
 end

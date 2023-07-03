@@ -31,8 +31,8 @@ tbConfig = {
     fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
     fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
     fQualityPerManpowerLevel = 2.0, --每人力等级可以提供的品质点数，人力1~5级， 产品2~10级
-    fPlatformManPowerRate = 0.05,   --中台对人力的影响参数
-    fPlatformQualityRate = 0.05,    --中台对质量的影响参数
+    fPlatformManPowerRate = 0.005,  --中台对人力的影响参数
+    fPlatformQualityRate = 0.005,   --中台对质量的影响参数
 
     --==== 产品所有状态罗列，只读不写 ====
     tbProductState = {
@@ -97,13 +97,13 @@ tbConfig = {
         },
         B = {
             --==研发相关配置==
-            nMinTeam = 8,       --团队最小人数需求
-            nIdeaTeam = 20,     --团队理想人数
+            nMinTeam = 8,               --团队最小人数需求
+            nIdeaTeam = 20,             --团队理想人数
             nRenovateMinTeam = 8,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,     --工作量
-            nRenovationWorkload = 30,        --翻新时的工作量
-            nMaintainTeam = 10,             --上线运营时需要维护团队规模
+            nWorkLoad = 40,             --工作量
+            nRenovationWorkload = 30,   --翻新时的工作量
+            nMaintainTeam = 10,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
@@ -116,13 +116,13 @@ tbConfig = {
         },
         C = {
             --==研发相关配置==
-            nMinTeam = 8,       --团队最小人数需求
-            nIdeaTeam = 20,     --团队理想人数
+            nMinTeam = 8,               --团队最小人数需求
+            nIdeaTeam = 20,             --团队理想人数
             nRenovateMinTeam = 8,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,     --工作量
-            nRenovationWorkload = 30,        --翻新时的工作量
-            nMaintainTeam = 10,             --上线运营时需要维护团队规模
+            nWorkLoad = 40,             --工作量
+            nRenovationWorkload = 30,   --翻新时的工作量
+            nMaintainTeam = 10,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
@@ -135,18 +135,18 @@ tbConfig = {
         },
         D = {
             --==研发相关配置==
-            nMinTeam = 8,       --团队最小人数需求
-            nIdeaTeam = 20,     --团队理想人数
+            nMinTeam = 8,               --团队最小人数需求
+            nIdeaTeam = 20,             --团队理想人数
             nRenovateMinTeam = 8,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,     --工作量
-            nRenovationWorkload = 30,        --翻新时的工作量
-            nMaintainTeam = 10, --上线运营时需要维护团队规模
+            nWorkLoad = 40,             --工作量
+            nRenovationWorkload = 30,   --翻新时的工作量
+            nMaintainTeam = 10,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
-            nBaseARPU = 10,     --基础ARPU
-            nMaxMarketScale = 50,  --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 450, --市场总份额
+            nBaseARPU = 10,                 --基础ARPU
+            nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 450,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
             --==Npc相关配置==
             nNpcInitialExpenses = 2000,
@@ -154,12 +154,12 @@ tbConfig = {
         },
         P = { --==中台项目==，设置项与产品项的有些不同
             --==研发相关配置==
-            nMinTeam = 8,       --团队最小人数需求
-            nIdeaTeam = 20,     --团队理想人数
+            nMinTeam = 8,               --团队最小人数需求
+            nIdeaTeam = 20,             --团队理想人数
             nRenovateMinTeam = 8,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,     --工作量
-            nRenovationWorkload = 30,        --翻新时的工作量
+            nWorkLoad = 40,             --工作量
+            nRenovationWorkload = 30,       --翻新时的工作量
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
             bIsPlatform = true,
@@ -211,7 +211,7 @@ tbInitTables = {
         tbClosedProduct = { },  -- 所有已关闭的产品
 
         --==== 研发相关 ====
-        nPlatformQuality = 0,   -- 已发布中台的当前质量（0表示无已发布的中台）
+        nPlatformQuality10 = 0,   -- 已发布中台的当前质量的十倍值（0表示无已发布的中台）
 
         --==== 财务数 ====
         nCash = 1000,               -- 现金
@@ -243,7 +243,8 @@ tbInitTables = {
         tbManpower = {0,0,0,0,0},                   --团队人员
         nNeedWorkLoad = 0,                          --研发或翻新需要完成的工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
-        fFinishedQuality = 0,                       --已完成工作量的累积品质
+        nFinishedQuality = 0,                       --已完成工作量的累积品质
+
         szName = "",
     },
 
@@ -256,8 +257,8 @@ tbInitTables = {
         fLastARPU = 0,              --最后一个季度/上季度ARPU
         nLastMarketIncome = 0,      --最后一个季度/上季度收入
         nMarketExpense = 0,         --当季市场营销费用（设定）
-        nOrigQuality = 0,           --产品研发或翻新完时的初始质量
-        nQuality = 0,               --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
+        nOrigQuality10 = 0,         --产品研发或翻新完时的初始质量
+        nQuality10 = 0,             --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
     },
 
     --品类初始信息
