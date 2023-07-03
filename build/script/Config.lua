@@ -60,13 +60,12 @@ tbConfig = {
     fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
     --==== 产品市场运营相关，只读不写 ====
-    nLossMarket = 25,   --- 品类份额转移
+    --nLossMarket = 25,               --品类份额转移
+    fMarketScaleShare = 0.1,        --各品类流动份额中，拿出多少比例来归入公共池，进行跨品类再分配
 
     -- npc配置
     tbNpc = {
-        nInitialProductNum = 2,  -- 初始市场npc产品数
         nInitialProductQuality = 2.0, -- 初始市场npc产品品质
-
         nMinNpcProductNum = 3, -- npc产品数量少于此，会上架产品
         nMaxProductNum = 6,    -- 品类市场产品多余此，不再上架产品
         fCloseWhenGainRatioLess = 3.0, -- 收益/营销费低于这个值，会下架产品
@@ -83,7 +82,7 @@ tbConfig = {
             nRenovateMinTeam = 8,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,     --工作量
-            nRenovationWorkload = 30,        --翻新时的工作量
+            nRenovationWorkload = 30,       --翻新时的工作量
             nMaintainTeam = 10,             --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
@@ -91,6 +90,7 @@ tbConfig = {
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 250,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 200,
             nNpcContinuousExpenses = 50,
@@ -110,6 +110,7 @@ tbConfig = {
             nMaxMarketScale = 20,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 150,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 400,
             nNpcContinuousExpenses = 100,
@@ -129,6 +130,7 @@ tbConfig = {
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 350,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 1200,
             nNpcContinuousExpenses = 150,
@@ -148,6 +150,7 @@ tbConfig = {
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 450,             --市场总份额
             nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 2000,
             nNpcContinuousExpenses = 250,
@@ -264,6 +267,8 @@ tbInitTables = {
     --品类初始信息
     tbInitCategoryInfo = {
         nCommunalMarketShare = 0,   --品类内部产品共享的市场份额
+        nProductIdeaCount = 0,      --产品数量控制，取值在初始化时复制自tbProductCategory
+        nMaxMarketScale = 0,        --该品类市场总规模占全品类总规模上限百分比，取值在初始化时复制自tbProductCategory
         nTotalScale = 0,            --最后一个季度/上季度整体市场规模
         nTotalIncome = 0,           --最后一个季度/上季度整体市场营收
         newPublished = {},          --当季度新发布的产品

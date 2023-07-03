@@ -70,20 +70,23 @@ function MarketMgr:DoStart()
 
     --初始化 品类信息 与 已发布产品列表
     data.tbCategoryInfo = {}
-    for category, product in pairs(tbConfig.tbProductCategory) do
+    for category, info in pairs(tbConfig.tbProductCategory) do
         if not GameLogic:PROD_IsPlatformC(category) then
             data.tbCategoryInfo[category] = Lib.copyTab(tbInitTables.tbInitCategoryInfo)
-            data.tbCategoryInfo[category].nCommunalMarketShare = product.nTotalMarket; --todo : remove this line
+            data.tbCategoryInfo[category].nCommunalMarketShare = info.nTotalMarket
+            data.tbCategoryInfo[category].nMaxMarketScale = info.nMaxMarketScale
+            data.tbCategoryInfo[category].nProductIdeaCount = info.nProductIdeaCount
         end
     end
 
     --新建npc产品
     Market.tbNpc = { tbProduct = {} }
-    for category, _ in pairs(data.tbCategoryInfo) do
-        for _ = 1, tbConfig.tbNpc.nInitialProductNum do
+    for category, info in pairs(data.tbCategoryInfo) do
+        for _ = 1, info.nProductIdeaCount do
             Market.NewNpcProduct(category)
         end
     end
+
     --发布npc的产品
     for id, product in pairs(Market.tbNpc.tbProduct) do
         GameLogic:PROD_NewPublished(id, product, false)
@@ -111,13 +114,9 @@ function MarketMgr:LossMarket()
             end
         end
     end
-    --[[
-                if tbUser.tbSysMsg then
-                    table.insert(tbUser.tbSysMsg, string.format("产品%s 流失用户 %d", tbProduct.szName, nLossMarket))
-                end
-    ]]
 end
 
+--[[
 -- 品类份额转移
 function MarketMgr:LossMarketByQuality()
     local tbRuntimeData = GetTableRuntime()
@@ -201,6 +200,50 @@ function MarketMgr:LossMarketByQuality()
     gainCategory.nCommunalMarketShare = gainCategory.nCommunalMarketShare + nLossMarket
 
     print("LossMarketByQuality: " .. tostring(nLossMarket) .. " " .. tbLossSortInfo.category .. " -> " .. tbGainSortInfo.category)
+end
+--]]
+
+function MarketMgr:GetAverageQuality10(list)
+    local count = 0
+    local quality = 0
+    for _, product in pairs(list) do
+        count = count + 1
+        quality = quality + product.nQuality10
+    end
+    if count > 0 then
+        quality = math.floor(quality / count)
+    end
+    return quality
+end
+
+-- 品类份额变化
+function MarketMgr:CategoryShareTransfer()
+    local data = GetTableRuntime().tbCategoryInfo
+    local nTotalScale = 0   --整个市场的总规模
+    local nShareScale = 0   --公共池
+    local nTotalWeight = 0  --分配权重总和
+    local weights = {}
+
+    for c, info in pairs(data) do
+        --累计以计算整个市场的总规模
+        nTotalScale = nTotalScale + info.nTotalScale
+        --各品类分一些份额到公共池里
+        nShareScale = nShareScale + math.floor(info.nCommunalMarketShare * tbConfig.fMarketScaleShare)
+        --各品类的再分配权重(以品类的平均产品质量为权重)
+        local weight = MarketMgr:GetAverageQuality10(info.tbPublishedProduct)
+        weights[c] = weight
+        nTotalWeight = nTotalWeight + weight
+    end
+
+    --根据权重给各品类分配份额
+    for c, info in pairs(data) do
+        local delta = math.floor(nShareScale * weights[c] / nTotalWeight)
+        local nMaxScale = nTotalScale * info.nMaxMarketScale / 100
+        if info.nTotalScale + delta > nMaxScale then
+            delta = math.max(0, math.floor(nMaxScale - info.nTotalScale))
+        end
+        info.nCommunalMarketShare = info.nCommunalMarketShare + delta
+    end
 end
 
 -- 份额分配
@@ -322,18 +365,11 @@ function MarketMgr:GainRevenue()
 end
 
 function MarketMgr:SettleMarket()
-
-    -- 份额流失
-    MarketMgr:LossMarket()
-
-    -- 品类份额转移
-    MarketMgr:LossMarketByQuality()
-
-    -- 份额分配
-    MarketMgr:DistributionMarket()
-
-    -- 获得收益 
-    MarketMgr:GainRevenue()
+    MarketMgr:LossMarket()              -- 各产品份额自然流失，归入品类内部共享待分配份额
+    MarketMgr:CategoryShareTransfer()   -- 品类间份额转移：各品类的待分配份额，取一部分根据品类间的质量差距，在品类间转移
+    --MarketMgr:LossMarketByQuality()   -- 品类份额转移
+    MarketMgr:DistributionMarket()      -- 各品类内部，根据产品质量情况与市场费用，分配份额
+    MarketMgr:GainRevenue()             -- 获得收益
 end
 
 function MarketMgr:UpdateNpc()
