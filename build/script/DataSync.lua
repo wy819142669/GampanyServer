@@ -142,6 +142,12 @@ function GameLogic:PROD_NewPublished(id, product, renovate)
     local info = GetTableRuntime().tbCategoryInfo[product.Category]
     info.tbPublishedProduct[id] = product
     info.newPublished[id] = renovate
+    --对于新发布的产品(不是翻新项目), 复制已发布产品的数据初始化项
+    if not renovate then
+        for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
+            product[k] = v
+        end
+    end
 end
 
 --对产品列表中每个产品进行某项处理
@@ -153,7 +159,7 @@ end
 
 --更新产品的ARPU值
 function GameLogic:MKT_UpdateArpuAndIncome(product)
-    product.fLastARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.1 * product.nQuality)
+    product.fLastARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.01 * product.nQuality10)
     if product.nLastMarketScale > 0 then
         product.nLastMarketIncome = math.floor(product.nLastMarketScale * product.fLastARPU)
     else
