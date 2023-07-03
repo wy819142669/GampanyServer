@@ -82,7 +82,17 @@ function MarketMgr:DoStart()
 end
 
 function MarketMgr:OnRecover()
-    
+    local data = GetTableRuntime()
+    for _, user in pairs(data.tbUser) do
+        for _, product in pairs(user.tbProduct) do
+            local info = data.tbCategoryInfo[product.Category]
+            if info then
+                if info.tbPublishedProduct[product.Id] then
+                    info.tbPublishedProduct[product.Id] = product
+                end
+            end
+        end
+    end
 end
 
 function MarketMgr:OnCloseProduct(id, product)

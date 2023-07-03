@@ -216,7 +216,7 @@ function DoPostSeason()
     Production:PostSeason()         -- 推进研发进度,更新产品品质
     HumanResources:PayOffSalary()   -- 支付薪水
     for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
-        info.newPublishedId = {}    --清空新产品列表
+        info.newPublished = {}    --清空新产品列表
     end
 end
 
