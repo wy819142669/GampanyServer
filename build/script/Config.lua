@@ -3,6 +3,7 @@ tbConfig = {
     nMaxGamerCount = 9,     --最多允许容纳的玩家的数目，因为界面没有做灵活适配，所以限制数目上限
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
     szAdminPassword = "",   --管理者登录密码
+    szRecoverDataFile = "20230703221718_Year1_Season2.std",
 
     --==== 财务设置相关，只读不写 ====
     fTaxRate = 0.1,         -- 税率【每年税额=税前利润*税率，当年亏损（税前利润为负）则不扣税】

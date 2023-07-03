@@ -131,7 +131,7 @@ function MarketMgr:LossMarketByQuality()
             if info.nHighestQuality < product.nQuality then
                 info.nHighestQuality = product.nQuality
             end
-            info.nTotalQuality = info.nTotalQuality + product.nQuality            
+            info.nTotalQuality = info.nTotalQuality + product.nQuality
         end
         table.insert(tbSortInfos, info)
     end
@@ -338,7 +338,7 @@ end
 
 function MarketMgr:UpdateNpc()
     for category, info in pairs(GetTableRuntime().tbCategoryInfo) do
-        tbProductList = info.tbPublishedProduct
+        local tbProductList = info.tbPublishedProduct
         local nProductNum = 0
         local nNpcProductNum = 0
         local nTotalQuality = 0

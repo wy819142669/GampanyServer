@@ -10,6 +10,7 @@ require("Admin")
 require("DataSync")
 require("Market")
 require("HumanResources")
+require("DataStorage")
 
 local tbRuntimeData = {
     --==== 游戏整体运行信息 ====
@@ -66,6 +67,10 @@ end
 
 function GetTableRuntime()
     return tbRuntimeData
+end
+
+function UpdateTableRuntime(tbData)
+    tbRuntimeData = tbData
 end
 
 function SandTableStart()
@@ -199,6 +204,8 @@ end
 
 -- 每个季度结束后的自动处理
 function DoPostSeason()
+    DataStorage:Save(tbRuntimeData)
+
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbSysMsg = {}
     end
