@@ -1,5 +1,4 @@
 local tbProductState = tbConfig.tbProductState
-local nNewProductId = 0
 
 Develop = {}       --用于包含响应客户端请求的函数
 Production = {}    --研发模块的内部函数
@@ -73,12 +72,14 @@ function Develop.Renovate(tbParam, user)
 end
 
 function Production:Reset()
-    nNewProductId = 0
+    local data = GetTableRuntime()
+    data.nNewProductId = 0
 end
 
 function Production:NewProductId()
-    nNewProductId = nNewProductId + 1
-    return nNewProductId
+    local data = GetTableRuntime()
+    data.nNewProductId = data.nNewProductId + 1
+    return data.nNewProductId
 end
 
 -- 此函数用来控制季度结算时遍历产品的顺序，为了避免出现一个季度产品对质量加成不一致的问题, 对于中台产品要统一结算时机

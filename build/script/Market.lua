@@ -78,16 +78,20 @@ function MarketMgr:DoStart()
     end
 
     --新建npc产品
-    Market.tbNpc = { tbProduct = {} }
+    data.tbNpc = { tbProduct = {} }
     for category, _ in pairs(data.tbCategoryInfo) do
         for _ = 1, tbConfig.tbNpc.nInitialProductNum do
             Market.NewNpcProduct(category)
         end
     end
     --发布npc的产品
-    for id, product in pairs(Market.tbNpc.tbProduct) do
+    for id, product in pairs(data.tbNpc.tbProduct) do
         GameLogic:PROD_NewPublished(id, product, false)
     end
+end
+
+function MarketMgr:OnRecover()
+    
 end
 
 function MarketMgr:OnCloseProduct(id, product)
@@ -234,7 +238,7 @@ function MarketMgr:DistributionMarket()
                 end
             end
 
-            for id, product in pairs(Market.tbNpc.tbProduct) do
+            for id, product in pairs(tbRuntimeData.tbNpc.tbProduct) do
                 local nQuality = product.nQuality or 0
                 if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality > 0 then
                     
@@ -258,7 +262,7 @@ function MarketMgr:DistributionMarket()
                 local nTotalCost = 0
                 for _, tbInfo in pairs(tbInfos) do
                     local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
-                    local tbUser = tbRuntimeData.tbUser[tbInfo.userName] or Market.tbNpc
+                    local tbUser = tbRuntimeData.tbUser[tbInfo.userName] or tbRuntimeData.tbNpc
 
                     tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta = tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta + nCost
                     tbUser.tbProduct[tbInfo.id].nLastMarketScale = tbUser.tbProduct[tbInfo.id].nLastMarketScale + tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta
@@ -364,7 +368,7 @@ function MarketMgr:UpdateNpc()
         end
     end
 
-    for id, tbProduct in pairs(Market.tbNpc.tbProduct) do
+    for id, tbProduct in pairs(GetTableRuntime().tbNpc.tbProduct) do
         if Production:IsPublished(tbProduct) and not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) then
             tbProduct.nMarketExpense = tbConfig.tbProductCategory[tbProduct.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
@@ -381,7 +385,7 @@ function MarketMgr:UpdateNpc()
 end
 
 function Market.NewNpcProduct(category, nQuality)
-    local id, product = Production:CreateUserProduct(category, Market.tbNpc)
+    local id, product = Production:CreateUserProduct(category, GetTableRuntime().tbNpc)
     product.State = tbConfig.tbProductState.nPublished
     product.bIsNpc = true
     product.nID = id

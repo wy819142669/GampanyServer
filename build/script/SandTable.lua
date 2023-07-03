@@ -27,11 +27,13 @@ local tbRuntimeData = {
     tbManpowerInMarket = { 0, 0, 0, 0, 0 }, -- 人才市场各等级人数。元素个数需要等于tbConfig.nManpowerMaxExpLevel
 
     tbNpc = {
-        tbProduc = {}
+        tbProduct = {}
     },
 
     --==== 产品市场相关 ====
     tbCategoryInfo = {},            --各品类运行时的信息，以品类为key，不包括中台，各value的数据项请参看tbInitTables.tbInitCategoryInfo
+
+    nNewProductId = 0,
 }
 
 local tbFunc = {
@@ -69,8 +71,9 @@ function GetTableRuntime()
     return tbRuntimeData
 end
 
-function UpdateTableRuntime(tbData)
+function RecoverTableRuntime(tbData)
     tbRuntimeData = tbData
+    MarketMgr:OnRecover()
 end
 
 function SandTableStart()

@@ -88,7 +88,7 @@ function tbAdminFunc.RecoverData(tbParam)
         return szError, false
     end
 
-    UpdateTableRuntime(tbData)
+    RecoverTableRuntime(tbData)
     return "success", true
 end
 
