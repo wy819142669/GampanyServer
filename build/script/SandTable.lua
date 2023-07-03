@@ -193,7 +193,7 @@ function DoPreSeason()
     HumanResources:SettlePoach()    -- 成功挖掘的人才入职
     HumanResources:SettleHire()     -- 人才市场招聘结果
     MarketMgr:UpdateNpc()           -- Npc调整
-
+    MarketMgr:AutoSetMarketExpense()-- 自动设置市场费用
     HumanResources:RecordProductManpower() -- 记录季度开始时的人力
 end
 

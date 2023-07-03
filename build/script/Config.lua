@@ -62,6 +62,8 @@ tbConfig = {
     --==== 产品市场运营相关，只读不写 ====
     --nLossMarket = 25,               --品类份额转移
     fMarketScaleShare = 0.1,        --各品类流动份额中，拿出多少比例来归入公共池，进行跨品类再分配
+    fNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
+    fRenovateCoefficient = 1.1,     --翻新后的产品当季度市场额外加成
 
     -- npc配置
     tbNpc = {
@@ -89,7 +91,6 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 250,             --市场总份额
-            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 200,
@@ -109,7 +110,6 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 20,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 150,             --市场总份额
-            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 400,
@@ -129,7 +129,6 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 350,             --市场总份额
-            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 1200,
@@ -149,7 +148,6 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 450,             --市场总份额
-            nNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 2000,

@@ -243,93 +243,56 @@ function MarketMgr:CategoryShareTransfer()
             delta = math.max(0, math.floor(nMaxScale - info.nTotalScale))
         end
         info.nCommunalMarketShare = info.nCommunalMarketShare + delta
+--        print("CategoryShareTransfer", c, delta, info.nCommunalMarketShare)
     end
 end
 
 -- 份额分配
 function MarketMgr:DistributionMarket()
-    local tbRuntimeData = GetTableRuntime()
-
-    for category, info in pairs(tbRuntimeData.tbCategoryInfo) do
-        local nMarket = info.nCommunalMarketShare
-        if nMarket > 0 then
-            local tbInfos = {}
-            local fTotalMarketValue = 0
-            for userName, tbUser in pairs(tbRuntimeData.tbUser) do
-                for id, product in pairs(tbUser.tbProduct) do
-                    local nQuality10 = product.nQuality10 or 0
-
-                    if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality10 > 0 then
-                        
-                        local fMarketValue = product.nMarketExpense * (1.3 ^ ((nQuality10  - 10)*0.1) )
-                        if GameLogic:PROD_IsNewProduct(category, id) then
-                            fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
-                        end
-
-                        fTotalMarketValue = fTotalMarketValue + fMarketValue
-                        table.insert(tbInfos, {
-                            userName = userName,
-                            id = id,
-                            name = product.szName,
-                            fMarketValue = fMarketValue,
-                        })
+    for category, info in pairs(GetTableRuntime().tbCategoryInfo) do
+        local nTotal = info.nCommunalMarketShare
+        if nTotal > 0 then
+            local fTotalWeight = 0  --分配权重总和
+            local weights = {}
+            --计算各产品的分配权重与权重总和
+            for id, product in pairs(info.tbPublishedProduct) do
+                if product.nMarketExpense > 0 then
+                    local weight = product.nMarketExpense * (1.3 ^ ((product.nQuality10  - 10)*0.1) )
+                    local new, renovate = GameLogic:PROD_IsNewProduct(category, id)
+                    if new then
+                        weight = weight * (renovate and tbConfig.fRenovateCoefficient or tbConfig.fNewProductCoefficient)
                     end
+                    weights[id] = weight
+                    fTotalWeight = fTotalWeight + weight
                 end
             end
 
-            for id, product in pairs(Market.tbNpc.tbProduct) do
-                local nQuality10 = product.nQuality10 or 0
-                if Production:IsPublished(product) and product.Category == category and product.nMarketExpense > 0 and nQuality10 > 0 then
-                    
-                    local fMarketValue = product.nMarketExpense * (1.3 ^ ((nQuality10 - 10)*0.1))
-                    if GameLogic:PROD_IsNewProduct(category, id) then
-                        fMarketValue = fMarketValue * tbConfig.tbProductCategory[category].nNewProductCoefficient
-                    end
-
-                    fTotalMarketValue = fTotalMarketValue + fMarketValue
-                    table.insert(tbInfos, {
-                        userName = tbConfig.tbNpc.szName,
-                        id = id,
-                        name = product.szName,
-                        fMarketValue = fMarketValue,
-                    })
+            --根据权重，给各产品分配市场份额
+            if fTotalWeight > 0 then
+                for id, weight in pairs(weights) do
+                    local delta = math.floor(nTotal * (weight / fTotalWeight))
+                    local product = info.tbPublishedProduct[id]
+                    product.nLastMarketScaleDelta = product.nLastMarketScaleDelta + delta
+                    info.nCommunalMarketShare = info.nCommunalMarketShare - delta
+--                    print("DistributionMarket", category, id, delta, product.nMarketExpense, product.nQuality10)
                 end
-            end
-
-            if fTotalMarketValue > 0 then
-                local nTotalMarket = nMarket
-                local nTotalCost = 0
-                for _, tbInfo in pairs(tbInfos) do
-                    local nCost = math.floor(nTotalMarket * (tbInfo.fMarketValue / fTotalMarketValue))
-                    local tbUser = tbRuntimeData.tbUser[tbInfo.userName] or Market.tbNpc
-
-                    tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta = tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta + nCost
-                    tbUser.tbProduct[tbInfo.id].nLastMarketScale = tbUser.tbProduct[tbInfo.id].nLastMarketScale + tbUser.tbProduct[tbInfo.id].nLastMarketScaleDelta
-
-                    if tbUser.tbSysMsg then
-                        table.insert(tbUser.tbSysMsg, string.format("产品%s 新获得用户 %d", tbInfo.name, nCost))
-                    end
-                    nTotalCost = nTotalCost + nCost
-                    print("user: " .. tostring(tbInfo.userName) .. " productid: " .. tostring(tbInfo.id) .. " Add Market: " .. tostring(nCost))
-                end
-
-                tbRuntimeData.tbCategoryInfo[category].nCommunalMarketShare = tbRuntimeData.tbCategoryInfo[category].nCommunalMarketShare - nTotalCost
             end
         end
-    end
 
-    --把当次的费用记录到最后一次记录上，及统计品类总市场规模
-    for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
         info.nTotalScale = 0
-        for _, product in pairs(info.tbPublishedProduct) do
+        for id, product in pairs(info.tbPublishedProduct) do
+            --各产品根据当季度的市场规模变化量，计算当季的最后拥有的市场规模
+            product.nLastMarketScale = product.nLastMarketScale + product.nLastMarketScaleDelta
+--            print("DistributionMarket done", category, id, product.nLastMarketScaleDelta, product.nLastMarketScale)
+            --统计品类总市场规模
             info.nTotalScale = info.nTotalScale + product.nLastMarketScale
+
+            --把当季的费用记录到最后一次记录上
             product.nLastMarketExpense = product.nMarketExpense
             product.nMarketExpense = 0
         end
-    end
 
-    --计算各产品的市场占比
-    for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
+        --计算各产品的市场占比
         if info.nTotalScale > 0 then
             for _, product in pairs(info.tbPublishedProduct) do
                 product.nLastMarketScalePct = math.floor(product.nLastMarketScale * 100 / info.nTotalScale)
@@ -357,7 +320,7 @@ function MarketMgr:GainRevenue()
             income = income + (product.nLastMarketIncome and product.nLastMarketIncome or 0) --非发布到市场的产品，不会有nLastMarketIncome
         end
         if income > 0 then
-            GameLogic:FIN_Revenue(user, tbConfig.tbFinClassify.Revenue, income)
+            GameLogic:FIN_Revenue(user, income)
             table.insert(user.tbSysMsg, string.format("产品共获得收益 %d", income))
             print(userName .. " Cash += " .. tostring(income))
         end
@@ -370,6 +333,33 @@ function MarketMgr:SettleMarket()
     --MarketMgr:LossMarketByQuality()   -- 品类份额转移
     MarketMgr:DistributionMarket()      -- 各品类内部，根据产品质量情况与市场费用，分配份额
     MarketMgr:GainRevenue()             -- 获得收益
+end
+
+--季度初自动设置市场费用，设置后可被修改
+function MarketMgr:AutoSetMarketExpense()
+    local data = GetTableRuntime()
+    --先自动参照上季度市场费用，重设本季度市场费用
+    for _, info in pairs(data.tbCategoryInfo) do
+        for _, product in pairs(info.tbPublishedProduct) do
+            product.nMarketExpense = product.nLastMarketExpense
+        end
+    end
+
+    --再按
+    for _, user in pairs(data.tbUser) do
+        local total = 0
+        for _, product in pairs(user.tbProduct) do
+            if product.nMarketExpense and product.nMarketExpense > 0 then
+                if total + product.nMarketExpense <= user.nCash then
+                    total = total + product.nMarketExpense
+                else
+                    product.nMarketExpense = user.nCash - total
+                    total = total + product.nMarketExpense
+                end
+            end
+        end
+        GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Mkt, total)
+    end
 end
 
 function MarketMgr:UpdateNpc()
@@ -405,7 +395,7 @@ function MarketMgr:UpdateNpc()
             tbProduct.nMarketExpense = tbConfig.tbProductCategory[tbProduct.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
         end
 
-        print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpense:", tbProduct.nMarketExpense, "tbProduct.bNewProduct:", GameLogic:PROD_IsNewProduct(tbProduct.Category, id))
+        --print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpense:", tbProduct.nMarketExpense, "tbProduct.bNewProduct:", GameLogic:PROD_IsNewProduct(tbProduct.Category, id))
         if not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
@@ -426,7 +416,7 @@ function Market.NewNpcProduct(category, nQuality10)
         product[k] = v
     end
 
-    product.nMarketExpense = tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+    product.nLastMarketExpense = math.floor(tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange))
     product.nQuality10 = nQuality10 or 20
 
     return product
