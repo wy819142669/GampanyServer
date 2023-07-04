@@ -19,9 +19,10 @@ function Market.Publish(tbParam, user)
         user.nPlatformQuality10 = quality10
     else
         GameLogic:PROD_NewPublished(tbParam.Id, product, renovate, false)
-        product.nOrigQuality10 = quality10
-        product.nQuality10 = quality10
     end
+    product.nOrigQuality10 = quality10
+    product.nQuality10 = quality10
+
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
 end
