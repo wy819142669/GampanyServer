@@ -246,13 +246,13 @@ tbInitTables = {
         nNeedWorkLoad = 0,                          --研发或翻新需要完成的工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
         nFinishedQuality = 0,                       --已完成工作量的累积品质
-        nOrigQuality10 = 0,                         --产品研发或翻新完时的初始质量
-        nQuality10 = 0,                             --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
         szName = "",
     },
 
     --新发布产品初始表
     tbInitPublishedProduct = {
+        nOrigQuality10 = 0,         --产品研发或翻新完时的初始质量
+        nQuality10 = 0,             --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
         nLastMarketExpense = 0,     --最后一个季度/上季度市场营销费用
         nLastMarketScale = 0,       --最后一个季度/上季度市场规模
         nLastMarketScaleDelta = 0,  --最后一个季度/上季度市场规模环比变化量
@@ -273,6 +273,8 @@ tbInitTables = {
                                     --各key就是产品id；各value为布尔值，表示是否为翻新
         tbPublishedProduct = {},    --所有已发布的产品（不包含已关闭的）（的引用）
                                     --各key就是产品id，各value就是各产品的运行时数据表(是对 tbConfig.tbUser[xx].tbProduct[id]的引用)
+        nPublishedCount = 0,        --上线产品总量
+        nNpcProductCount = 0,       --Npc产品总量（都是已上线的）
     },
 }
 

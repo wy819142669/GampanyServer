@@ -14,9 +14,13 @@ function Market.Publish(tbParam, user)
     end
 
     local renovate = product.State == tbConfig.tbProductState.nRenovateDone
-    Production:Publish(product, user)
-    if not GameLogic:PROD_IsPlatform(product) then
-        GameLogic:PROD_NewPublished(tbParam.Id, product, renovate)
+    local quality10 = Production:Publish(product, user)
+    if GameLogic:PROD_IsPlatform(product) then
+        user.nPlatformQuality10 = quality10
+    else
+        GameLogic:PROD_NewPublished(tbParam.Id, product, renovate, false)
+        product.nOrigQuality10 = quality10
+        product.nQuality10 = quality10
     end
     local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
     return szReturnMsg, true
@@ -93,13 +97,6 @@ function MarketMgr:OnRecover()
             end
         end
     end
-end
-
-function MarketMgr:OnCloseProduct(id, product)
-    local info = GetTableRuntime().tbCategoryInfo[product.Category]
-    info.tbPublishedProduct[id] = nil
-    info.newPublished[id] = nil
-    info.nCommunalMarketShare = info.nCommunalMarketShare + product.nLastMarketScale
 end
 
 --产品份额的自然流失（受品类流失率及自身质量影响）
@@ -316,7 +313,7 @@ function MarketMgr:UpdateNpc()
         if not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
-            MarketMgr:OnCloseProduct(id, tbProduct)
+            GameLogic:OnCloseProduct(id, tbProduct, true)
         end
 
         tbProduct.nLastMarketIncome = nil
@@ -327,9 +324,9 @@ function Market.NewNpcProduct(category, nQuality10)
     local id, product = Production:CreateUserProduct(category, GetTableRuntime().tbNpc)
     product.State = tbConfig.tbProductState.nPublished
     product.bIsNpc = true
+    GameLogic:PROD_NewPublished(id, product, false, true)
     product.nOrigQuality10 = nQuality10
     product.nQuality10 = nQuality10
-    GameLogic:PROD_NewPublished(id, product, false)
     product.nLastMarketExpense = math.floor(tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange))
     return id
 end

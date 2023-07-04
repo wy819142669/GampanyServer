@@ -138,15 +138,31 @@ function GameLogic:PROD_IsNewProduct(category, id)
 end
 
 --一个新产品发布了
-function GameLogic:PROD_NewPublished(id, product, renovate)
+function GameLogic:PROD_NewPublished(id, product, renovate, npc)
     local info = GetTableRuntime().tbCategoryInfo[product.Category]
     info.tbPublishedProduct[id] = product
     info.newPublished[id] = renovate
+    info.nPublishedCount = info.nPublishedCount + 1
+    if npc then
+        info.nNpcProductCount = info.nNpcProductCount + 1
+    end
     --对于新发布的产品(不是翻新项目), 复制已发布产品的数据初始化项
     if not renovate then
         for k, v in pairs(tbInitTables.tbInitPublishedProduct) do
             product[k] = v
         end
+    end
+end
+
+--关闭一个产品
+function GameLogic:OnCloseProduct(id, product, npc)
+    local info = GetTableRuntime().tbCategoryInfo[product.Category]
+    info.tbPublishedProduct[id] = nil
+    info.newPublished[id] = nil
+    info.nCommunalMarketShare = info.nCommunalMarketShare + product.nLastMarketScale
+    info.nPublishedCount = info.nPublishedCount - 1
+    if npc then
+        info.nNpcProductCount = info.nNpcProductCount - 1
     end
 end
 

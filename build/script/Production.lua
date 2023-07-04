@@ -40,7 +40,7 @@ function Develop.CloseProduct(tbParam, user)
     end
 
     if GameLogic:PROD_IsInMarket(product) then
-        MarketMgr:OnCloseProduct(tbParam.Id, product)
+        GameLogic:OnCloseProduct(tbParam.Id, product, false)
     end
 
     product.State = tbProductState.nClosed
@@ -118,15 +118,10 @@ end
 function Production:Publish(product, user)
     --在Market.Publish中已对产品状态做过检查，此处略过
     --product.State == tbConfig.tbProductState.nEnabled or product.State == tbConfig.tbProductState.nRenovateDone
-
     local quality = math.floor(product.nFinishedQuality / product.nFinishedWorkLoad * 10)
     product.nFinishedQuality = 0
-    product.nOrigQuality10 = quality
-    product.nQuality10 = quality
     product.State = tbProductState.nPublished
-    if GameLogic:PROD_IsPlatform(product) then
-        user.nPlatformQuality10 = quality
-    end
+    return quality
 end
 
 function Production:GetTeamScaleQuality(product)
