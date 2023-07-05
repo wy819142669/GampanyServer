@@ -132,31 +132,36 @@ end
 -- 品类份额变化
 function MarketMgr:CategoryShareTransfer()
     local data = GetTableRuntime().tbCategoryInfo
-    local nTotalScale = 0   --整个市场的总规模
+    local nAllScale = 0     --整个市场的总规模
     local nShareScale = 0   --公共池
-    local nTotalWeight = 0  --分配权重总和
+    local nAllWeight = 0    --分配权重总和
     local weights = {}
+    local delta
 
     for c, info in pairs(data) do
         --累计以计算整个市场的总规模
-        nTotalScale = nTotalScale + info.nTotalScale
+        nAllScale = nAllScale + info.nTotalScale
         --各品类分一些份额到公共池里
-        nShareScale = nShareScale + math.floor(info.nCommunalMarketShare * tbConfig.fMarketScaleShare)
+        delta = math.min(info.nCommunalMarketShare, tbConfig.nMarketShiftScale)
+        nShareScale = nShareScale + delta
+        info.nCommunalMarketShare = info.nCommunalMarketShare - delta
+        info.nTotalScale = info.nTotalScale - delta
         --各品类的再分配权重(以品类的平均产品质量为权重)
         local weight = MarketMgr:GetAverageQuality10(info.tbPublishedProduct)
         weights[c] = weight
-        nTotalWeight = nTotalWeight + weight
+        nAllWeight = nAllWeight + weight
     end
 
     --根据权重给各品类分配份额
     for c, info in pairs(data) do
-        local delta = math.floor(nShareScale * weights[c] / nTotalWeight)
-        local nMaxScale = nTotalScale * info.nMaxMarketScale / 100
+        delta = math.floor(nShareScale * weights[c] / nAllWeight)
+        local nMaxScale = nAllScale * info.nMaxMarketScale / 100
         if info.nTotalScale + delta > nMaxScale then
             delta = math.max(0, math.floor(nMaxScale - info.nTotalScale))
         end
         info.nCommunalMarketShare = info.nCommunalMarketShare + delta
-        --print("CategoryShareTransfer", c, delta, info.nCommunalMarketShare)
+        info.nTotalScale = info.nTotalScale + delta
+        --print("MarketShare Category:".. c, delta, info.nTotalScale)
     end
 end
 
@@ -246,7 +251,7 @@ function MarketMgr:GainRevenue()
     end
 end
 
-function MarketMgr:SettleMarket()
+function MarketMgr:PostSeason()
     MarketMgr:LossMarket()              -- 各产品份额自然流失，归入品类内部共享待分配份额
     MarketMgr:CategoryShareTransfer()   -- 品类间份额转移：各品类的待分配份额，取一部分根据品类间的质量差距，在品类间转移
     MarketMgr:DistributionMarket()      -- 各品类内部，根据产品质量情况与市场费用，分配份额

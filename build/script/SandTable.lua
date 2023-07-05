@@ -209,7 +209,7 @@ function DoPostSeason()
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbSysMsg = {}
     end
-    MarketMgr:SettleMarket()        -- 更新市场竞标结果 -- 获取上个季度市场收益
+    MarketMgr:PostSeason()        -- 更新市场竞标结果 -- 获取上个季度市场收益
     Production:PostSeason()         -- 推进研发进度,更新产品品质
     HumanResources:PayOffSalary()   -- 支付薪水
     for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
