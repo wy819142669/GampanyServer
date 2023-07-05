@@ -276,6 +276,13 @@ tbInitTables = {
         nPublishedCount = 0,        --上线产品总量
         nNpcProductCount = 0,       --Npc产品总量（都是已上线的）
     },
+
+    --Npc动态信息的初始化
+    tbInitNpc = {
+        tbProduct = {},             --产品列表
+        tbScheduleToNew = {},       --计划将新建产品
+        tbScheduleToClose = {},     --计划将关闭产品
+    },
 }
 
 tbInitTables.tbInitUserData.tbYearReport = Lib.copyTab(tbInitTables.tbInitReport)

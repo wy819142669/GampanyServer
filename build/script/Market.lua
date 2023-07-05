@@ -78,7 +78,7 @@ function MarketMgr:DoStart()
     end
 
     --新建npc产品，npc产品新建时直接发布
-    data.tbNpc = { tbProduct = {} }
+    data.tbNpc = Lib.copyTab(tbInitTables.tbInitNpc)
     for category, info in pairs(data.tbCategoryInfo) do
         for _ = 1, info.nProductIdeaCount do
             Market.NewNpcProduct(category, 10)
@@ -177,7 +177,7 @@ function MarketMgr:DistributionMarket()
                     end
                     weights[id] = weight
                     fTotalWeight = fTotalWeight + weight
-                    --print("DistributionMarket", id, product.nMarketExpense, weight)
+                    --print("DistributionMarket weight", id, product.nMarketExpense, weight)
                 end
             end
 
@@ -201,7 +201,7 @@ function MarketMgr:DistributionMarket()
         for id, product in pairs(info.tbPublishedProduct) do
             --各产品根据当季度的市场规模变化量，计算当季的最后拥有的市场规模
             product.nLastMarketScale = product.nLastMarketScale + product.nLastMarketScaleDelta
-            --print("DistributionMarket done", category, id, product.nLastMarketScaleDelta, product.nLastMarketScale)
+            --print("DistributionMarket result:", category, id, product.nLastMarketScaleDelta, product.nLastMarketScale)
             --统计品类总市场规模
             info.nTotalScale = info.nTotalScale + product.nLastMarketScale
 
@@ -253,28 +253,24 @@ end
 
 --季度初自动设置市场费用，设置后可被修改
 function MarketMgr:AutoSetMarketExpense()
-    local data = GetTableRuntime()
-    --先自动参照上季度市场费用，重设本季度市场费用
-    for _, info in pairs(data.tbCategoryInfo) do
-        for _, product in pairs(info.tbPublishedProduct) do
-            product.nMarketExpense = product.nLastMarketExpense
-        end
-    end
-
-    --再根据玩家财力，做必要调整，并扣除费用
-    for _, user in pairs(data.tbUser) do
+    --对于玩家，若账面现金足够，则自动参照上季度市场费用 并扣除费用
+    for _, user in pairs(GetTableRuntime().tbUser) do
         local total = 0
         for _, product in pairs(user.tbProduct) do
-            if product.nMarketExpense and product.nMarketExpense > 0 then
-                if total + product.nMarketExpense <= user.nCash then
-                    total = total + product.nMarketExpense
-                else
-                    product.nMarketExpense = user.nCash - total
-                    total = total + product.nMarketExpense
-                end
+            if product.nLastMarketExpense and product.nLastMarketExpense > 0 then
+                product.nMarketExpense = math.min(product.nLastMarketExpense, user.nCash - total)
+                total = total + product.nMarketExpense
             end
         end
         GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Mkt, total)
+    end
+
+    --对于npc
+    for id, product in pairs(GetTableRuntime().tbNpc.tbProduct) do
+        if not GameLogic:PROD_IsNewProduct(product.Category, id) then
+            product.nMarketExpense = tbConfig.tbProductCategory[product.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+            --print("Npc id:"..id, "LastMarketIncome:",product.nLastMarketIncome, "MarketExpense:", product.nMarketExpense, "product.bNewProduct:", GameLogic:PROD_IsNewProduct(product.Category, id))
+        end
     end
 end
 
@@ -306,11 +302,6 @@ function MarketMgr:UpdateNpc()
     end
 
     for id, tbProduct in pairs(GetTableRuntime().tbNpc.tbProduct) do
-        if Production:IsPublished(tbProduct) and not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) then
-            tbProduct.nMarketExpense = tbConfig.tbProductCategory[tbProduct.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
-        end
-
-        --print("Npc id:"..id, "nLastMarketIncome:",tbProduct.nLastMarketIncome, "nMarketExpense:", tbProduct.nMarketExpense, "tbProduct.bNewProduct:", GameLogic:PROD_IsNewProduct(tbProduct.Category, id))
         if not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
             print("Npc id:"..id, "close")
             tbProduct.State = tbConfig.tbProductState.nClosed
@@ -321,6 +312,11 @@ function MarketMgr:UpdateNpc()
     end
 end
 
+function MarketMgr:DoPreSeason()
+    MarketMgr:AutoSetMarketExpense()    -- 自动设置市场费用
+    MarketMgr:UpdateNpc()               -- Npc调整
+end
+
 function Market.NewNpcProduct(category, nQuality10)
     local id, product = Production:CreateUserProduct(category, GetTableRuntime().tbNpc)
     product.State = tbConfig.tbProductState.nPublished
@@ -328,6 +324,6 @@ function Market.NewNpcProduct(category, nQuality10)
     GameLogic:PROD_NewPublished(id, product, false, true)
     product.nOrigQuality10 = nQuality10
     product.nQuality10 = nQuality10
-    product.nLastMarketExpense = math.floor(tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange))
+    product.nMarketExpense = math.floor(tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange))
     return id
 end

@@ -17,6 +17,7 @@ local tbRuntimeData = {
     bPlaying = false,
     nCurYear = 0,       -- 当前年份, 取值为0时，表示游戏未开始
     nCurSeason = 0,     -- 当前季度, 取值为0~4, 0表示新年开始时且1季度开始前
+    nNewProductId = 0,  -- 新建项目的id值
 
     --==== 玩家相关信息 ====
     nGamerCount = 0,
@@ -26,14 +27,11 @@ local tbRuntimeData = {
     --==== 人才市场相关信息 ====
     tbManpowerInMarket = { 0, 0, 0, 0, 0 }, -- 人才市场各等级人数。元素个数需要等于tbConfig.nManpowerMaxExpLevel
 
-    tbNpc = {
-        tbProduct = {}
-    },
+    --==== npc 数据 ====
+    tbNpc = { },
 
     --==== 产品市场相关 ====
     tbCategoryInfo = {},            --各品类运行时的信息，以品类为key，不包括中台，各value的数据项请参看tbInitTables.tbInitCategoryInfo
-
-    nNewProductId = 0,
 }
 
 local tbFunc = {
@@ -189,19 +187,18 @@ function NextStepIfAllGamersDone(forceAllDone)
         tbUser.bStepDone = false
 	end
     DoUpdateGamerDataVersion(nil)
-    print("=============== Year:".. tbRuntimeData.nCurYear .. " Season:" .. tbRuntimeData.nCurSeason .. "  ===============")
 end
 
 -- 每个季度开始前的自动处理
 function DoPreSeason()
+    print("=============== Year:".. tbRuntimeData.nCurYear .. " Season:" .. tbRuntimeData.nCurSeason .. "  ===============")
     HumanResources:AddNewManpower() -- 新人才进入人才市场
     HumanResources:SettleDepart()   -- 办理离职（交付流失员工）
     HumanResources:SettleFire()     -- 解雇人员离职
     HumanResources:SettleTrain()    -- 培训中的员工升级
     HumanResources:SettlePoach()    -- 成功挖掘的人才入职
     HumanResources:SettleHire()     -- 人才市场招聘结果
-    MarketMgr:AutoSetMarketExpense()-- 自动设置市场费用
-    MarketMgr:UpdateNpc()           -- Npc调整
+    MarketMgr:DoPreSeason()         -- 市场模块处理
     HumanResources:RecordProductManpower() -- 记录季度开始时的人力
 end
 
@@ -232,6 +229,7 @@ end
 
 -- 每年开始时的自动处理
 function DoPreYear()
+    print("=============== Year:".. tbRuntimeData.nCurYear .. "  ==============================")
     for _, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbYearReport = Lib.copyTab(tbInitTables.tbInitReport)    --清空年报
         tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport

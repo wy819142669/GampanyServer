@@ -136,7 +136,7 @@ end
 
 function Production:GetDevelopingQuality(product, user)
     local category = tbConfig.tbProductCategory[product.Category]
-    local bInRenovate = product.State == tbConfig.tbProductState.nRenovating
+    local bInRenovate = product.State == tbConfig.tbProductState.nRenovating or product.State == tbConfig.tbProductState.nRenovateDone
     local nMinTeam = bInRenovate and category.nRenovateMinTeam or category.nMinTeam
     local nIdeaTeam = bInRenovate and category.nRenovateIdeaTeam or category.nIdeaTeam
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
