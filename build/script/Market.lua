@@ -229,6 +229,8 @@ function MarketMgr:GainRevenue()
             GameLogic:MKT_UpdateArpuAndIncome(product)
             info.nTotalIncome = info.nTotalIncome + product.nLastMarketIncome
             --print("GainRevenue", id, product.fLastARPU, product.nLastMarketScale, product.nLastMarketIncome)
+
+            product.nSeasonCount = product.nSeasonCount + 1 --更新产品上市后的时长（季度数）
         end
     end
     --结算玩家收入
@@ -274,6 +276,22 @@ function MarketMgr:AutoSetMarketExpense()
     end
 end
 
+--关停效益不好的npc产品
+function MarketMgr:CloseNpcBadPerformance()
+    local list = GetTableRuntime().tbNpc.tbProduct
+    for id, product in pairs(list) do
+        if product.nSeasonCount > 2 then --上市时间太短的产品，不会被处理
+            --关停效益不好的产品
+            if product.nLastMarketIncome / product.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
+                print("Npc product closed, id:", id)
+                product.State = tbConfig.tbProductState.nClosed
+                GameLogic:OnCloseProduct(id, product, true)
+                list[id] = nil
+            end
+        end
+    end
+end
+
 function MarketMgr:UpdateNpc()
     for category, info in pairs(GetTableRuntime().tbCategoryInfo) do
         local tbProductList = info.tbPublishedProduct
@@ -300,20 +318,11 @@ function MarketMgr:UpdateNpc()
             print("NewNpcProduct:", id)
         end
     end
-
-    for id, tbProduct in pairs(GetTableRuntime().tbNpc.tbProduct) do
-        if not GameLogic:PROD_IsNewProduct(tbProduct.Category, id) and tbProduct.nLastMarketIncome and tbProduct.nLastMarketIncome / tbProduct.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
-            print("Npc id:"..id, "close")
-            tbProduct.State = tbConfig.tbProductState.nClosed
-            GameLogic:OnCloseProduct(id, tbProduct, true)
-        end
-
-        tbProduct.nLastMarketIncome = nil
-    end
 end
 
 function MarketMgr:DoPreSeason()
     MarketMgr:AutoSetMarketExpense()    -- 自动设置市场费用
+    MarketMgr:CloseNpcBadPerformance()  -- 关闭效益不好的npc产品
     MarketMgr:UpdateNpc()               -- Npc调整
 end
 

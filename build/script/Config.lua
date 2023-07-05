@@ -260,6 +260,7 @@ tbInitTables = {
         fLastARPU = 0,              --最后一个季度/上季度ARPU
         nLastMarketIncome = 0,      --最后一个季度/上季度收入
         nMarketExpense = 0,         --当季市场营销费用（设定）
+        nSeasonCount = 0,           --产品上市后的时长（季度数）
     },
 
     --品类初始信息
