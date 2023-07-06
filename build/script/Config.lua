@@ -260,8 +260,6 @@ tbInitTables = {
     --品类初始信息
     tbInitCategoryInfo = {
         nCommunalMarketShare = 0,   --品类内部产品共享的市场份额
-        nProductIdeaCount = 0,      --产品数量控制，取值在初始化时复制自tbProductCategory
-        nMaxMarketScale = 0,        --该品类市场总规模占全品类总规模上限百分比，取值在初始化时复制自tbProductCategory
         nTotalScale = 0,            --最后一个季度/上季度整体市场规模
         nTotalIncome = 0,           --最后一个季度/上季度整体市场营收
         newPublished = {},          --当季度新发布的产品

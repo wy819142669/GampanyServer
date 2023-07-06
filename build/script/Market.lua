@@ -72,15 +72,13 @@ function MarketMgr:DoStart()
         if not GameLogic:PROD_IsPlatformC(category) then
             data.tbCategoryInfo[category] = Lib.copyTab(tbInitTables.tbInitCategoryInfo)
             data.tbCategoryInfo[category].nCommunalMarketShare = info.nTotalMarket
-            data.tbCategoryInfo[category].nMaxMarketScale = info.nMaxMarketScale
-            data.tbCategoryInfo[category].nProductIdeaCount = info.nProductIdeaCount
         end
     end
 
     --新建npc产品，npc产品新建时直接发布
     data.tbNpc = Lib.copyTab(tbInitTables.tbInitNpc)
     for category, info in pairs(data.tbCategoryInfo) do
-        for _ = 1, info.nProductIdeaCount do
+        for _ = 1, tbConfig.tbProductCategory[category].nProductIdeaCount do
             Market.NewNpcProduct(category, tbConfig.nNpcInitProductQuality10)
         end
     end
@@ -155,7 +153,7 @@ function MarketMgr:CategoryShareTransfer()
     --根据权重给各品类分配份额
     for c, info in pairs(data) do
         delta = math.floor(nShareScale * weights[c] / nAllWeight)
-        local nMaxScale = nAllScale * info.nMaxMarketScale / 100
+        local nMaxScale = nAllScale * tbConfig.tbProductCategory[c].nMaxMarketScale / 100
         if info.nTotalScale + delta > nMaxScale then
             delta = math.max(0, math.floor(nMaxScale - info.nTotalScale))
         end
@@ -322,7 +320,8 @@ function MarketMgr:NpcExecSchedule()
     local schedule = npc.tbScheduleToNew
     for category, _ in pairs(schedule) do
         local info = data.tbCategoryInfo[category]
-        if info.nPublishedCount >= info.nProductIdeaCount then
+        local cat = tbConfig.tbProductCategory[category]
+        if info.nPublishedCount >= cat.nProductIdeaCount then
             --产品数量过多，取消新品上市计划
             schedule[category] = nil
         else
@@ -340,7 +339,8 @@ function MarketMgr:NpcExecSchedule()
     for category, delay in pairs(schedule) do
         delay = delay - 1
         local info = data.tbCategoryInfo[category]
-        if info.nPublishedCount <= info.nProductIdeaCount then
+        local cat = tbConfig.tbProductCategory[category]
+        if info.nPublishedCount <= cat.nProductIdeaCount then
             --产品数量不再过多，取消关闭产品计划
             schedule[category] = nil
         elseif delay <= 0 then
@@ -362,11 +362,12 @@ function MarketMgr:NpcSetSchedule()
     local data =  GetTableRuntime()
     local npc = data.tbNpc
     for category, info in pairs(data.tbCategoryInfo) do
-         if info.nPublishedCount < info.nProductIdeaCount then
+        local cat = tbConfig.tbProductCategory[category]
+        if info.nPublishedCount < cat.nProductIdeaCount then
             npc.tbScheduleToNew[category] = true    --推到下个季度才会检查执行
-         elseif info.nPublishedCount > info.nProductIdeaCount and not npc.tbScheduleToClose[category] then
+        elseif info.nPublishedCount > cat.nProductIdeaCount and not npc.tbScheduleToClose[category] then
              npc.tbScheduleToClose[category] = tbConfig.nNpcCloseProductDelay   --推延若干各季度才会检查执行
-         end
+        end
     end
 end
 
