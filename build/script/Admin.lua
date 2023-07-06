@@ -59,6 +59,33 @@ function tbAdminFunc.DoReset(tbParam)
     return "success", true
 end
 
+function tbAdminFunc.SetConfig(tbParam)
+    if tbParam.Key == nil or tbParam.Value == nil then
+        return "failed, need Key and Value", false
+    end
+    if tbConfig[tbParam.Key] == nil then
+        return "failed, Key:".. tbParam.Key .. "not exist", false
+    end
+    local old = tbConfig[tbParam.Key]
+    tbConfig[tbParam.Key] = tbParam.Value
+    print("tbConfig." .. tbParam.Key, old, "->", tbConfig[tbParam.Key])
+    return "success", true
+end
+
+function tbAdminFunc.SetProductConfig(tbParam)
+    if tbParam.Key == nil or tbParam.Value == nil or tbParam.Category == nil then
+        return "failed, need Key , Value and Category", false
+    end
+    local info = tbConfig.tbProductCategory[tbParam.Category]
+    if info == nil or info[tbParam.Key] == nil then
+        return "failed, Category:" .. tbParam.Category .. " Key:".. tbParam.Key .. "not exist", false
+    end
+    local old = info[tbParam.Key]
+    info[tbParam.Key] = tbParam.Value
+    print("tbConfig.tbProductCategory[" .. tbParam.Category .. "] Key:" ..tbParam.Key, old, "->", info[tbParam.Key])
+    return "success", true
+end
+
 function tbAdminFunc.DoStart(tbParam)
     local runtime = GetTableRuntime()
     if runtime.bPlaying then
