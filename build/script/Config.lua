@@ -7,6 +7,7 @@ tbConfig = {
     szRecoverDataFile = "20230703221718_Year1_Season2.std",
 
     --==== 财务设置相关，只读不写 ====
+    nInitCash = 1000,       -- 初始时玩家公司的账上现金量
     fTaxRate = 0.1,         -- 税率【每年税额=税前利润*税率，当年亏损（税前利润为负）则不扣税】
     tbFinClassify = {       -- 财务现金流分类
         Revenue = 1,        -- 销售收入
@@ -210,7 +211,7 @@ tbInitTables = {
         nPlatformQuality10 = 0,   -- 已发布中台的当前质量的十倍值（0表示无已发布的中台）
 
         --==== 财务数 ====
-        nCash = 1000,               -- 现金
+        nCash = 0,                  -- 现金，游戏开始时的初始值由tbConfig.nInitCash设置
         tbYearReport = { },         -- 当年报告
         tbHistoryYearReport = {},   -- 历史年报
 
