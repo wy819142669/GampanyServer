@@ -81,7 +81,7 @@ function MarketMgr:DoStart()
     data.tbNpc = Lib.copyTab(tbInitTables.tbInitNpc)
     for category, info in pairs(data.tbCategoryInfo) do
         for _ = 1, info.nProductIdeaCount do
-            Market.NewNpcProduct(category, 10)
+            Market.NewNpcProduct(category, tbConfig.nNpcInitProductQuality10)
         end
     end
 end
@@ -251,13 +251,6 @@ function MarketMgr:GainRevenue()
     end
 end
 
-function MarketMgr:PostSeason()
-    MarketMgr:LossMarket()              -- 各产品份额自然流失，归入品类内部共享待分配份额
-    MarketMgr:CategoryShareTransfer()   -- 品类间份额转移：各品类的待分配份额，取一部分根据品类间的质量差距，在品类间转移
-    MarketMgr:DistributionMarket()      -- 各品类内部，根据产品质量情况与市场费用，分配份额
-    MarketMgr:GainRevenue()             -- 获得收益
-end
-
 --季度初自动设置市场费用，设置后可被修改
 function MarketMgr:AutoSetMarketExpense()
     --对于玩家，若账面现金足够，则自动参照上季度市场费用 并扣除费用
@@ -275,20 +268,45 @@ function MarketMgr:AutoSetMarketExpense()
     --对于npc
     for id, product in pairs(GetTableRuntime().tbNpc.tbProduct) do
         if not GameLogic:PROD_IsNewProduct(product.Category, id) then
-            product.nMarketExpense = tbConfig.tbProductCategory[product.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange)
+            product.nMarketExpense = tbConfig.tbProductCategory[product.Category].nNpcContinuousExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.fNpcExpenseFloatRange)
             --print("Npc id:"..id, "LastMarketIncome:",product.nLastMarketIncome, "MarketExpense:", product.nMarketExpense, "product.bNewProduct:", GameLogic:PROD_IsNewProduct(product.Category, id))
         end
     end
 end
 
+function MarketMgr:GetGamerProductHighestQuality(list)
+    local quality = 0
+    local npcProducts = GetTableRuntime().tbNpc.tbProduct
+    for id, product in pairs(list) do
+        if not table.contain_key(npcProducts, id) and product.nOrigQuality10 > quality then
+            quality = product.nOrigQuality10
+        end
+    end
+    return quality
+end
+
+function MarketMgr:NpcGetLowestRevenueProduct(category)
+    local revenue = 100000000
+    local chooseId = nil
+    local chooseProduct = nil
+    for id, product in pairs(GetTableRuntime().tbNpc.tbProduct) do
+        if product.Category == category and product.nLastMarketIncome - product.nLastMarketExpense < revenue then
+            revenue = product.nLastMarketIncome - product.nLastMarketExpense
+            chooseId = id
+            chooseProduct = product
+        end
+    end
+    return chooseId, chooseProduct
+end
+
 --关停效益不好的npc产品
-function MarketMgr:CloseNpcBadPerformance()
+function MarketMgr:NpcCloseBadPerformance()
     local list = GetTableRuntime().tbNpc.tbProduct
     for id, product in pairs(list) do
         if product.nSeasonCount > 2 then --上市时间太短的产品，不会被处理
             --关停效益不好的产品
-            if product.nLastMarketIncome / product.nMarketExpense < tbConfig.tbNpc.fCloseWhenGainRatioLess then
-                print("Npc product closed, id:", id)
+            if product.nLastMarketIncome / product.nMarketExpense < tbConfig.fNpcCloseWhenGainRatioLess then
+                print("Npc close product: ", product.Category .. tostring(id))
                 product.State = tbConfig.tbProductState.nClosed
                 GameLogic:OnCloseProduct(id, product, true)
                 list[id] = nil
@@ -297,38 +315,93 @@ function MarketMgr:CloseNpcBadPerformance()
     end
 end
 
-function MarketMgr:UpdateNpc()
-    for category, info in pairs(GetTableRuntime().tbCategoryInfo) do
-        local tbProductList = info.tbPublishedProduct
-        local nProductNum = 0
-        local nNpcProductNum = 0
-        local nTotalQuality = 0
-        local nUserMaxQuality = 0
-        for id, tbProduct in pairs(tbProductList) do
-            nProductNum = nProductNum + 1
-            if tbProduct.bIsNpc then
-                nNpcProductNum = nNpcProductNum + 1
-            else
-                if tbProduct.nQuality10 > nUserMaxQuality then
-                    nUserMaxQuality = tbProduct.nQuality10
-                end
-            end
-
-            nTotalQuality = nTotalQuality + tbProduct.nQuality10
+function MarketMgr:NpcExecSchedule()
+    local data =  GetTableRuntime()
+    local npc = data.tbNpc
+    --处理新建产品计划
+    local schedule = npc.tbScheduleToNew
+    for category, _ in pairs(schedule) do
+        local info = data.tbCategoryInfo[category]
+        if info.nPublishedCount >= info.nProductIdeaCount then
+            --产品数量过多，取消新品上市计划
+            schedule[category] = nil
+        else
+            --新产品上市, 每个季度只上市一款
+            local nAverage = MarketMgr:GetAverageQuality10(info.tbPublishedProduct)
+            local nHighest = MarketMgr:GetGamerProductHighestQuality(info.tbPublishedProduct)
+            local quality = nHighest > nAverage and math.random(nAverage, nHighest) or nAverage
+            local id = Market.NewNpcProduct(category, quality)
+            print("Npc  new Product: ", category .. tostring(id))
         end
+    end
 
-        if nProductNum > nNpcProductNum and nProductNum < tbConfig.tbNpc.nMaxProductNum and nNpcProductNum < tbConfig.tbNpc.nMinNpcProductNum then
-            local nAvgQuality10 = math.ceil(math.min(nTotalQuality / nProductNum, nUserMaxQuality))
-            local id = Market.NewNpcProduct(category, nAvgQuality10)
-            print("NewNpcProduct:", id)
+    --处理关闭产品计划
+    schedule = npc.tbScheduleToClose
+    for category, delay in pairs(schedule) do
+        delay = delay - 1
+        local info = data.tbCategoryInfo[category]
+        if info.nPublishedCount <= info.nProductIdeaCount then
+            --产品数量不再过多，取消关闭产品计划
+            schedule[category] = nil
+        elseif delay <= 0 then
+            --选择一个利润最低的产品关闭
+            local id, product = MarketMgr:NpcGetLowestRevenueProduct(category)
+            if id then
+                print("Npc close product: ", product.Category .. tostring(id))
+                product.State = tbConfig.tbProductState.nClosed
+                GameLogic:OnCloseProduct(id, product, true)
+                npc.tbProduct[id] = nil
+            end
+        else
+            schedule[category] = delay
         end
     end
 end
 
-function MarketMgr:DoPreSeason()
+function MarketMgr:NpcSetSchedule()
+    local data =  GetTableRuntime()
+    local npc = data.tbNpc
+    for category, info in pairs(data.tbCategoryInfo) do
+         if info.nPublishedCount < info.nProductIdeaCount then
+            npc.tbScheduleToNew[category] = true    --推到下个季度才会检查执行
+         elseif info.nPublishedCount > info.nProductIdeaCount and not npc.tbScheduleToClose[category] then
+             npc.tbScheduleToClose[category] = tbConfig.nNpcCloseProductDelay   --推延若干各季度才会检查执行
+         end
+    end
+end
+
+function MarketMgr:LogNpcProducts()
+    local data = GetTableRuntime()
+    local npc = data.tbNpc
+    for category, info in pairs(data.tbCategoryInfo) do
+        for id, product in pairs(npc.tbProduct) do
+            if product.Category == category then
+                print(string.format("Npc product %s%d :", category ,id),
+                    string.format("Quality:%.1f", product.nQuality10),
+                    string.format("Arpu:%.1f", product.fLastARPU),
+                    "Expense:" .. tostring(math.floor(product.nLastMarketExpense)),
+                    string.format("Scale:%d(%+d)", product.nLastMarketScale, product.nLastMarketScaleDelta),                    
+                    "Income:" .. tostring(product.nLastMarketIncome))
+            end
+        end
+    end
+end
+
+function MarketMgr:PreSeason()
     MarketMgr:AutoSetMarketExpense()    -- 自动设置市场费用
-    MarketMgr:CloseNpcBadPerformance()  -- 关闭效益不好的npc产品
-    MarketMgr:UpdateNpc()               -- Npc调整
+    MarketMgr:NpcCloseBadPerformance()  -- 关闭效益不好的npc产品
+    MarketMgr:NpcExecSchedule()         -- npc执行产品计划
+    MarketMgr:NpcSetSchedule()          -- Npc设置产品计划
+end
+
+function MarketMgr:PostSeason()
+    MarketMgr:LossMarket()              -- 各产品份额自然流失，归入品类内部共享待分配份额
+    MarketMgr:CategoryShareTransfer()   -- 品类间份额转移：各品类的待分配份额，取一部分根据品类间的质量差距，在品类间转移
+    MarketMgr:DistributionMarket()      -- 各品类内部，根据产品质量情况与市场费用，分配份额
+    MarketMgr:GainRevenue()             -- 获得收益
+    if tbConfig.bLogNpcProducts then
+        MarketMgr:LogNpcProducts()          -- 输出npc产品信息
+    end
 end
 
 function Market.NewNpcProduct(category, nQuality10)
@@ -338,6 +411,6 @@ function Market.NewNpcProduct(category, nQuality10)
     GameLogic:PROD_NewPublished(id, product, false, true)
     product.nOrigQuality10 = nQuality10
     product.nQuality10 = nQuality10
-    product.nMarketExpense = math.floor(tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.tbNpc.fExpenseFloatRange))
+    product.nMarketExpense = math.floor(tbConfig.tbProductCategory[category].nNpcInitialExpenses * (1 + (math.random() - 0.5) * 2 * tbConfig.fNpcExpenseFloatRange))
     return id
 end

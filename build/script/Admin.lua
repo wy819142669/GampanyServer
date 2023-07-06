@@ -64,7 +64,7 @@ function tbAdminFunc.DoStart(tbParam)
     if runtime.bPlaying then
         return "failed, already started", false
     end
-    if runtime.nGamerCount < 1 then
+    if runtime.nGamerCount < 1 and not tbConfig.bDebug then
         return "failed, no gamer", false
     end
 

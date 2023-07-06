@@ -2,6 +2,7 @@ tbConfig = {
     --==== 游戏整体性设置与控制，只读不写 ====
     nMaxGamerCount = 9,     --最多允许容纳的玩家的数目，因为界面没有做灵活适配，所以限制数目上限
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
+    bLogNpcProducts = true, --是否在屏幕显示npc产品每季度的表现
     szAdminPassword = "",   --管理者登录密码
     szRecoverDataFile = "20230703221718_Year1_Season2.std",
 
@@ -61,19 +62,13 @@ tbConfig = {
     fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
     --==== 产品市场运营相关，只读不写 ====
-    nMarketShiftScale = 25,         --每季度各品类贡献这么市场份额，归入公共池，进行跨品类再分配
-    fNewProductCoefficient = 1.2,   --新上线产品当季度市场额外加成
-    fRenovateCoefficient = 1.1,     --翻新后的产品当季度市场额外加成
-
-    -- npc配置
-    tbNpc = {
-        nInitialProductQuality = 2.0, -- 初始市场npc产品品质
-        nMinNpcProductNum = 3, -- npc产品数量少于此，会上架产品
-        nMaxProductNum = 6,    -- 品类市场产品多余此，不再上架产品
-        fCloseWhenGainRatioLess = 3.0, -- 收益/营销费低于这个值，会下架产品
-        fExpenseFloatRange = 0.1,  -- 营销费随机浮动
-        szName = "Npc",
-    },
+    nMarketShiftScale = 25,             --每季度各品类贡献这么市场份额，归入公共池，进行跨品类再分配
+    fNewProductCoefficient = 1.2,       --新上线产品当季度市场额外加成
+    fRenovateCoefficient = 1.1,         --翻新后的产品当季度市场额外加成
+    nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
+    fNpcCloseWhenGainRatioLess = 3.0,   --NPC，收益/营销费低于这个值，会下架产品
+    fNpcExpenseFloatRange = 0.1,        --NPC，营销费随机浮动
+    nNpcInitProductQuality10 = 20,      --NPC，初始产品品质
 
     --====== 产品品类设置====
     tbProductCategory = {

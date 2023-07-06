@@ -198,7 +198,7 @@ function DoPreSeason()
     HumanResources:SettleTrain()    -- 培训中的员工升级
     HumanResources:SettlePoach()    -- 成功挖掘的人才入职
     HumanResources:SettleHire()     -- 人才市场招聘结果
-    MarketMgr:DoPreSeason()         -- 市场模块处理
+    MarketMgr:PreSeason()         -- 市场模块处理
     HumanResources:RecordProductManpower() -- 记录季度开始时的人力
 end
 
@@ -245,4 +245,6 @@ function DoUpdateGamerDataVersion(account)
     end
 end
 
-print("load SandTable.lua success")
+print("╔════════════════════════════════════════════╗")
+print("║    Game Company Simulator © Seasun 2003    ║")
+print("╚════════════════════════════════════════════╝")
