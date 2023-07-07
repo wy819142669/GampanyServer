@@ -19,7 +19,6 @@ function Production:CreateUserProduct(category, user)
     product.Id = id
     product.nNeedWorkLoad = categoryConfig.nWorkLoad
     product.Category = category
-    product.bIsPlatform = categoryConfig.bIsPlatform
     product.szName = category .. tostring(id)
     user.tbProduct[id] = product
     return id, product
@@ -163,7 +162,7 @@ function Production:GetDevelopingQuality(product, user)
     totalQuality = totalQuality * tbConfig.fQualityPerManpowerLevel
 
     -- 非中台部门要计算中台加成
-    if not category.bIsPlatform then
+    if not GameLogic:PROD_IsPlatform(product) then
         local fManPowerRate, fQualityRate = self:GetPlatformEffect(user)
         totalQuality, totalMan = totalQuality * (1 + fQualityRate), totalMan * (1 + fManPowerRate)
     end
