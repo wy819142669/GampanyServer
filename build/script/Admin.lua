@@ -67,8 +67,11 @@ function tbAdminFunc.SetConfig(tbParam)
         return "failed, Key:".. tbParam.Key .. "not exist", false
     end
     local old = tbConfig[tbParam.Key]
-    tbConfig[tbParam.Key] = tbParam.Value
-    print("tbConfig." .. tbParam.Key, old, "->", tbConfig[tbParam.Key])
+    if old ~= tbParam.Value then
+        tbConfig[tbParam.Key] = tbParam.Value
+        print("tbConfig." .. tbParam.Key, old, "->", tbConfig[tbParam.Key])
+        tbConfig.nDataVersion = tbConfig.nDataVersion + 1
+    end
     return "success", true
 end
 
@@ -81,8 +84,11 @@ function tbAdminFunc.SetProductConfig(tbParam)
         return "failed, Category:" .. tbParam.Category .. " Key:".. tbParam.Key .. "not exist", false
     end
     local old = info[tbParam.Key]
-    info[tbParam.Key] = tbParam.Value
-    print("tbConfig.tbProductCategory[" .. tbParam.Category .. "] Key:" ..tbParam.Key, old, "->", info[tbParam.Key])
+    if old ~= tbParam.Value then
+        info[tbParam.Key] = tbParam.Value
+        print("tbConfig.tbProductCategory[" .. tbParam.Category .. "] Key:" ..tbParam.Key, old, "->", info[tbParam.Key])
+        tbConfig.nDataVersion = tbConfig.nDataVersion + 1
+    end
     return "success", true
 end
 

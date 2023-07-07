@@ -32,7 +32,14 @@ function tbQueryFunc.GetConfigData(tbParam)
 end
 
 function tbQueryFunc.GetRunTimeData(tbParam)
-    return "success", true, { tbRuntimeData = GetTableRuntime() }
+    local data = GetTableRuntime()
+    local ret
+    if tbParam.ConfigVersion and tbParam.ConfigVersion == tbConfig.nDataVersion then
+        ret = { tbRuntimeData = data }
+    else
+        ret = { tbRuntimeData = data, tbConfig = tbConfig }
+    end
+    return "success", true, ret
 end
 
 --=================================================================
