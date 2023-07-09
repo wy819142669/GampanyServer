@@ -191,10 +191,6 @@ function MarketMgr:DistributionMarket()
                     local product = info.tbPublishedProduct[id]
                     product.nLastMarketScaleDelta = product.nLastMarketScaleDelta + delta
                     info.nCommunalMarketShare = info.nCommunalMarketShare - delta
-
-                    -- if tbUser.tbSysMsg then
-                    --     table.insert(tbUser.tbSysMsg, string.format("产品%s 新获得用户 %d", tbInfo.name, delta))
-                    -- end
                     --print("DistributionMarket", category, id, delta, product.nMarketExpense, product.nQuality10)
                 end
             end
@@ -217,6 +213,17 @@ function MarketMgr:DistributionMarket()
         if info.nTotalScale > 0 then
             for _, product in pairs(info.tbPublishedProduct) do
                 product.nLastMarketScalePct = math.floor(product.nLastMarketScale * 100 / info.nTotalScale)
+            end
+        end
+    end
+
+    for _, user in pairs(GetTableRuntime().tbUser) do
+        for _, product in pairs(user.tbProduct) do
+            if product.nLastMarketScaleDelta and product.nLastMarketScaleDelta ~= 0 then
+                if user.tbSysMsg then
+                    table.insert(user.tbSysMsg, string.format("产品%s 用户%d（%s%d）", 
+                        product.szName, product.nLastMarketScale, product.nLastMarketScaleDelta > 0 and "+" or "", product.nLastMarketScaleDelta))
+                end
             end
         end
     end
