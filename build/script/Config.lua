@@ -5,7 +5,7 @@ tbConfig = {
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
     bLogNpcProducts = true, --是否在屏幕显示npc产品每季度的表现
     szAdminPassword = "",   --管理者登录密码
-    szRecoverDataFile = "20230703221718_Year1_Season2.std",
+    szRecoverDataFile = "20230709220846_Year2_Season1.std",
 
     --==== 财务设置相关，只读不写 ====
     nInitCash = 1000,       -- 初始时玩家公司的账上现金量
@@ -82,7 +82,8 @@ tbConfig = {
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,     --工作量
             nRenovationWorkload = 30,       --翻新时的工作量
-            nMaintainTeam = 10,             --上线运营时需要维护团队规模
+            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
@@ -101,7 +102,8 @@ tbConfig = {
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 30,   --翻新时的工作量
-            nMaintainTeam = 10,         --上线运营时需要维护团队规模
+            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
@@ -120,7 +122,8 @@ tbConfig = {
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 30,   --翻新时的工作量
-            nMaintainTeam = 10,         --上线运营时需要维护团队规模
+            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
@@ -139,7 +142,8 @@ tbConfig = {
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 30,   --翻新时的工作量
-            nMaintainTeam = 10,         --上线运营时需要维护团队规模
+            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
@@ -158,7 +162,8 @@ tbConfig = {
             nRenovateIdeaTeam = 20,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 30,       --翻新时的工作量
-            nMaintainTeam = 10,             --上线运营时需要维护团队规模
+            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
     },

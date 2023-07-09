@@ -191,21 +191,21 @@ function Production:UpdateWorkload(product, user)
         return --之前就已经完成了，还重新配上多余人手，则保持不做释放多余人手
     end
 
-    --====把多余的人手（超过category.nMaintainTeam），自动释放====
+    --====把多余的人手（超过category.nMaintainIdeaTeam），自动释放====
     totalMan = 0
     local category = tbConfig.tbProductCategory[product.Category]
     for i = tbConfig.nManpowerMaxExpLevel, 1, -1 do --优先保留高等级的，释放低等级的
         local num = product.tbManpower[i]
         if num > 0 then
-            if totalMan >= category.nMaintainTeam then
+            if totalMan >= category.nMaintainIdeaTeam then
                 user.tbIdleManpower[i] = user.tbIdleManpower[i] + num
                 user.tbJobManpower[i] = user.tbJobManpower[i] - num
                 totalMan = totalMan + num
                 product.tbManpower[i] = 0
-            elseif totalMan + num <= category.nMaintainTeam then
+            elseif totalMan + num <= category.nMaintainIdeaTeam then
                 totalMan = totalMan + num
             else
-                local exceed = totalMan + num - category.nMaintainTeam
+                local exceed = totalMan + num - category.nMaintainIdeaTeam
                 user.tbIdleManpower[i] = user.tbIdleManpower[i] + exceed
                 user.tbJobManpower[i] = user.tbJobManpower[i] - exceed
                 totalMan = totalMan + num
@@ -215,8 +215,8 @@ function Production:UpdateWorkload(product, user)
     end
 
 
-    if totalMan > category.nMaintainTeam and szMsg ~= "" then
-        table.insert(user.tbSysMsg, string.format(szMsg, product.szName, totalMan - category.nMaintainTeam))
+    if totalMan > category.nMaintainIdeaTeam and szMsg ~= "" then
+        table.insert(user.tbSysMsg, string.format(szMsg, product.szName, totalMan - category.nMaintainIdeaTeam))
     end
 end
 
@@ -226,7 +226,7 @@ function Production:UpdatePublished(product, user)
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
 
-    if totalMan >= category.nMaintainTeam then
+    if totalMan >= category.nMaintainIdeaTeam then
         if product.nQuality10 == product.nOrigQuality10 then
             return
         end

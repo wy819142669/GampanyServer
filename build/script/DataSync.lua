@@ -182,8 +182,11 @@ end
 
 --更新产品的ARPU值
 function GameLogic:MKT_UpdateArpuAndIncome(product)
+    local totalMan = Production:GetTeamScaleQuality(product)
+    local category = tbConfig.tbProductCategory[product.Category]
+
     product.fLastARPU = tbConfig.tbProductCategory[product.Category].nBaseARPU * (0.9 + 0.01 * product.nQuality10)
-    if product.nLastMarketScale > 0 then
+    if product.nLastMarketScale > 0 and (product.bIsNpc or totalMan >= category.nMaintainMinTeam) then
         product.nLastMarketIncome = math.floor(product.nLastMarketScale * product.fLastARPU)
     else
         product.nLastMarketIncome = 0
