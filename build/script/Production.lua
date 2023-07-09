@@ -228,13 +228,13 @@ function Production:UpdatePublished(product, user)
     local szReason
 
     if totalMan >= category.nMaintainIdeaTeam then
-        if totalQuality / totalMan * 10 >= product.nOrigQuality10 then
+        if totalQuality / totalMan * 10 >= product.nOrigQuality10 / tbConfig.fQualityPerManpowerLevel then
             if product.nQuality10 == product.nOrigQuality10 then
                 return
             end
             addQuality = 10  --维护团队的等级不低于原始质量等级，则恢复质量
         else
-            szReason = string.format("维护团队平均等级不足%.1f", product.nOrigQuality10 / 10)
+            szReason = string.format("维护团队平均等级不足%.1f", product.nOrigQuality10 / 10 / tbConfig.fQualityPerManpowerLevel)
         end
     else
         szReason = string.format("维护人数不足%d人", category.nMaintainIdeaTeam)
@@ -247,7 +247,7 @@ function Production:UpdatePublished(product, user)
         if GameLogic:PROD_IsPlatform(product) then
             user.nPlatformQuality10 = product.nQuality10
         end
-        table.insert(user.tbSysMsg, string.format("已发布产品%s由于%s品质由%d变更为%d", product.szName, szReason, nLastQuality10 / 10, product.nQuality10 / 10))
+        table.insert(user.tbSysMsg, string.format("已发布产品%s由于%s品质由%.1f变更为%.1f", product.szName, szReason, nLastQuality10 / 10, product.nQuality10 / 10))
     end
 end
 
