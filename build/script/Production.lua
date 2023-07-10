@@ -221,7 +221,7 @@ function Production:UpdateWorkload(product, user)
 end
 
 function Production:UpdatePublished(product, user)
-    local addQuality = -10
+    local addQuality = -tbConfig.fQualityDelta
     local nLastQuality10 = product.nQuality10
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
@@ -232,7 +232,7 @@ function Production:UpdatePublished(product, user)
             if product.nQuality10 == product.nOrigQuality10 then
                 return
             end
-            addQuality = 10  --维护团队的等级不低于原始质量等级，则恢复质量
+            addQuality = tbConfig.fQualityDelta  --维护团队的等级不低于原始质量等级，则恢复质量
         else
             szReason = string.format("维护团队平均等级不足%.1f", product.nOrigQuality10 / 10 / tbConfig.fQualityPerManpowerLevel)
         end

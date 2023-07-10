@@ -105,7 +105,7 @@ function MarketMgr:LossMarket()
         for id, product in pairs(info.tbPublishedProduct) do
             product.nLastMarketScaleDelta = 0
             if product.nLastMarketScale > 0 then
-                local fLossRate = (1.0 - fRetentionRate - 0.001 * product.nQuality10)
+                local fLossRate = (1.0 - fRetentionRate - 0.001 * product.nQuality10 * tbConfig.fQualityRatio)
                 fLossRate = (fLossRate < 0) and 0 or fLossRate
                 product.nLastMarketScaleDelta = - math.floor(product.nLastMarketScale * fLossRate)
                 info.nCommunalMarketShare = info.nCommunalMarketShare - product.nLastMarketScaleDelta  --各产品流失的份额，流入品类内部共享份额
@@ -173,7 +173,7 @@ function MarketMgr:DistributionMarket()
             --计算各产品的分配权重与权重总和
             for id, product in pairs(info.tbPublishedProduct) do
                 if product.nMarketExpense > 0 then
-                    local weight = product.nMarketExpense * (1.3 ^ ((product.nQuality10  - 10)*0.1) )
+                    local weight = product.nMarketExpense * (1.3 ^ ((product.nQuality10 * tbConfig.fQualityRatio - 10)*0.1) )
                     local new, renovate = GameLogic:PROD_IsNewProduct(category, id)
                     if new then
                         weight = weight * (renovate and tbConfig.fRenovateCoefficient or tbConfig.fNewProductCoefficient)

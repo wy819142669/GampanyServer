@@ -34,7 +34,9 @@ tbConfig = {
     --==== 产品研发相关设置，只读不写 ====
     fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
     fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
-    fQualityPerManpowerLevel = 2.0, --每人力等级可以提供的品质点数，人力1~5级， 产品2~10级
+    fQualityPerManpowerLevel = 1.0, --每人力等级可以提供的品质点数，人力1~5级， 产品1~5级
+    fQualityRatio = 2.0,            --产品品质系数，计算产品品质系数时要用产品品质乘以该系数再计算，用以抵消fQualityPerManpowerLevel 由2.0改成1.0的影响
+    fQualityDelta = 5,              --产品品质变化差值，如果产品在运营期间由于团队人员和等级造成产品品质降低或者升高，每季度的变化值
     fPlatformManPowerRate = 0.005,  --中台对人力的影响参数
     fPlatformQualityRate = 0.005,   --中台对质量的影响参数
 
