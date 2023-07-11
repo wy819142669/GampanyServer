@@ -24,7 +24,7 @@ function HR.CommitHire(tbParam, user)
     end
 
     if tbParam.nExpense < tbParam.nNum * tbConfig.nSalary then
-        return "预算费用太低，不能低于人均工资", false
+        return "预算费用太低，不能低于工资", false
     end
 
     if user.tbHire then
@@ -381,7 +381,7 @@ function HumanResources:AddNewManpower()
     if tbRuntimeData.nCurYear <= #tbConfig.tbNewManpowerPerYear then
         local tbNewManpower = tbConfig.tbNewManpowerPerYear[tbRuntimeData.nCurYear]
         for i = 1, tbConfig.nManpowerMaxExpLevel do
-            local nNew = tbNewManpower[i]
+            local nNew = math.floor(tbNewManpower[i] * tbRuntimeData.nGamerCount / tbConfig.nStandardPlayerCount + 0.5)
             if nCurSeason == 1 then
                 nNew = math.floor(nNew * tbConfig.fSeason1NewManpowerRatio + 0.5)
             else

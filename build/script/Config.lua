@@ -51,6 +51,7 @@ tbConfig = {
     },
 
     --==== 人力相关系统设置数据，只读不写 ====
+    nStandardPlayerCount = 6,   -- 基准玩家数，每次人才进入市场，会以基准玩家数/实际玩家数*新进人数来对新进人数做调整
     tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数，子表元素个数需要等于tbConfig.nManpowerMaxExpLevel
         {61, 26, 12, 1, 0},
         {66, 39, 21, 4, 0},
