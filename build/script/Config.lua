@@ -67,12 +67,12 @@ tbConfig = {
 
     --==== 产品市场运营相关，只读不写 ====
     nMarketShiftScale = 25,             --每季度各品类贡献这么市场份额，归入公共池，进行跨品类再分配
-    fNewProductCoefficient = 1.5,       --新上线产品当季度市场额外加成
-    fRenovateCoefficient = 1.2,         --翻新后的产品当季度市场额外加成
+    fNewProductCoefficient = 2,       --新上线产品当季度市场额外加成
+    fRenovateCoefficient = 1.5,         --翻新后的产品当季度市场额外加成
     nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
     fNpcCloseWhenGainRatioLess = 3.0,   --NPC，收益/营销费低于这个值，会下架产品
     fNpcExpenseFloatRange = 0.1,        --NPC，营销费随机浮动
-    nNpcInitProductQuality10 = 20,      --NPC，初始产品品质
+    nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
 
     --====== 产品品类设置====
     tbProductCategory = {
@@ -87,14 +87,14 @@ tbConfig = {
             nMaintainMinTeam = 10,           --上线运营时需要最小团队规模
             nMaintainIdeaTeam = 20,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.3,    --产品基础留存率
+            fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 3,                 --基础ARPU
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 500,             --市场总份额
+            nTotalMarket = 700,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 200,
-            nNpcContinuousExpenses = 50,
+            nNpcContinuousExpenses = 100,
         },
         B = {
             --==研发相关配置==
@@ -107,14 +107,14 @@ tbConfig = {
             nMaintainMinTeam = 20,           --上线运营时需要最小团队规模
             nMaintainIdeaTeam = 40,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.35,    --产品基础留存率
-            nBaseARPU = 10,                 --基础ARPU
-            nMaxMarketScale = 9,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 300,             --市场总份额
+            fProductRetentionRate = 0.58,    --产品基础留存率
+            nBaseARPU = 9,                 --基础ARPU
+            nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 430,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 400,
-            nNpcContinuousExpenses = 100,
+            nNpcContinuousExpenses = 150,
         },
         C = {
             --==研发相关配置==
@@ -127,10 +127,10 @@ tbConfig = {
             nMaintainMinTeam = 30,           --上线运营时需要最小团队规模
             nMaintainIdeaTeam = 60,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.4,    --产品基础留存率
+            fProductRetentionRate = 0.73,    --产品基础留存率
             nBaseARPU = 8,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 700,             --市场总份额
+            nTotalMarket = 900,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
             nNpcInitialExpenses = 1200,
@@ -147,7 +147,7 @@ tbConfig = {
             nMaintainMinTeam = 50,           --上线运营时需要最小团队规模
             nMaintainIdeaTeam = 100,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.45,    --产品基础留存率
+            fProductRetentionRate = 0.73,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
