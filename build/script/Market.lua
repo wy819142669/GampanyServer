@@ -385,7 +385,7 @@ function MarketMgr:LogNpcProducts()
         for id, product in pairs(npc.tbProduct) do
             if product.Category == category then
                 print(string.format("Npc product %s%d :", category ,id),
-                    string.format("Quality:%.1f", product.nQuality10),
+                    string.format("Quality:%.1f", product.nQuality10 / 10),
                     string.format("Arpu:%.1f", product.fLastARPU),
                     "Expense:" .. tostring(math.floor(product.nLastMarketExpense)),
                     string.format("Scale:%d(%+d)", product.nLastMarketScale, product.nLastMarketScaleDelta),                    

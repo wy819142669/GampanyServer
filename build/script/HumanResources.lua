@@ -195,21 +195,35 @@ function HR.Poach(tbParam, user)
     return szResult, true
 end
 
--- 调配调动人员 {FuncName = "HR", Operate = "Reassign", ProductId=1, Staffs={0,0,0,0,0}} Staffs中的数值表示目标人数，而不是变动人数
+-- 调配调动人员 {FuncName = "HR", Operate = "Reassign", tbReassign = { [ProductId] = {0,0,0,0,0} }} {0,0,0,0,0}中的数值表示目标人数，而不是变动人数
 function HR.Reassign(tbParam, user)
-    if tbParam.ProductId == nil or tbParam.Staffs == nil then
+    if tbParam.tbReassign == nil then
         return "调配调动人员参数有误", false
     end
-    local product = user.tbProduct[tbParam.ProductId]
-    if product == nil then
-        return "未找到产品：" .. tbParam.ProductId, false
+
+    for id, _ in pairs(tbParam.tbReassign) do
+        local product = user.tbProduct[id]
+        if product == nil then
+            return "未找到产品：" .. tbParam.ProductId, false
+        end
     end
 
-    for i = 1, tbConfig.nManpowerMaxExpLevel do
-        if product.tbManpower[i] + user.tbIdleManpower[i] >= tbParam.Staffs[i] then
-            user.tbIdleManpower[i] = product.tbManpower[i] + user.tbIdleManpower[i] - tbParam.Staffs[i]
-            product.tbManpower[i] = tbParam.Staffs[i]
-         end
+    for id, _ in pairs(tbParam.tbReassign) do
+        local product = user.tbProduct[id]
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
+            user.tbIdleManpower[i] = user.tbIdleManpower[i] + product.tbManpower[i]
+            product.tbManpower[i] = 0
+        end
+    end
+
+    for id, reassign in pairs(tbParam.tbReassign) do
+        local product = user.tbProduct[id]
+        for i = 1, tbConfig.nManpowerMaxExpLevel do
+            if user.tbIdleManpower[i] >= reassign[i] then
+                user.tbIdleManpower[i] = user.tbIdleManpower[i] - reassign[i]
+                product.tbManpower[i] = reassign[i]
+            end
+        end
     end
     HumanResources:UpdateJobManpower(user)
     return "success", true
