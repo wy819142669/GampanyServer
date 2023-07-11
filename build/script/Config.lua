@@ -20,7 +20,7 @@ tbConfig = {
     },
 
     --==== 人力相关系统设置，只读不写 ====
-    nSalary = 1,                    -- 薪水
+    nSalary = 5,                    -- 薪水
     fSalaryRatioPerLevel = 0.2,     -- 每薪水等级薪水涨幅
     fHireWeightRatioPerLevel = 0.5, -- 每薪水等级增加招聘权重系数
     nManpowerMaxExpLevel = 5,       -- 人员能力等级最大值
@@ -67,8 +67,8 @@ tbConfig = {
 
     --==== 产品市场运营相关，只读不写 ====
     nMarketShiftScale = 25,             --每季度各品类贡献这么市场份额，归入公共池，进行跨品类再分配
-    fNewProductCoefficient = 1.2,       --新上线产品当季度市场额外加成
-    fRenovateCoefficient = 1.1,         --翻新后的产品当季度市场额外加成
+    fNewProductCoefficient = 1.5,       --新上线产品当季度市场额外加成
+    fRenovateCoefficient = 1.2,         --翻新后的产品当季度市场额外加成
     nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
     fNpcCloseWhenGainRatioLess = 3.0,   --NPC，收益/营销费低于这个值，会下架产品
     fNpcExpenseFloatRange = 0.1,        --NPC，营销费随机浮动
@@ -78,94 +78,94 @@ tbConfig = {
     tbProductCategory = {
         A = {
             --==研发相关配置==
-            nMinTeam = 8,       --团队最小人数需求
+            nMinTeam = 10,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
-            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,     --工作量
-            nRenovationWorkload = 30,       --翻新时的工作量
-            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
+            nRenovateMinTeam = 20,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 40,     --翻新时团队理想人数
+            nWorkLoad = 80,     --工作量
+            nRenovationWorkload = 136,       --翻新时的工作量
+            nMaintainMinTeam = 10,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 20,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.5,    --产品基础留存率
-            nBaseARPU = 10,                 --基础ARPU
+            fProductRetentionRate = 0.3,    --产品基础留存率
+            nBaseARPU = 3,                 --基础ARPU
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 250,             --市场总份额
+            nTotalMarket = 500,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 50,
-            nNpcContinuousExpenses = 45,
+            nNpcInitialExpenses = 200,
+            nNpcContinuousExpenses = 50,
         },
         B = {
             --==研发相关配置==
-            nMinTeam = 8,               --团队最小人数需求
-            nIdeaTeam = 20,             --团队理想人数
-            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,             --工作量
-            nRenovationWorkload = 30,   --翻新时的工作量
-            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
+            nMinTeam = 20,               --团队最小人数需求
+            nIdeaTeam = 40,             --团队理想人数
+            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 80,     --翻新时团队理想人数
+            nWorkLoad = 160,             --工作量
+            nRenovationWorkload = 272,   --翻新时的工作量
+            nMaintainMinTeam = 20,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 40,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.5,    --产品基础留存率
+            fProductRetentionRate = 0.35,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
-            nMaxMarketScale = 20,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 150,             --市场总份额
+            nMaxMarketScale = 9,           --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 300,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 60,
-            nNpcContinuousExpenses = 55,
+            nNpcInitialExpenses = 400,
+            nNpcContinuousExpenses = 100,
         },
         C = {
             --==研发相关配置==
-            nMinTeam = 8,               --团队最小人数需求
-            nIdeaTeam = 20,             --团队理想人数
-            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,             --工作量
-            nRenovationWorkload = 30,   --翻新时的工作量
-            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
+            nMinTeam = 30,               --团队最小人数需求
+            nIdeaTeam = 60,             --团队理想人数
+            nRenovateMinTeam = 60,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 120,     --翻新时团队理想人数
+            nWorkLoad = 480,             --工作量
+            nRenovationWorkload = 816,   --翻新时的工作量
+            nMaintainMinTeam = 30,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 60,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.5,    --产品基础留存率
-            nBaseARPU = 10,                 --基础ARPU
+            fProductRetentionRate = 0.4,    --产品基础留存率
+            nBaseARPU = 8,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 350,             --市场总份额
+            nTotalMarket = 700,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 70,
-            nNpcContinuousExpenses = 65,
+            nNpcInitialExpenses = 1200,
+            nNpcContinuousExpenses = 150,
         },
         D = {
             --==研发相关配置==
-            nMinTeam = 8,               --团队最小人数需求
-            nIdeaTeam = 20,             --团队理想人数
-            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,             --工作量
-            nRenovationWorkload = 30,   --翻新时的工作量
-            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
+            nMinTeam = 50,               --团队最小人数需求
+            nIdeaTeam = 100,             --团队理想人数
+            nRenovateMinTeam = 100,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 200,     --翻新时团队理想人数
+            nWorkLoad = 800,             --工作量
+            nRenovationWorkload = 1360,   --翻新时的工作量
+            nMaintainMinTeam = 50,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 100,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
-            fProductRetentionRate = 0.5,    --产品基础留存率
+            fProductRetentionRate = 0.45,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 450,             --市场总份额
+            nTotalMarket = 900,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 80,
-            nNpcContinuousExpenses = 75,
+            nNpcInitialExpenses = 2000,
+            nNpcContinuousExpenses = 250,
         },
         P = { --==中台项目==，设置项与产品项的有些不同
             --==研发相关配置==
-            nMinTeam = 8,               --团队最小人数需求
-            nIdeaTeam = 20,             --团队理想人数
-            nRenovateMinTeam = 8,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 20,     --翻新时团队理想人数
-            nWorkLoad = 40,             --工作量
-            nRenovationWorkload = 30,       --翻新时的工作量
-            nMaintainMinTeam = 8,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 10,         --上线运营时需要维护团队规模
+            nMinTeam = 15,               --团队最小人数需求
+            nIdeaTeam = 30,             --团队理想人数
+            nRenovateMinTeam = 30,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 60,     --翻新时团队理想人数
+            nWorkLoad = 120,             --工作量
+            nRenovationWorkload = 204,       --翻新时的工作量
+            nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
     },
