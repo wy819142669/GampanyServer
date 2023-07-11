@@ -146,6 +146,7 @@ function MarketMgr:CategoryShareTransfer()
         info.nTotalScale = info.nTotalScale - delta
         --各品类的再分配权重(以品类的平均产品质量为权重)
         local weight = MarketMgr:GetAverageQuality10(info.tbPublishedProduct)
+        weight = math.max(1, weight)
         weights[c] = weight
         nAllWeight = nAllWeight + weight
     end

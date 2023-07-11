@@ -67,7 +67,7 @@ tbConfig = {
     fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
     --==== 产品市场运营相关，只读不写 ====
-    nMarketShiftScale = 25,             --每季度各品类贡献这么市场份额，归入公共池，进行跨品类再分配
+    nMarketShiftScale = 25,             --每季度各品类最多贡献这么市场份额，归入公共池，进行跨品类再分配
     fNewProductCoefficient = 2,       --新上线产品当季度市场额外加成
     fRenovateCoefficient = 1.5,         --翻新后的产品当季度市场额外加成
     nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
