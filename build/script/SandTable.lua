@@ -98,6 +98,7 @@ function tbFunc.Action.Login(tbParam)
         
         if tbRuntimeData.bPlaying then
             Administration:NewUser(tbParam.Account)
+            HumanResources:UpdateAllUserManpower()
         end
     end
     return "success", true

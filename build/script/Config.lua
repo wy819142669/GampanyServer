@@ -70,10 +70,9 @@ tbConfig = {
     nMarketShiftScale = 25,             --每季度各品类最多贡献这么市场份额，归入公共池，进行跨品类再分配
     fNewProductCoefficient = 2,       --新上线产品当季度市场额外加成
     fRenovateCoefficient = 1.5,         --翻新后的产品当季度市场额外加成
-    nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
-    fNpcCloseWhenGainRatioLess = 1.2,   --NPC，收益/营销费低于这个值，会下架产品
+    -- nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
+    -- fNpcCloseWhenGainRatioLess = 1.2,   --NPC，收益/营销费低于这个值，会下架产品
     fNpcExpenseFloatRange = 0.1,        --NPC，营销费随机浮动
-    nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
 
     --====== 产品品类设置====
     tbProductCategory = {
@@ -96,6 +95,8 @@ tbConfig = {
             --==Npc相关配置==
             nNpcInitialExpenses = 200,
             nNpcContinuousExpenses = 100,
+            nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
+            nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         B = {
             --==研发相关配置==
@@ -116,6 +117,8 @@ tbConfig = {
             --==Npc相关配置==
             nNpcInitialExpenses = 400,
             nNpcContinuousExpenses = 150,
+            nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
+            nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         C = {
             --==研发相关配置==
@@ -136,6 +139,8 @@ tbConfig = {
             --==Npc相关配置==
             nNpcInitialExpenses = 1200,
             nNpcContinuousExpenses = 150,
+            nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
+            nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         D = {
             --==研发相关配置==
@@ -156,6 +161,8 @@ tbConfig = {
             --==Npc相关配置==
             nNpcInitialExpenses = 2000,
             nNpcContinuousExpenses = 250,
+            nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
+            nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         P = { --==中台项目==，设置项与产品项的有些不同
             --==研发相关配置==

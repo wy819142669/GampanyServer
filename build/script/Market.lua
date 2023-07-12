@@ -79,7 +79,7 @@ function MarketMgr:DoStart()
     data.tbNpc = Lib.copyTab(tbInitTables.tbInitNpc)
     for category, info in pairs(data.tbCategoryInfo) do
         for _ = 1, tbConfig.tbProductCategory[category].nProductIdeaCount do
-            Market.NewNpcProduct(category, tbConfig.nNpcInitProductQuality10)
+            Market.NewNpcProduct(category, tbConfig.tbProductCategory[category].nNpcInitProductQuality10)
         end
     end
 end
@@ -305,18 +305,31 @@ function MarketMgr:NpcGetLowestRevenueProduct(category)
     return chooseId, chooseProduct
 end
 
---关停效益不好的npc产品
-function MarketMgr:NpcCloseBadPerformance()
-    local list = GetTableRuntime().tbNpc.tbProduct
-    for id, product in pairs(list) do
-        if product.nSeasonCount > 2 then --上市时间太短的产品，不会被处理
-            --关停效益不好的产品
-            if product.nLastMarketIncome / product.nMarketExpense < tbConfig.fNpcCloseWhenGainRatioLess then
-                print("Npc close product: ", product.Category .. tostring(id))
-                product.State = tbConfig.tbProductState.nClosed
-                GameLogic:OnCloseProduct(id, product, true)
-                list[id] = nil
-            end
+function MarketMgr:NpcGetLowestQualityProduct(category)
+    local quality = 100
+    local chooseId = nil
+    local chooseProduct = nil
+    for id, product in pairs(GetTableRuntime().tbNpc.tbProduct) do
+        if product.Category == category and product.nQuality10 < quality then
+            quality = product.nQuality10
+            chooseId = id
+            chooseProduct = product
+        end
+    end
+    return chooseId, chooseProduct
+end
+
+--概率关低品质npc产品
+function MarketMgr:NpcCloseLowQuality()
+    local data = GetTableRuntime()
+    for category, info in pairs(data.tbCategoryInfo) do
+        local cat = tbConfig.tbProductCategory[category]
+        if math.random() * 100 < cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount then
+            local id, product = MarketMgr:NpcGetLowestRevenueProduct(category)
+            print("Npc close product: ", product.Category .. tostring(id))
+            product.State = tbConfig.tbProductState.nClosed
+            GameLogic:OnCloseProduct(id, product, true)
+            data.tbNpc.tbProduct[id] = nil
         end
     end
 end
@@ -341,29 +354,6 @@ function MarketMgr:NpcExecSchedule()
             print("Npc  new Product: ", category .. tostring(id))
         end
     end
-
-    --处理关闭产品计划
-    schedule = npc.tbScheduleToClose
-    for category, delay in pairs(schedule) do
-        delay = delay - 1
-        local info = data.tbCategoryInfo[category]
-        local cat = tbConfig.tbProductCategory[category]
-        if info.nPublishedCount <= cat.nProductIdeaCount then
-            --产品数量不再过多，取消关闭产品计划
-            schedule[category] = nil
-        elseif delay <= 0 then
-            --选择一个利润最低的产品关闭
-            local id, product = MarketMgr:NpcGetLowestRevenueProduct(category)
-            if id then
-                print("Npc close product: ", product.Category .. tostring(id))
-                product.State = tbConfig.tbProductState.nClosed
-                GameLogic:OnCloseProduct(id, product, true)
-                npc.tbProduct[id] = nil
-            end
-        else
-            schedule[category] = delay
-        end
-    end
 end
 
 function MarketMgr:NpcSetSchedule()
@@ -373,8 +363,6 @@ function MarketMgr:NpcSetSchedule()
         local cat = tbConfig.tbProductCategory[category]
         if info.nPublishedCount < cat.nProductIdeaCount then
             npc.tbScheduleToNew[category] = true    --推到下个季度才会检查执行
-        elseif info.nPublishedCount > cat.nProductIdeaCount and not npc.tbScheduleToClose[category] then
-             npc.tbScheduleToClose[category] = tbConfig.nNpcCloseProductDelay   --推延若干各季度才会检查执行
         end
     end
 end
@@ -398,7 +386,7 @@ end
 
 function MarketMgr:PreSeason()
     MarketMgr:AutoSetMarketExpense()    -- 自动设置市场费用
-    MarketMgr:NpcCloseBadPerformance()  -- 关闭效益不好的npc产品
+    MarketMgr:NpcCloseLowQuality()      --概率关低品质npc产品
     MarketMgr:NpcExecSchedule()         -- npc执行产品计划
     MarketMgr:NpcSetSchedule()          -- Npc设置产品计划
 end

@@ -233,6 +233,7 @@ function Production:UpdatePublished(product, user)
                 return
             end
             addQuality = tbConfig.fQualityDelta  --维护团队的等级不低于原始质量等级，则恢复质量
+            szReason = "维护团队规模和品质优秀"
         else
             szReason = string.format("维护团队平均等级不足%.1f", product.nOrigQuality10 / 10 / tbConfig.fQualityPerManpowerLevel)
         end
