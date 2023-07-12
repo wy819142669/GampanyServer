@@ -71,7 +71,7 @@ tbConfig = {
     fNewProductCoefficient = 2,       --新上线产品当季度市场额外加成
     fRenovateCoefficient = 1.5,         --翻新后的产品当季度市场额外加成
     nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
-    fNpcCloseWhenGainRatioLess = 3.0,   --NPC，收益/营销费低于这个值，会下架产品
+    fNpcCloseWhenGainRatioLess = 1.2,   --NPC，收益/营销费低于这个值，会下架产品
     fNpcExpenseFloatRange = 0.1,        --NPC，营销费随机浮动
     nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
 
