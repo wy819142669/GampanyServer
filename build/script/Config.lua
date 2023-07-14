@@ -117,7 +117,7 @@ tbConfig = {
             --==Npc相关配置==
             nNpcInitialExpenses = 400,
             nNpcContinuousExpenses = 150,
-            nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
+            nNpcInitProductQuality10 = 15,      --NPC，初始产品品质
             nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         C = {
@@ -139,7 +139,7 @@ tbConfig = {
             --==Npc相关配置==
             nNpcInitialExpenses = 1200,
             nNpcContinuousExpenses = 150,
-            nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
+            nNpcInitProductQuality10 = 20,      --NPC，初始产品品质
             nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         D = {
@@ -161,7 +161,7 @@ tbConfig = {
             --==Npc相关配置==
             nNpcInitialExpenses = 2000,
             nNpcContinuousExpenses = 250,
-            nNpcInitProductQuality10 = 10,      --NPC，初始产品品质
+            nNpcInitProductQuality10 = 30,      --NPC，初始产品品质
             nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         P = { --==中台项目==，设置项与产品项的有些不同
