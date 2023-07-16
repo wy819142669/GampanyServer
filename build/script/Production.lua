@@ -64,7 +64,11 @@ function Develop.Renovate(tbParam, user)
     elseif product.State ~= tbProductState.nPublished then
         return "未发布的产品不能翻新：" .. tbParam.Id, false
     end
+
+    local categoryConfig = tbConfig.tbProductCategory[product.Category]
+
     product.State = tbProductState.nRenovating
+    product.nNeedWorkLoad = categoryConfig.nRenovationWorkload
     product.nFinishedWorkLoad = 0
     product.nFinishedQuality = 0
     return "success", true
