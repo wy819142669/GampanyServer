@@ -100,14 +100,14 @@ tbConfig = {
         },
         B = {
             --==研发相关配置==
-            nMinTeam = 20,               --团队最小人数需求
-            nIdeaTeam = 40,             --团队理想人数
-            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 80,     --翻新时团队理想人数
-            nWorkLoad = 160,             --工作量
-            nRenovationWorkload = 272,   --翻新时的工作量
-            nMaintainMinTeam = 20,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 40,         --上线运营时需要维护团队规模
+            nMinTeam = 15,               --团队最小人数需求
+            nIdeaTeam = 30,             --团队理想人数
+            nRenovateMinTeam = 30,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 60,     --翻新时团队理想人数
+            nWorkLoad = 180,             --工作量
+            nRenovationWorkload = 306,   --翻新时的工作量
+            nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.58,    --产品基础留存率
             nBaseARPU = 9,                 --基础ARPU
@@ -115,12 +115,34 @@ tbConfig = {
             nTotalMarket = 430,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 400,
+            nNpcInitialExpenses = 450,
             nNpcContinuousExpenses = 150,
             nNpcInitProductQuality10 = 15,      --NPC，初始产品品质
             nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
         C = {
+            --==研发相关配置==
+            nMinTeam = 20,               --团队最小人数需求
+            nIdeaTeam = 40,             --团队理想人数
+            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 80,     --翻新时团队理想人数
+            nWorkLoad = 320,             --工作量
+            nRenovationWorkload = 544,   --翻新时的工作量
+            nMaintainMinTeam = 20,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 40,         --上线运营时需要维护团队规模
+            --==市场运营相关配置==
+            fProductRetentionRate = 0.73,    --产品基础留存率
+            nBaseARPU = 8,                 --基础ARPU
+            nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
+            nTotalMarket = 900,             --市场总份额
+            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+            --==Npc相关配置==
+            nNpcInitialExpenses = 800,
+            nNpcContinuousExpenses = 150,
+            nNpcInitProductQuality10 = 20,      --NPC，初始产品品质
+            nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
+        },
+        D = {
             --==研发相关配置==
             nMinTeam = 30,               --团队最小人数需求
             nIdeaTeam = 60,             --团队理想人数
@@ -132,34 +154,12 @@ tbConfig = {
             nMaintainIdeaTeam = 60,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.73,    --产品基础留存率
-            nBaseARPU = 8,                 --基础ARPU
-            nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
-            nTotalMarket = 900,             --市场总份额
-            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
-            --==Npc相关配置==
-            nNpcInitialExpenses = 1200,
-            nNpcContinuousExpenses = 150,
-            nNpcInitProductQuality10 = 20,      --NPC，初始产品品质
-            nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
-        },
-        D = {
-            --==研发相关配置==
-            nMinTeam = 50,               --团队最小人数需求
-            nIdeaTeam = 100,             --团队理想人数
-            nRenovateMinTeam = 100,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 200,     --翻新时团队理想人数
-            nWorkLoad = 800,             --工作量
-            nRenovationWorkload = 1360,   --翻新时的工作量
-            nMaintainMinTeam = 50,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 100,         --上线运营时需要维护团队规模
-            --==市场运营相关配置==
-            fProductRetentionRate = 0.73,    --产品基础留存率
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
             nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
             --==Npc相关配置==
-            nNpcInitialExpenses = 2000,
+            nNpcInitialExpenses = 1200,
             nNpcContinuousExpenses = 250,
             nNpcInitProductQuality10 = 30,      --NPC，初始产品品质
             nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
