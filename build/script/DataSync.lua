@@ -192,3 +192,15 @@ function GameLogic:MKT_UpdateArpuAndIncome(product)
         product.nLastMarketIncome = 0
     end
 end
+
+--获取Npc数量配置
+function GameLogic:MKT_GetProductIdeaCount(category, year, season)
+    local tbIdeaCount = tbConfig.tbProductCategory[category].tbProductIdeaCount
+    if not tbIdeaCount then
+        return 0
+    end
+
+    year = math.min(year, #tbIdeaCount)
+
+    return tbIdeaCount[year][season]
+end

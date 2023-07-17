@@ -77,8 +77,8 @@ function MarketMgr:DoStart()
 
     --新建npc产品，npc产品新建时直接发布
     data.tbNpc = Lib.copyTab(tbInitTables.tbInitNpc)
-    for category, info in pairs(data.tbCategoryInfo) do
-        for _ = 1, tbConfig.tbProductCategory[category].nProductIdeaCount do
+    for category, _ in pairs(data.tbCategoryInfo) do
+        for _ = 1, GameLogic:MKT_GetProductIdeaCount(category, 1, 1) do
             Market.NewNpcProduct(category, tbConfig.tbProductCategory[category].nNpcInitProductQuality10)
         end
     end
@@ -324,8 +324,10 @@ function MarketMgr:NpcCloseLowQuality()
     local data = GetTableRuntime()
     for category, info in pairs(data.tbCategoryInfo) do
         local cat = tbConfig.tbProductCategory[category]
-        if math.random() * 100 < cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount then
-            local id, product = MarketMgr:NpcGetLowestRevenueProduct(category)
+        local rand = math.random() * 100
+        print(rand, cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount)
+        if rand < cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount then
+            local id, product = MarketMgr:NpcGetLowestQualityProduct(category)
             print("Npc close product: ", product.Category .. tostring(id))
             product.State = tbConfig.tbProductState.nClosed
             GameLogic:OnCloseProduct(id, product, true)
@@ -341,17 +343,19 @@ function MarketMgr:NpcExecSchedule()
     local schedule = npc.tbScheduleToNew
     for category, _ in pairs(schedule) do
         local info = data.tbCategoryInfo[category]
-        local cat = tbConfig.tbProductCategory[category]
-        if info.nPublishedCount >= cat.nProductIdeaCount then
+        local productIdeaCount = GameLogic:MKT_GetProductIdeaCount(category, data.nCurYear, data.nCurSeason)
+        if info.nPublishedCount >= productIdeaCount then
             --产品数量过多，取消新品上市计划
             schedule[category] = nil
         else
-            --新产品上市, 每个季度只上市一款
-            local nAverage = MarketMgr:GetAverageQuality10(info.tbPublishedProduct)
-            local nHighest = MarketMgr:GetGamerProductHighestQuality(info.tbPublishedProduct)
-            local quality = nHighest > nAverage and math.random(nAverage, nHighest) or nAverage
-            local id = Market.NewNpcProduct(category, quality)
-            print("Npc  new Product: ", category .. tostring(id))
+            --新产品上市, 每个季度最多上市2款
+            for _ = 1, math.min(2, productIdeaCount - info.nPublishedCount) do
+                local nAverage = MarketMgr:GetAverageQuality10(info.tbPublishedProduct)
+                local nHighest = MarketMgr:GetGamerProductHighestQuality(info.tbPublishedProduct)
+                local quality = nHighest > nAverage and math.random(nAverage, nHighest) or nAverage
+                local id = Market.NewNpcProduct(category, quality)
+                print("Npc  new Product: ", category .. tostring(id))
+            end
         end
     end
 end
@@ -360,8 +364,8 @@ function MarketMgr:NpcSetSchedule()
     local data =  GetTableRuntime()
     local npc = data.tbNpc
     for category, info in pairs(data.tbCategoryInfo) do
-        local cat = tbConfig.tbProductCategory[category]
-        if info.nPublishedCount < cat.nProductIdeaCount then
+        local productIdeaCount = GameLogic:MKT_GetProductIdeaCount(category, data.nCurYear, data.nCurSeason)
+        if info.nPublishedCount < productIdeaCount then
             npc.tbScheduleToNew[category] = true    --推到下个季度才会检查执行
         end
     end
@@ -386,7 +390,7 @@ end
 
 function MarketMgr:PreSeason()
     MarketMgr:AutoSetMarketExpense()    -- 自动设置市场费用
-    MarketMgr:NpcCloseLowQuality()      --概率关低品质npc产品
+    MarketMgr:NpcCloseLowQuality()      -- 概率关低品质npc产品
     MarketMgr:NpcExecSchedule()         -- npc执行产品计划
     MarketMgr:NpcSetSchedule()          -- Npc设置产品计划
 end

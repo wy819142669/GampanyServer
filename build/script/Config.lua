@@ -91,7 +91,13 @@ tbConfig = {
             nBaseARPU = 3,                 --基础ARPU
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 700,             --市场总份额
-            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+            tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+                {5, 5, 5, 5},
+                {5, 5, 8, 8},
+                {8, 8, 8, 8},
+                {10, 10, 10, 10},
+                {10, 10, 10, 10},
+            },
             --==Npc相关配置==
             nNpcInitialExpenses = 200,
             nNpcContinuousExpenses = 100,
@@ -113,7 +119,13 @@ tbConfig = {
             nBaseARPU = 9,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 430,             --市场总份额
-            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+            tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+                {5, 5, 5, 5},            --第一年四个季度的Npc数量
+                {5, 5, 8, 8},            --第二年四个季度的Npc数量
+                {8, 8, 8, 8},
+                {10, 10, 10, 10},
+                {10, 10, 10, 10},
+            },
             --==Npc相关配置==
             nNpcInitialExpenses = 450,
             nNpcContinuousExpenses = 150,
@@ -135,7 +147,13 @@ tbConfig = {
             nBaseARPU = 8,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
-            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+            tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+                {5, 5, 5, 5},
+                {5, 5, 8, 8},
+                {8, 8, 8, 8},
+                {10, 10, 10, 10},
+                {10, 10, 10, 10},
+            },
             --==Npc相关配置==
             nNpcInitialExpenses = 800,
             nNpcContinuousExpenses = 150,
@@ -157,7 +175,13 @@ tbConfig = {
             nBaseARPU = 10,                 --基础ARPU
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
-            nProductIdeaCount = 10,         --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+            tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
+                {5, 5, 5, 5},
+                {5, 5, 8, 8},
+                {8, 8, 8, 8},
+                {10, 10, 10, 10},
+                {10, 10, 10, 10},
+            },
             --==Npc相关配置==
             nNpcInitialExpenses = 1200,
             nNpcContinuousExpenses = 250,
