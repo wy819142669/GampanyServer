@@ -222,8 +222,8 @@ function MarketMgr:DistributionMarket()
         for _, product in pairs(user.tbProduct) do
             if product.nLastMarketScaleDelta and product.nLastMarketScaleDelta ~= 0 then
                 if user.tbSysMsg then
-                    table.insert(user.tbSysMsg, string.format("产品%s 用户%d（%s%d）", 
-                        product.szName, product.nLastMarketScale, product.nLastMarketScaleDelta > 0 and "+" or "", product.nLastMarketScaleDelta))
+                    table.insert(user.tbSysMsg, string.format("产品%s 用户%d（%+d）", 
+                        product.szName, product.nLastMarketScale, product.nLastMarketScaleDelta))
                 end
             end
         end
