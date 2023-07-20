@@ -253,6 +253,8 @@ tbInitTables = {
         nCash = 0,                  -- 现金，游戏开始时的初始值由tbConfig.nInitCash设置
         tbYearReport = { },         -- 当年报告
         tbHistoryYearReport = {},   -- 历史年报
+        nBankruptcyCount = 0,       -- 破产次数
+        bBankruptcy = false,        -- 是否破产
 
         -- 系统消息
         tbSysMsg = {},

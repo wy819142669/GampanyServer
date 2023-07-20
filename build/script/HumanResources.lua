@@ -511,7 +511,25 @@ function HumanResources:PayOffSalary()
                 GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Pub, pub)
                 GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)
             else
-                --todo 破产
+                if not user.bBankruptcy then
+                    GameLogic:Bankruptcy(user)
+                end
+            end
+        end
+    end
+end
+
+-- 统计所有正常经营玩家的人力
+function HumanResources:UpdateTotalManpower()
+    local data = GetTableRuntime()
+    data.tbTotalManpower = {0, 0, 0, 0, 0}
+    data.nTotalManpower = 0
+    for _, user in pairs(data.tbUser) do
+        if not user.bBankruptcy then
+            for i = 1, tbConfig.nManpowerMaxExpLevel do
+                local total = user.tbIdleManpower[i] + user.tbJobManpower[i] + user.tbFireManpower[i]
+                data.tbTotalManpower[i] = data.tbTotalManpower[i] + total
+                data.nTotalManpower = data.nTotalManpower + total
             end
         end
     end

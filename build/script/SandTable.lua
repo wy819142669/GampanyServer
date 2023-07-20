@@ -231,9 +231,28 @@ end
 -- 每年开始时的自动处理
 function DoPreYear()
     print("=============== Year:".. tbRuntimeData.nCurYear .. "  ==============================")
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
+    local bNeedUpdateManpower = false
+    HumanResources:UpdateTotalManpower()
+
+    for name, tbUser in pairs(tbRuntimeData.tbUser) do
         tbUser.tbYearReport = Lib.copyTab(tbInitTables.tbInitReport)    --清空年报
         tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
+
+        if tbUser.bBankruptcy then
+            local newUser = Administration:NewUser(name)
+            newUser.nBankruptcyCount = tbUser.nBankruptcyCount
+            newUser.tbHistoryYearReport = tbUser.tbHistoryYearReport
+            newUser.tbSysMsg = tbUser.tbSysMsg
+            newUser.tbTips = tbUser.tbTips
+
+            GameLogic:HR_RestartInitManpower(newUser)
+
+            bNeedUpdateManpower = true
+        end
+    end
+
+    if bNeedUpdateManpower then
+        HumanResources:UpdateAllUserManpower()
     end
 end
 

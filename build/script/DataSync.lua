@@ -52,6 +52,27 @@ function GameLogic:HR_GetSalary(level)
     return (tbConfig.nSalary * (1 + (level - 1) * tbConfig.fSalaryRatioPerLevel))
 end
 
+function GameLogic:HR_RestartInitManpower(user)
+    local manpower = 0
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
+        manpower = manpower + user.tbIdleManpower[i]
+    end
+
+    local data = GetTableRuntime()
+    if not data.tbTotalManpower or data.nTotalManpower == 0 then
+        return
+    end
+
+    local left = manpower
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
+        local add = math.floor(data.tbTotalManpower[i] / data.nTotalManpower * manpower)
+        user.tbIdleManpower[i] = add
+        left = left - add
+    end
+
+    user.tbIdleManpower[1] = user.tbIdleManpower[1] + left
+end
+
 --计算税额
 function GameLogic:FIN_Tax(profit)
     return math.max(0, math.floor(profit * tbConfig.fTaxRate + 0.5))
@@ -204,4 +225,24 @@ function GameLogic:MKT_GetProductIdeaCount(category, year, season)
     year = math.min(year, #tbIdeaCount)
 
     return tbIdeaCount[year][season]
+end
+
+-- 破产
+function GameLogic:Bankruptcy(user)
+    user.bBankruptcy = true
+    user.nBankruptcyCount = user.nBankruptcyCount + 1
+
+    for _, product in pairs(user.tbProduct) do
+        Production:Close(product, user)
+    end
+
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
+        user.tbFireManpower[i] = user.tbFireManpower[i] + user.tbIdleManpower[i]
+        user.tbIdleManpower[i] = 0
+    end
+
+    user.nCash = 0
+    user.tbPoach = nil
+    user.tbHire = nil
+    table.insert(user.tbTips, "你已经破产，明年再重整旗鼓。")
 end

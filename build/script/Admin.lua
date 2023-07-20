@@ -139,6 +139,8 @@ function Administration:NewUser(name)
         user.tbHistoryYearReport[runtime.nCurYear] = user.tbYearReport
     end
     runtime.tbUser[name] = user
+
+    return user
 end
 
 function tbAdminFunc.NextStep(tbParam)

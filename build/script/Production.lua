@@ -5,6 +5,10 @@ Production = {}    --研发模块的内部函数
 
 -- 立项 {FuncName = "Develop", Operate = "NewProduct", Category="A" }
 function Develop.NewProduct(tbParam, user)
+    if user.bBankruptcy then
+        return "破产状态无法立项", false
+    end
+    
     if tbParam.Category == nil then
         return "立项需要指明品类", false
     end
@@ -24,13 +28,7 @@ function Production:CreateUserProduct(category, user)
     return id, product
 end
 
--- 关闭产品 {FuncName = "Develop", Operate = "CloseProduct", Id=1 }
-function Develop.CloseProduct(tbParam, user)
-    local product = tbParam.Id and user.tbProduct[tbParam.Id] or nil
-    if product == nil then
-        return "未找到欲关闭的产品：" .. tbParam.Id, false
-    end
-
+function Production:Close(product, user)
     --该产品在岗人员全部回到空闲状态
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         user.tbJobManpower[i] = user.tbJobManpower[i] - product.tbManpower[i]
@@ -39,12 +37,22 @@ function Develop.CloseProduct(tbParam, user)
     end
 
     if GameLogic:PROD_IsInMarket(product) then
-        GameLogic:OnCloseProduct(tbParam.Id, product, false)
+        GameLogic:OnCloseProduct(product.Id, product, false)
     end
 
     product.State = tbProductState.nClosed
-    user.tbClosedProduct[tbParam.Id] = product
-    user.tbProduct[tbParam.Id] = nil
+    user.tbClosedProduct[product.Id] = product
+    user.tbProduct[product.Id] = nil
+end
+
+-- 关闭产品 {FuncName = "Develop", Operate = "CloseProduct", Id=1 }
+function Develop.CloseProduct(tbParam, user)
+    local product = tbParam.Id and user.tbProduct[tbParam.Id] or nil
+    if product == nil then
+        return "未找到欲关闭的产品：" .. tbParam.Id, false
+    end
+
+    Production:Close(product, user)
 
     return "success", true
 end
