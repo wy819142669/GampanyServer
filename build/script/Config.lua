@@ -7,9 +7,9 @@ tbConfig = {
     szAdminPassword = "",   --管理者登录密码
     szRecoverDataFile = "20230709220846_Year2_Season1.std",
 
-    bEnablePoachYear = 3,
-    bEnableRaiseSalaryYear = 3,
-    bEnablePlatformYear = 4,
+    bEnablePoachYear = 3,       -- 开启挖人的年份
+    bEnableRaiseSalaryYear = 3, -- 开启涨工资的年份
+    bEnablePlatformYear = 4,    -- 开启平台的年份
 
     --==== 财务设置相关，只读不写 ====
     nInitCash = 1000,       -- 初始时玩家公司的账上现金量
