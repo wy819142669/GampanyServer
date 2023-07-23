@@ -188,7 +188,19 @@ tbConfig = {
             nNpcInitProductQuality10 = 30,      --NPC，初始产品品质
             nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
-        P = { --==中台项目==，设置项与产品项的有些不同
+        P = { --==中台项目==，设置项与产品项的有些不同 --加研发速度
+            --==研发相关配置==
+            nMinTeam = 15,               --团队最小人数需求
+            nIdeaTeam = 30,             --团队理想人数
+            nRenovateMinTeam = 30,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 60,     --翻新时团队理想人数
+            nWorkLoad = 120,             --工作量
+            nRenovationWorkload = 204,       --翻新时的工作量
+            nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
+            fProductRetentionRate = 0.5,    --产品基础留存率
+        },
+        PQ = { --==中台项目==，设置项与产品项的有些不同  --加研发质量
             --==研发相关配置==
             nMinTeam = 15,               --团队最小人数需求
             nIdeaTeam = 30,             --团队理想人数
@@ -247,7 +259,8 @@ tbInitTables = {
         tbClosedProduct = { },  -- 所有已关闭的产品
 
         --==== 研发相关 ====
-        nPlatformQuality10 = 0,   -- 已发布中台的当前质量的十倍值（0表示无已发布的中台）
+        nPlatformPQuality10 = 0,   -- 已发布中台P的当前质量的十倍值（0表示无已发布的中台）
+        nPlatformPQQuality10 = 0,  -- 已发布中台PQ的当前质量的十倍值（0表示无已发布的中台）
 
         --==== 财务数 ====
         nCash = 0,                  -- 现金，游戏开始时的初始值由tbConfig.nInitCash设置

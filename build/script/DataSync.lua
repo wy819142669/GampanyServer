@@ -133,7 +133,7 @@ end
 
 --是否是发布到市场中的产品
 function GameLogic:PROD_IsInMarket(product)
-    return product.Category ~= "P" and table.contain_value(tbConfig.tbPublishedState, product.State)
+    return product.Category ~= "P" and product.Category ~= "PQ" and table.contain_value(tbConfig.tbPublishedState, product.State)
 end
 
 --是否是已发布的产品（包括市场中的，与已发布的中台）
@@ -146,14 +146,19 @@ function GameLogic:PROD_IsDeveloping(product)
     return table.contain_value(tbConfig.tbDevelopingState, product.State)
 end
 
---是否是中台产品
-function GameLogic:PROD_IsPlatform(product)
+--是否是中台产品P
+function GameLogic:PROD_IsPlatformP(product)
     return product.Category == "P"
+end
+
+--是否是中台产品PQ
+function GameLogic:PROD_IsPlatformPQ(product)
+    return product.Category == "PQ"
 end
 
 --是否是中台品类
 function GameLogic:PROD_IsPlatformC(category)
-    return category == "P"
+    return category == "P" or category == "PQ"
 end
 
 --是否是当季度新上线的产品，返回两个布尔值，前者表示是否新产品（包括翻新），后者表示是否为翻新的新品

@@ -98,7 +98,7 @@ end
 function Production:GetProductLoopSequence(tbProductList)
     local tbResult = {}
     for _, tbProduct in pairs(tbProductList) do
-        if GameLogic:PROD_IsPlatform(tbProduct) then
+        if GameLogic:PROD_IsPlatformP(tbProduct) or GameLogic:PROD_IsPlatformPQ(tbProduct) then
             -- 优先处理
             table.insert(tbResult, 1, tbProduct)
         else
@@ -170,13 +170,13 @@ function Production:GetDevelopingQuality(product, user)
             end
         end
     end
-    
+
     totalQuality = totalQuality * tbConfig.fQualityPerManpowerLevel
 
     -- 非中台部门要计算中台加成
-    if not GameLogic:PROD_IsPlatform(product) then
+    if not GameLogic:PROD_IsPlatformP(product) and not GameLogic:PROD_IsPlatformPQ(product) then
         local fManPowerRate, fQualityRate = self:GetPlatformEffect(user)
-        totalQuality, totalMan = totalQuality * (1 + fQualityRate), totalMan * (1 + fManPowerRate)
+        totalQuality, totalMan = totalQuality * fQualityRate, totalMan * fManPowerRate
     end
 
     -- 四舍五入
@@ -259,8 +259,10 @@ function Production:UpdatePublished(product, user)
     product.nQuality10 = math.max(1, product.nQuality10)
 
     if product.nQuality10 ~= nLastQuality10 then
-        if GameLogic:PROD_IsPlatform(product) then
-            user.nPlatformQuality10 = product.nQuality10
+        if GameLogic:PROD_IsPlatformP(product) then
+            user.nPlatformPQuality10 = product.nQuality10
+        elseif GameLogic:PROD_IsPlatformPQ(product) then
+            user.nPlatformPQQuality10 = product.nQuality10
         end
         table.insert(user.tbSysMsg, string.format("已发布产品%s由于%s品质由%.1f变更为%.1f", product.szName, szReason, nLastQuality10 / 10, product.nQuality10 / 10))
     end
@@ -271,5 +273,8 @@ function Production:IsPublished(product)
 end
 
 function Production:GetPlatformEffect(user)
-    return tbConfig.fPlatformManPowerRate * user.nPlatformQuality10, tbConfig.fPlatformQualityRate * user.nPlatformQuality10
+    local manpowerRate = 1 + tbConfig.fPlatformManPowerRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio
+    local qualityRate =  (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio) * (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQQuality10 * tbConfig.fQualityRatio)
+
+    return manpowerRate, qualityRate
 end
