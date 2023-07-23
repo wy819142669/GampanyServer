@@ -7,6 +7,10 @@ tbConfig = {
     szAdminPassword = "",   --管理者登录密码
     szRecoverDataFile = "20230709220846_Year2_Season1.std",
 
+    bEnablePoachYear = 3,
+    bEnableRaiseSalaryYear = 3,
+    bEnablePlatformYear = 4,
+
     --==== 财务设置相关，只读不写 ====
     nInitCash = 1000,       -- 初始时玩家公司的账上现金量
     fTaxRate = 0.1,         -- 税率【每年税额=税前利润*税率，当年亏损（税前利润为负）则不扣税】
