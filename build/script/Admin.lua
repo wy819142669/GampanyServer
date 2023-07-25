@@ -92,6 +92,21 @@ function tbAdminFunc.SetProductConfig(tbParam)
     return "success", true
 end
 
+function tbAdminFunc.ModifyUserData(tbParam)
+    if tbParam.Key == nil or tbParam.UserName == nil or tbParam.Value == nil then
+        return "failed, need Key, Name and Value", false
+    end
+    local runtime = GetTableRuntime()
+    local user = runtime.tbUser[tbParam.UserName]
+    if not user then
+        return "invalid user name", false
+    end
+    
+    if tbParam.Key == "nCash" then
+        GameLogic:FIN_GM(user, tbParam.Value)
+    end
+end
+
 function tbAdminFunc.DoStart(tbParam)
     local runtime = GetTableRuntime()
     if runtime.bPlaying then

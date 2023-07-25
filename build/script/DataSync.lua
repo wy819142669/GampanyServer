@@ -108,6 +108,11 @@ function GameLogic:FIN_Revenue(user, amount)
     return true
 end
 
+function GameLogic:FIN_GM(user, amount)
+    user.nCash = user.nCash + amount
+    return true
+end
+
 --根据现金异动修改财报
 function GameLogic:FIN_ModifyReport(report, classify, amount)
     if classify == tbConfig.tbFinClassify.Revenue then -- 销售收入
