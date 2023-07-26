@@ -84,7 +84,7 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 10,       --团队最小人数需求
             nIdeaTeam = 20,     --团队理想人数
-            nRenovateMinTeam = 20,       --翻新时团队最小人数需求
+            nRenovateMinTeam = 27,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 40,     --翻新时团队理想人数
             nWorkLoad = 80,     --工作量
             nRenovationWorkload = 136,       --翻新时的工作量
@@ -97,9 +97,11 @@ tbConfig = {
             nTotalMarket = 700,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
                 {5, 5, 5, 5},
-                {5, 5, 8, 8},
+                {5, 5, 5, 5},
+                {6, 6, 6, 6},
+                {7, 7, 7, 7},
                 {8, 8, 8, 8},
-                {10, 10, 10, 10},
+                {9, 9, 9, 9},
                 {10, 10, 10, 10},
             },
             --==Npc相关配置==
@@ -112,7 +114,7 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 15,               --团队最小人数需求
             nIdeaTeam = 30,             --团队理想人数
-            nRenovateMinTeam = 30,       --翻新时团队最小人数需求
+            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 60,     --翻新时团队理想人数
             nWorkLoad = 180,             --工作量
             nRenovationWorkload = 306,   --翻新时的工作量
@@ -124,10 +126,12 @@ tbConfig = {
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 430,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
-                {5, 5, 5, 5},            --第一年四个季度的Npc数量
-                {5, 5, 8, 8},            --第二年四个季度的Npc数量
+            {5, 5, 5, 5},
+                {5, 5, 5, 5},
+                {6, 6, 6, 6},
+                {7, 7, 7, 7},
                 {8, 8, 8, 8},
-                {10, 10, 10, 10},
+                {9, 9, 9, 9},
                 {10, 10, 10, 10},
             },
             --==Npc相关配置==
@@ -140,7 +144,7 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 20,               --团队最小人数需求
             nIdeaTeam = 40,             --团队理想人数
-            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
+            nRenovateMinTeam = 54,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 80,     --翻新时团队理想人数
             nWorkLoad = 320,             --工作量
             nRenovationWorkload = 544,   --翻新时的工作量
@@ -152,11 +156,13 @@ tbConfig = {
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
-                {5, 5, 5, 5},
-                {5, 5, 8, 8},
-                {8, 8, 8, 8},
-                {10, 10, 10, 10},
-                {10, 10, 10, 10},
+            {5, 5, 5, 5},
+            {5, 5, 5, 5},
+            {6, 6, 6, 6},
+            {7, 7, 7, 7},
+            {8, 8, 8, 8},
+            {9, 9, 9, 9},
+            {10, 10, 10, 10},
             },
             --==Npc相关配置==
             nNpcInitialExpenses = 800,
@@ -168,7 +174,7 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 30,               --团队最小人数需求
             nIdeaTeam = 60,             --团队理想人数
-            nRenovateMinTeam = 60,       --翻新时团队最小人数需求
+            nRenovateMinTeam = 80,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 120,     --翻新时团队理想人数
             nWorkLoad = 480,             --工作量
             nRenovationWorkload = 816,   --翻新时的工作量
@@ -180,11 +186,13 @@ tbConfig = {
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
-                {5, 5, 5, 5},
-                {5, 5, 8, 8},
-                {8, 8, 8, 8},
-                {10, 10, 10, 10},
-                {10, 10, 10, 10},
+            {5, 5, 5, 5},
+            {5, 5, 5, 5},
+            {6, 6, 6, 6},
+            {7, 7, 7, 7},
+            {8, 8, 8, 8},
+            {9, 9, 9, 9},
+            {10, 10, 10, 10},
             },
             --==Npc相关配置==
             nNpcInitialExpenses = 1200,
@@ -194,24 +202,24 @@ tbConfig = {
         },
         P = { --==中台项目==，设置项与产品项的有些不同 --加研发速度
             --==研发相关配置==
-            nMinTeam = 15,               --团队最小人数需求
-            nIdeaTeam = 30,             --团队理想人数
-            nRenovateMinTeam = 30,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 60,     --翻新时团队理想人数
-            nWorkLoad = 120,             --工作量
-            nRenovationWorkload = 204,       --翻新时的工作量
-            nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
+            nMinTeam = 10,               --团队最小人数需求
+            nIdeaTeam = 20,             --团队理想人数
+            nRenovateMinTeam = 27,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 40,     --翻新时团队理想人数
+            nWorkLoad = 40,             --工作量
+            nRenovationWorkload = 68,       --翻新时的工作量
+            nMaintainMinTeam = 10,           --上线运营时需要最小团队规模
+            nMaintainIdeaTeam = 20,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
         PQ = { --==中台项目==，设置项与产品项的有些不同  --加研发质量
             --==研发相关配置==
             nMinTeam = 15,               --团队最小人数需求
             nIdeaTeam = 30,             --团队理想人数
-            nRenovateMinTeam = 30,       --翻新时团队最小人数需求
+            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 60,     --翻新时团队理想人数
-            nWorkLoad = 120,             --工作量
-            nRenovationWorkload = 204,       --翻新时的工作量
+            nWorkLoad = 60,             --工作量
+            nRenovationWorkload = 102,       --翻新时的工作量
             nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
             nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
