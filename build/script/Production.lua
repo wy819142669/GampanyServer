@@ -130,6 +130,7 @@ function Production:Publish(product, user)
     --在Market.Publish中已对产品状态做过检查，此处略过
     --product.State == tbConfig.tbProductState.nEnabled or product.State == tbConfig.tbProductState.nRenovateDone
     local quality = math.floor(product.nFinishedQuality / product.nFinishedWorkLoad * 10)
+    quality = math.min(quality, tbConfig.nManpowerMaxExpLevel)
     product.nFinishedQuality = 0
     product.State = tbProductState.nPublished
     return quality
