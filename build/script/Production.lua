@@ -264,9 +264,19 @@ function Production:UpdatePublished(product, user)
 
     if product.nQuality10 ~= nLastQuality10 then
         if GameLogic:PROD_IsPlatformP(product) then
-            user.nPlatformPQuality10 = product.nQuality10
+            if totalMan >= category.nMaintainMinTeam then
+                user.nPlatformPQuality10 = product.nQuality10
+            else
+                user.nPlatformPQuality10 = 0
+                table.insert(user.tbSysMsg, string.format("中台%s由于维护人数不足，失去作用", product.szName))
+            end
         elseif GameLogic:PROD_IsPlatformPQ(product) then
-            user.nPlatformPQQuality10 = product.nQuality10
+            if totalMan >= category.nMaintainMinTeam then
+                user.nPlatformPQQuality10 = product.nQuality10
+            else
+                user.nPlatformPQQuality10 = 0
+                table.insert(user.tbSysMsg, string.format("中台%s由于维护人数不足，失去作用", product.szName))
+            end
         end
         table.insert(user.tbSysMsg, string.format("已发布产品%s由于%s品质由%.1f变更为%.1f", product.szName, szReason, nLastQuality10 / 10, product.nQuality10 / 10))
     end
