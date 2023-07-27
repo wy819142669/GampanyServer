@@ -130,7 +130,6 @@ function Production:Publish(product, user)
     --在Market.Publish中已对产品状态做过检查，此处略过
     --product.State == tbConfig.tbProductState.nEnabled or product.State == tbConfig.tbProductState.nRenovateDone
     local quality = math.floor(product.nFinishedQuality / product.nFinishedWorkLoad * 10)
-    quality = math.min(quality, tbConfig.nManpowerMaxExpLevel * 10)
     product.nFinishedQuality = 0
     product.State = tbProductState.nPublished
     return quality
@@ -176,12 +175,11 @@ function Production:GetDevelopingQuality(product, user)
 
     -- 非中台部门要计算中台加成
     if not GameLogic:PROD_IsPlatformP(product) and not GameLogic:PROD_IsPlatformPQ(product) then
-        local fManPowerRate, fQualityRate = self:GetPlatformEffect(user)
+        local fManPowerRate, fQualityRate = GameLogic:GetPlatformEffect(user)
         totalQuality, totalMan = totalQuality * fQualityRate, totalMan * fManPowerRate
     end
 
-    -- 四舍五入
-    return math.floor(totalQuality + 0.5), math.floor(totalMan + 0.5)
+    return math.floor(totalQuality), math.floor(totalMan)
 end
 
 function Production:UpdateWorkload(product, user)
@@ -239,15 +237,20 @@ function Production:UpdatePublished(product, user)
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
     local szReason
+    local qualityEffect = GameLogic:GetPlatformQualityEffect(user)
+    if GameLogic:PROD_IsPlatformP(product) or GameLogic:PROD_IsPlatformPQ(product) then
+        qualityEffect = 1
+    end
+    local avgQuality = math.floor(totalQuality / totalMan * 10 * qualityEffect)
 
     if totalMan >= category.nMaintainIdeaTeam then
-        if totalQuality / totalMan * 10 >= product.nOrigQuality10 / tbConfig.fQualityPerManpowerLevel then
+        if avgQuality >= product.nOrigQuality10 / tbConfig.fQualityPerManpowerLevel then
             if product.nQuality10 == product.nOrigQuality10 then
                 return
             end
             addQuality = tbConfig.fQualityDelta  --维护团队的等级不低于原始质量等级，则恢复质量
             szReason = "维护团队规模和品质优秀"
-        elseif totalQuality / totalMan * 10 >= product.nQuality10 / tbConfig.fQualityPerManpowerLevel then
+        elseif avgQuality >= product.nQuality10 / tbConfig.fQualityPerManpowerLevel then
             return
         else
             szReason = string.format("维护团队平均等级不足%.1f", product.nOrigQuality10 / 10 / tbConfig.fQualityPerManpowerLevel)
@@ -271,11 +274,4 @@ end
 
 function Production:IsPublished(product)
     return table.contain_value(tbConfig.tbPublishedState, product.State)
-end
-
-function Production:GetPlatformEffect(user)
-    local manpowerRate = 1 + tbConfig.fPlatformManPowerRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio
-    local qualityRate =  (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio) * (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQQuality10 * tbConfig.fQualityRatio)
-
-    return manpowerRate, qualityRate
 end

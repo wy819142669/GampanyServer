@@ -192,6 +192,17 @@ function GameLogic:PROD_NewPublished(id, product, renovate, npc)
     end
 end
 
+function GameLogic:GetPlatformEffect(user)
+    local manpowerRate = 1 + tbConfig.fPlatformManPowerRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio
+    local qualityRate =  (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio) * (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQQuality10 * tbConfig.fQualityRatio)
+
+    return manpowerRate, qualityRate
+end
+
+function GameLogic:GetPlatformQualityEffect(user)
+    return (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQQuality10 * tbConfig.fQualityRatio)
+end
+
 --关闭一个产品
 function GameLogic:OnCloseProduct(id, product, npc)
     local info = GetTableRuntime().tbCategoryInfo[product.Category]
