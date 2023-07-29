@@ -25,7 +25,7 @@ tbConfig = {
 
     --==== 人力相关系统设置，只读不写 ====
     nSalary = 5,                    -- 薪水
-    fSalaryRatioPerLevel = 0.2,     -- 每薪水等级薪水涨幅
+    fSalaryRatioPerLevel = 0.1,     -- 每薪水等级薪水涨幅
     fHireWeightRatioPerLevel = 0.5, -- 每薪水等级增加招聘权重系数
     nManpowerMaxExpLevel = 5,       -- 人员能力等级最大值
     fTrainMaxRatioPerLevel = 0.1,   -- 每级可培训人数比例

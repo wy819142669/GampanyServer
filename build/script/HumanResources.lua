@@ -506,7 +506,7 @@ function HumanResources:PayOffSalary()
             if GameLogic:FIN_Pay(user, nil, nCost) then
                 table.insert(user.tbSysMsg, string.format("支付薪水：%d", nCost))
                 -- 分类记账
-                local dev, pub, idle = HumanResources:SalaryByPosition(user, nCost)                
+                local dev, pub, idle = HumanResources:SalaryByPosition(user, nCost)
                 GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, dev)
                 GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Pub, pub)
                 GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)
