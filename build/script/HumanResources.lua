@@ -98,7 +98,7 @@ function HR.CommitTrain(tbParam, user)
     local tbMax = Lib.copyTab(user.tbIdleManpower)
     for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
         tbMax[i] = tbMax[i] + user.tbFireManpower[i] + user.tbJobManpower[i]
-        tbMax[i] = math.max(1, math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel))
+        tbMax[i] = math.floor(tbMax[i] * tbConfig.fTrainMaxRatioPerLevel)
     end
     tbMax[tbConfig.nManpowerMaxExpLevel] = 0
 
