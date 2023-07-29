@@ -393,7 +393,7 @@ end
 function MarketMgr:PreSeason()
     MarketMgr:AutoSetMarketExpense()    -- 自动设置市场费用
     MarketMgr:NpcCloseLowQuality()      -- 概率关低品质npc产品
-    MarketMgr:NpcExecSchedule()         -- npc执行产品计划
+    MarketMgr:NpcExecSchedule()         -- Npc执行产品计划
     MarketMgr:NpcSetSchedule()          -- Npc设置产品计划
 end
 

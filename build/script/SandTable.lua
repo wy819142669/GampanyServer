@@ -224,7 +224,8 @@ function DoPostYear()
         --年尾扣税
         GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Tax, GameLogic:FIN_Tax(user.tbYearReport.nGrossProfit))
         --记录一年最后的账上结余
-        user.tbYearReport.nBalance = user.nCash - user.tbYearReport.nTax
+        user.tbYearReport.nBalance = user.nCash
+        user.tbYearReport.nScore = user.nCash + user.tbYearReport.nNetProfit * tbConfig.fNetProfitRatioForReportSort
     end
 end
 

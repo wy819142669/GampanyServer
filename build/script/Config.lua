@@ -22,6 +22,7 @@ tbConfig = {
         Salary_Dev = 5,     -- 薪酬(非发布产品)
         Salary_Pub = 6,     -- 薪酬(已发布产品，不包含平台)
     },
+    fNetProfitRatioForReportSort = 12,   -- 年报得分，利润的系数    得分= 现金+利润*利润系数
 
     --==== 人力相关系统设置，只读不写 ====
     nSalary = 5,                    -- 薪水
@@ -297,6 +298,7 @@ tbInitTables = {
         nTax = 0,               -- 税款
         nNetProfit = 0,         -- 净利润
         nBalance = 0,           -- 结余现金
+        nScore = 0,             -- 得分
     },
 
     --新立项产品初始表
