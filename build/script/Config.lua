@@ -33,7 +33,7 @@ tbConfig = {
     fPoachSalaryLevelRatio = 1.2,   -- 挖掘时薪水等级系数
     nPoachSalaryWeight = 8,         -- 挖掘时薪水等级部分的权重， 此参数越高，挖掘费用效果越不明显
     tbPoachExpenseRatio = { 2, 4, 8, 12, 16},   -- 挖掘人才可选薪水倍数
-    fPoachFailedReturnExpenseRatio = 0.8,       -- 挖掘人才失败时候返还费用比例
+    fPoachFailedReturnExpenseRatio = 0.5,       -- 挖掘人才失败时候返还费用比例
 
     --==== 产品研发相关设置，只读不写 ====
     fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
