@@ -90,10 +90,10 @@ tbConfig = {
             nWorkLoad = 80,     --工作量
             nRenovationWorkload = 136,       --翻新时的工作量
             nMaintainMinTeam = 10,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 20,         --上线运营时需要维护团队规模
+            nMaintainIdeaTeam = 15,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
-            nBaseARPU = 3,                 --基础ARPU
+            nBaseARPU = 4,                 --基础ARPU
             nMaxMarketScale = 30,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 700,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
@@ -120,10 +120,10 @@ tbConfig = {
             nWorkLoad = 180,             --工作量
             nRenovationWorkload = 306,   --翻新时的工作量
             nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
+            nMaintainIdeaTeam = 23,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.58,    --产品基础留存率
-            nBaseARPU = 9,                 --基础ARPU
+            nBaseARPU = 12,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 430,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
@@ -150,10 +150,10 @@ tbConfig = {
             nWorkLoad = 320,             --工作量
             nRenovationWorkload = 544,   --翻新时的工作量
             nMaintainMinTeam = 20,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 40,         --上线运营时需要维护团队规模
+            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.73,    --产品基础留存率
-            nBaseARPU = 8,                 --基础ARPU
+            nBaseARPU = 11,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
@@ -180,10 +180,10 @@ tbConfig = {
             nWorkLoad = 480,             --工作量
             nRenovationWorkload = 816,   --翻新时的工作量
             nMaintainMinTeam = 30,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 60,         --上线运营时需要维护团队规模
+            nMaintainIdeaTeam = 45,         --上线运营时需要维护团队规模
             --==市场运营相关配置==
             fProductRetentionRate = 0.73,    --产品基础留存率
-            nBaseARPU = 10,                 --基础ARPU
+            nBaseARPU = 14,                 --基础ARPU
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
             tbProductIdeaCount = {       --产品数量控制，npc会控制自己的产品产生/销亡，以使市场上该品类产品的数量尽量为此数
@@ -210,7 +210,7 @@ tbConfig = {
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 68,       --翻新时的工作量
             nMaintainMinTeam = 10,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 20,         --上线运营时需要维护团队规模
+            nMaintainIdeaTeam = 15,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
         PQ = { --==中台项目==，设置项与产品项的有些不同  --加研发质量
@@ -222,7 +222,7 @@ tbConfig = {
             nWorkLoad = 60,             --工作量
             nRenovationWorkload = 102,       --翻新时的工作量
             nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
+            nMaintainIdeaTeam = 23,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
     },
