@@ -15,6 +15,10 @@ function Market.Publish(tbParam, user)
 
     local renovate = product.State == tbConfig.tbProductState.nRenovateDone
     local quality10 = Production:Publish(product, user)
+    if renovate then
+        quality10 = math.floor((product.nOrigQuality10 + quality10) / 2)
+    end
+
     if GameLogic:PROD_IsPlatformP(product) then
         user.nPlatformPQuality10 = quality10
     elseif GameLogic:PROD_IsPlatformPQ(product) then
