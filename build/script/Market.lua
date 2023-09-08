@@ -21,8 +21,8 @@ function Market.Publish(tbParam, user)
 
     if GameLogic:PROD_IsPlatformP(product) then
         user.nPlatformPQuality10 = quality10
-    elseif GameLogic:PROD_IsPlatformPQ(product) then
-        user.nPlatformPQQuality10 = quality10
+    elseif GameLogic:PROD_IsPlatformQ(product) then
+        user.nPlatformQQuality10 = quality10
     else
         GameLogic:PROD_NewPublished(tbParam.Id, product, renovate, false)
     end
@@ -75,7 +75,7 @@ function MarketMgr:DoStart()
     --初始化 品类信息 与 已发布产品列表
     data.tbCategoryInfo = {}
     for category, info in pairs(tbConfig.tbProductCategory) do
-        if not GameLogic:PROD_IsPlatformC(category) then
+        if not GameLogic:PROD_IsPlatformCategory(category) then
             data.tbCategoryInfo[category] = Lib.copyTab(tbInitTables.tbInitCategoryInfo)
             data.tbCategoryInfo[category].nCommunalMarketShare = info.nTotalMarket
         end

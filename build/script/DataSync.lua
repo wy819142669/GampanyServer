@@ -138,7 +138,7 @@ end
 
 --是否是发布到市场中的产品
 function GameLogic:PROD_IsInMarket(product)
-    return product.Category ~= "P" and product.Category ~= "PQ" and table.contain_value(tbConfig.tbPublishedState, product.State)
+    return product.Category ~= "P" and product.Category ~= "Q" and table.contain_value(tbConfig.tbPublishedState, product.State)
 end
 
 --是否是已发布的产品（包括市场中的，与已发布的中台）
@@ -156,14 +156,19 @@ function GameLogic:PROD_IsPlatformP(product)
     return product.Category == "P"
 end
 
---是否是中台产品PQ
-function GameLogic:PROD_IsPlatformPQ(product)
-    return product.Category == "PQ"
+--是否是中台产品Q
+function GameLogic:PROD_IsPlatformQ(product)
+    return product.Category == "Q"
+end
+
+--是否是中台产品
+function GameLogic:PROD_IsPlatform(product)
+    return product.Category == "P" or product.Category == "Q"
 end
 
 --是否是中台品类
-function GameLogic:PROD_IsPlatformC(category)
-    return category == "P" or category == "PQ"
+function GameLogic:PROD_IsPlatformCategory(category)
+    return category == "P" or category == "Q"
 end
 
 --是否是当季度新上线的产品，返回两个布尔值，前者表示是否新产品（包括翻新），后者表示是否为翻新的新品
@@ -194,13 +199,13 @@ end
 
 function GameLogic:GetPlatformEffect(user)
     local manpowerRate = 1 + tbConfig.fPlatformManPowerRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio
-    local qualityRate =  (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio) * (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQQuality10 * tbConfig.fQualityRatio)
+    local qualityRate =  (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio) * (1 + tbConfig.fPlatformQualityRate * user.nPlatformQQuality10 * tbConfig.fQualityRatio)
 
     return manpowerRate, qualityRate
 end
 
 function GameLogic:GetPlatformQualityEffect(user)
-    return (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQQuality10 * tbConfig.fQualityRatio)
+    return (1 + tbConfig.fPlatformQualityRate * user.nPlatformQQuality10 * tbConfig.fQualityRatio)
 end
 
 --关闭一个产品

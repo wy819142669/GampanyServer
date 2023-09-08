@@ -98,7 +98,7 @@ end
 function Production:GetProductLoopSequence(tbProductList)
     local tbResult = {}
     for _, tbProduct in pairs(tbProductList) do
-        if GameLogic:PROD_IsPlatformP(tbProduct) or GameLogic:PROD_IsPlatformPQ(tbProduct) then
+        if GameLogic:PROD_IsPlatform(tbProduct) then
             -- 优先处理
             table.insert(tbResult, 1, tbProduct)
         else
@@ -174,7 +174,7 @@ function Production:GetDevelopingQuality(product, user)
     totalQuality = totalQuality * tbConfig.fQualityPerManpowerLevel
 
     -- 非中台部门要计算中台加成
-    if not GameLogic:PROD_IsPlatformP(product) and not GameLogic:PROD_IsPlatformPQ(product) then
+    if not GameLogic:PROD_IsPlatform(product) then
         local fManPowerRate, fQualityRate = GameLogic:GetPlatformEffect(user)
         totalQuality, totalMan = totalQuality * fQualityRate, totalMan * fManPowerRate
     end
@@ -238,7 +238,7 @@ function Production:UpdatePublished(product, user)
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
     local szReason
     local qualityEffect = GameLogic:GetPlatformQualityEffect(user)
-    if GameLogic:PROD_IsPlatformP(product) or GameLogic:PROD_IsPlatformPQ(product) then
+    if GameLogic:PROD_IsPlatform(product) then
         qualityEffect = 1
     end
     local avgQuality = math.floor(totalQuality / totalMan * 10 * qualityEffect)
@@ -270,11 +270,11 @@ function Production:UpdatePublished(product, user)
                 user.nPlatformPQuality10 = 0
                 table.insert(user.tbSysMsg, string.format("中台%s由于维护人数不足，失去作用", product.szName))
             end
-        elseif GameLogic:PROD_IsPlatformPQ(product) then
+        elseif GameLogic:PROD_IsPlatformQ(product) then
             if totalMan >= category.nMaintainMinTeam then
-                user.nPlatformPQQuality10 = product.nQuality10
+                user.nPlatformQQuality10 = product.nQuality10
             else
-                user.nPlatformPQQuality10 = 0
+                user.nPlatformQQuality10 = 0
                 table.insert(user.tbSysMsg, string.format("中台%s由于维护人数不足，失去作用", product.szName))
             end
         end
