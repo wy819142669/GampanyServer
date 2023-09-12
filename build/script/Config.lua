@@ -5,7 +5,7 @@ tbConfig = {
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
     bLogNpcProducts = true, --是否在屏幕显示npc产品每季度的表现
     szAdminPassword = "",   --管理者登录密码
-    szRecoverDataFile = "20230709220846_Year2_Season1.std",
+    szRecoverDataFile = "2023MMDDhhmmss_YearY_SeasonS.std",
 
     bEnablePoachYear = 2,       -- 开启挖人的年份
     bEnableRaiseSalaryYear = 2, -- 开启涨工资的年份
@@ -56,7 +56,7 @@ tbConfig = {
     },
 
     --==== 人力相关系统设置数据，只读不写 ====
-    nStandardPlayerCount = 6,   -- 基准玩家数，每次人才进入市场，会以基准玩家数/实际玩家数*新进人数来对新进人数做调整
+    nStandardPlayerCount = 6,   -- 基准玩家数，每次新人才进入市场，会以“实际玩家数/基准玩家数”为系数做调整
     tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数，子表元素个数需要等于tbConfig.nManpowerMaxExpLevel
         {36, 16, 7, 1, 0},
         {41, 23, 12, 2, 0},
@@ -69,14 +69,14 @@ tbConfig = {
         {12, 14, 17, 16, 7},
         {12, 12, 18, 19, 11},
     },
-    fSeason1NewManpowerRatio = 0.3,  -- 第一季度新进人数占全年人数比例， 剩下的在第三季度新进
+    fSeason1NewManpowerRatio = 0.3,     --第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
     --==== 产品市场运营相关，只读不写 ====
     nMarketShiftScale = 25,             --每季度各品类最多贡献这么市场份额，归入公共池，进行跨品类再分配
-    fNewProductCoefficient = 2,       --新上线产品当季度市场额外加成
+    fNewProductCoefficient = 2,         --新上线产品当季度市场额外加成
     fRenovateCoefficient = 1.5,         --翻新后的产品当季度市场额外加成
-    -- nNpcCloseProductDelay = 3,          --Npc，因产品数目过多关闭产品的延迟（季度数）
-    -- fNpcCloseWhenGainRatioLess = 1.2,   --NPC，收益/营销费低于这个值，会下架产品
+    -- nNpcCloseProductDelay = 3,       --Npc，因产品数目过多关闭产品的延迟（季度数）
+    -- fNpcCloseWhenGainRatioLess = 1.2,--NPC，收益/营销费低于这个值，会下架产品
     fNpcExpenseFloatRange = 0.1,        --NPC，营销费随机浮动
 
     --====== 产品品类设置====

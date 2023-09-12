@@ -21,6 +21,10 @@ func main() {
 	LoadLua()
 	defer g_L.Close()
 
+    if (len(os.Args) > 1) {
+        CallLua("AdminLoadSavedFile", os.Args[1])
+    }
+
 	pidF := NewPidF("SandTableServer.pid")
 	defer pidF.Close()
 

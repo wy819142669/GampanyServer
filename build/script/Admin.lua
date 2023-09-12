@@ -5,6 +5,16 @@ require("Config")
 tbAdminFunc = {}
 Administration = {}
 
+--读取存档数据
+function AdminLoadSavedFile(file)
+    tbConfig.szRecoverDataFile = file
+    local tbData = DataStorage:Load()
+    if tbData then
+        print("Loading saved session : ", file, "\n")
+        RecoverTableRuntime(tbData)
+    end
+end
+
 function Admin(jsonParam)
     local tbParam = JsonDecode(jsonParam)
     local func = tbAdminFunc[tbParam.FuncName]
@@ -50,12 +60,16 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.bPlaying = false
     runtime.nCurYear = 0
     runtime.nCurSeason = 0
+    runtime.nNewProductId = 0
 
     runtime.nGamerCount = 0
     runtime.tbLoginAccount = {}
     runtime.tbUser = {}
     runtime.tbManpowerInMarket = {0, 0, 0, 0, 0}
+
+    runtime.tbNpc = {}
     runtime.tbCategoryInfo = {}
+
     return "success", true
 end
 
