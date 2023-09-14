@@ -81,7 +81,7 @@ function SandTableStart()
 end
 
 --------------------接口实现---------------------------------------
--- 登录 {FuncName = "Login"}
+-- 登录 {FuncName = "Login", Password = "xxx"}
 function tbFunc.Action.Login(tbParam)
     if not table.contain_key(tbRuntimeData.tbLoginAccount, tbParam.Account) then
         if tbRuntimeData.nGamerCount >= tbConfig.nMaxGamerCount then
@@ -93,14 +93,19 @@ function tbFunc.Action.Login(tbParam)
             return "failed, already start", false
         end
 
-        tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time()}
+        tbRuntimeData.tbLoginAccount[tbParam.Account] = { loginTime = os.time(), password = tbParam.Password }
         tbRuntimeData.nGamerCount = tbRuntimeData.nGamerCount + 1
         
         if tbRuntimeData.bPlaying then
             Administration:NewUser(tbParam.Account)
             HumanResources:UpdateAllUserManpower()
         end
+    else
+        if tbRuntimeData.tbLoginAccount[tbParam.Account].password ~= tbParam.Password then
+            return "password error", false
+        end
     end
+
     return "success", true
 end
 
