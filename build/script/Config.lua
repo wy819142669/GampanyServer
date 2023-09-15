@@ -5,7 +5,7 @@ tbConfig = {
     bDebug = true,          --调试模式，允许玩家客户端发出一些管理请求
     bLogNpcProducts = true, --是否在屏幕显示npc产品每季度的表现
     szAdminPassword = "",   --管理者登录密码
-    szRecoverDataFile = "2023MMDDhhmmss_YearY_SeasonS.std",
+    --szRecoverDataFile = "2023MMDDhhmmss_YearY_SeasonS.std",
 
     bEnablePoachYear = 2,       -- 开启挖人的年份
     bEnableRaiseSalaryYear = 2, -- 开启涨工资的年份
