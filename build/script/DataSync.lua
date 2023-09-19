@@ -33,11 +33,18 @@ end
 
 function tbQueryFunc.GetRunTimeData(tbParam)
     local data = GetTableRuntime()
-    local ret
-    if tbParam.ConfigVersion and tbParam.ConfigVersion == tbConfig.nDataVersion then
-        ret = { tbRuntimeData = data }
-    else
-        ret = { tbRuntimeData = data, tbConfig = tbConfig }
+    local ret = {}
+
+    if os.time() - data.nLastVersionTime >= 5 then -- 5秒强制刷新一下版本号，防止漏改版本号客户端数据永不刷新
+        DoUpdateGamerDataVersion()
+    end
+
+    if not tbParam.RuntimeDataVersion or tbParam.RuntimeDataVersion ~= data.nDataVersion then
+        ret.tbRuntimeData = data
+    end
+
+    if not tbParam.ConfigVersion or tbParam.ConfigVersion ~= tbConfig.nDataVersion then
+        ret.tbConfig = tbConfig
     end
     return "success", true, ret
 end

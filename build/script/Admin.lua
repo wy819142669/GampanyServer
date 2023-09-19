@@ -22,6 +22,8 @@ function Admin(jsonParam)
     local bRet = false
     if func then
         szMsg, bRet, tbCustomData = func(tbParam)
+
+        DoUpdateGamerDataVersion(nil)
     else
         szMsg = "invalid admin FuncName"
     end

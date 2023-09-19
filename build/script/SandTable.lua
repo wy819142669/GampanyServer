@@ -18,6 +18,8 @@ local tbRuntimeData = {
     nCurYear = 0,       -- 当前年份, 取值为0时，表示游戏未开始
     nCurSeason = 0,     -- 当前季度, 取值为0~4, 0表示新年开始时且1季度开始前
     nNewProductId = 0,  -- 新建项目的id值
+    nDataVersion = 0,   -- 整体数据的版本号
+    nLastVersionTime = 0, -- 上次版本号变更时间
 
     --==== 玩家相关信息 ====
     nGamerCount = 0,
@@ -269,6 +271,9 @@ function DoUpdateGamerDataVersion(account)
             user.nDataVersion = user.nDataVersion + 1
         end
     end
+
+    tbRuntimeData.nDataVersion = tbRuntimeData.nDataVersion + 1
+    tbRuntimeData.nLastVersionTime = os.time()
 end
 
 print("╔════════════════════════════════════════════╗")
