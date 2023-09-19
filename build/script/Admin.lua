@@ -120,6 +120,8 @@ function tbAdminFunc.ModifyUserData(tbParam)
     
     if tbParam.Key == "nCash" then
         GameLogic:FIN_GM(user, tbParam.Value)
+    elseif tbParam.Key == "Password" then
+        runtime.tbLoginAccount[tbParam.UserName].password = tbParam.Value
     end
 end
 
