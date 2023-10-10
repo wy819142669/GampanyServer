@@ -93,8 +93,8 @@ function Production:NewProductId()
     return data.nNewProductId
 end
 
--- 此函数用来控制季度结算时遍历产品的顺序，为了避免出现一个季度产品对质量加成不一致的问题, 对于中台产品要统一结算时机
--- 当前是方式是优先处理中台，这样后续遍历的产品就会被中台的质量分所影响
+-- 此函数用来控制季度结算时遍历产品的顺序，为了避免出现一个季度产品对品质加成不一致的问题, 对于中台产品要统一结算时机
+-- 当前是方式是优先处理中台，这样后续遍历的产品就会被中台的品质分所影响
 function Production:GetProductLoopSequence(tbProductList)
     local tbResult = {}
     for _, tbProduct in pairs(tbProductList) do
@@ -117,7 +117,7 @@ function Production:PostSeason()
             if GameLogic:PROD_IsDeveloping(product) then
                 Production:UpdateWorkload(product, user)
             end
-            -- 发布后都需要团队维持质量
+            -- 发布后都需要团队维持品质
             if GameLogic:PROD_IsPublished(product) then
                 Production:UpdatePublished(product, user)
             end
@@ -158,7 +158,7 @@ function Production:GetDevelopingQuality(product, user)
     elseif totalMan > nIdeaTeam then
         local exceed = totalMan - nIdeaTeam
         totalMan = nIdeaTeam + exceed * tbConfig.fBigTeamRatio
-        --团队超出理想规模时，优先保留级别高员工贡献的质量
+        --团队超出理想规模时，优先保留级别高员工贡献的品质
         for i = 1, tbConfig.nManpowerMaxExpLevel do
             if product.tbManpower[i] > 0 then
                 local num = math.min(exceed, product.tbManpower[i])
@@ -248,7 +248,7 @@ function Production:UpdatePublished(product, user)
             if product.nQuality10 == product.nOrigQuality10 then
                 return
             end
-            addQuality = tbConfig.fQualityDelta  --维护团队的等级不低于原始质量等级，则恢复质量
+            addQuality = tbConfig.fQualityDelta  --维护团队的等级不低于原始品质等级，则恢复品质
             szReason = "维护团队规模和品质优秀"
         elseif avgQuality >= product.nQuality10 / tbConfig.fQualityPerManpowerLevel then
             return
