@@ -37,13 +37,13 @@ tbConfig = {
     fPoachFailedReturnExpenseRatio = 0.5,       -- 挖掘人才失败时候返还费用比例
 
     --==== 产品研发相关设置，只读不写 ====
-    fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与质量的缩水后的比例
-    fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与质量的缩水后的比例
+    fSmallTeamRatio = 0.8,          --团队规模不足时，新增工作量与品质的缩水后的比例
+    fBigTeamRatio = 0.5,            --团队规模过大时，新增工作量与品质的缩水后的比例
     fQualityPerManpowerLevel = 1.0, --每人力等级可以提供的品质点数，人力1~5级， 产品1~5级
     fQualityRatio = 2.0,            --产品品质系数，计算产品品质系数时要用产品品质乘以该系数再计算，用以抵消fQualityPerManpowerLevel 由2.0改成1.0的影响
     fQualityDelta = 5,              --产品品质变化差值，如果产品在运营期间由于团队人员和等级造成产品品质降低或者升高，每季度的变化值
     fPlatformManPowerRate = 0.005,  --中台对人力的影响参数
-    fPlatformQualityRate = 0.005,   --中台对质量的影响参数
+    fPlatformQualityRate = 0.005,   --中台对品质的影响参数
 
     --==== 产品所有状态罗列，只读不写 ====
     tbProductState = {
@@ -213,7 +213,7 @@ tbConfig = {
             nMaintainIdeaTeam = 15,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
-        Q = { --==中台项目(引擎平台)==，设置项与产品项的有些不同  --加研发质量
+        Q = { --==中台项目(引擎平台)==，设置项与产品项的有些不同  --加研发品质
             --==研发相关配置==
             nMinTeam = 15,               --团队最小人数需求
             nIdeaTeam = 30,             --团队理想人数
@@ -272,8 +272,8 @@ tbInitTables = {
         tbClosedProduct = { },  -- 所有已关闭的产品
 
         --==== 研发相关 ====
-        nPlatformPQuality10 = 0,   -- 已发布中台P的当前质量的十倍值（0表示无已发布的中台）
-        nPlatformQQuality10 = 0,   -- 已发布中台PQ的当前质量的十倍值（0表示无已发布的中台）
+        nPlatformPQuality10 = 0,   -- 已发布中台P的当前品质的十倍值（0表示无已发布的中台）
+        nPlatformQQuality10 = 0,   -- 已发布中台PQ的当前品质的十倍值（0表示无已发布的中台）
 
         --==== 财务数 ====
         nCash = 0,                  -- 现金，游戏开始时的初始值由tbConfig.nInitCash设置
@@ -314,8 +314,8 @@ tbInitTables = {
 
     --新发布产品初始表
     tbInitPublishedProduct = {
-        nOrigQuality10 = 0,         --产品研发或翻新完时的初始质量
-        nQuality10 = 0,             --当前质量，以研发完成时的质量为初值，发布后受团队规模等影响各季度会动态变化
+        nOrigQuality10 = 0,         --产品研发或翻新完时的初始品质
+        nQuality10 = 0,             --当前品质，以研发完成时的品质为初值，发布后受团队规模等影响各季度会动态变化
         nLastMarketExpense = 0,     --最后一个季度/上季度市场营销费用
         nLastMarketScale = 0,       --最后一个季度/上季度市场规模
         nLastMarketScaleDelta = 0,  --最后一个季度/上季度市场规模环比变化量

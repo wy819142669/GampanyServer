@@ -104,7 +104,7 @@ function MarketMgr:OnRecover()
     end
 end
 
---产品份额的自然流失（受品类流失率及自身质量影响）
+--产品份额的自然流失（受品类流失率及自身品质影响）
 function MarketMgr:LossMarket()
     for c, info in pairs(GetTableRuntime().tbCategoryInfo) do
         local fRetentionRate = tbConfig.tbProductCategory[c].fProductRetentionRate
@@ -150,7 +150,7 @@ function MarketMgr:CategoryShareTransfer()
         nShareScale = nShareScale + delta
         info.nCommunalMarketShare = info.nCommunalMarketShare - delta
         info.nTotalScale = info.nTotalScale - delta
-        --各品类的再分配权重(以品类的平均产品质量为权重)
+        --各品类的再分配权重(以品类的平均产品品质为权重)
         local weight = MarketMgr:GetAverageQuality10(info.tbPublishedProduct)
         weight = math.max(1, weight)
         weights[c] = weight
@@ -403,8 +403,8 @@ end
 
 function MarketMgr:PostSeason()
     MarketMgr:LossMarket()              -- 各产品份额自然流失，归入品类内部共享待分配份额
-    MarketMgr:CategoryShareTransfer()   -- 品类间份额转移：各品类的待分配份额，取一部分根据品类间的质量差距，在品类间转移
-    MarketMgr:DistributionMarket()      -- 各品类内部，根据产品质量情况与市场费用，分配份额
+    MarketMgr:CategoryShareTransfer()   -- 品类间份额转移：各品类的待分配份额，取一部分根据品类间的品质差距，在品类间转移
+    MarketMgr:DistributionMarket()      -- 各品类内部，根据产品品质情况与市场费用，分配份额
     MarketMgr:GainRevenue()             -- 获得收益
     if tbConfig.bLogNpcProducts then
         MarketMgr:LogNpcProducts()          -- 输出npc产品信息
