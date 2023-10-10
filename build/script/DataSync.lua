@@ -36,7 +36,7 @@ function tbQueryFunc.GetRunTimeData(tbParam)
     local ret = {}
 
     if os.time() - data.nLastVersionTime >= 5 then -- 5秒强制刷新一下版本号，防止漏改版本号客户端数据永不刷新
-        DoUpdateGamerDataVersion()
+        DoUpdateGamerDataVersion("")
     end
 
     if not tbParam.RuntimeDataVersion or tbParam.RuntimeDataVersion ~= data.nDataVersion then
