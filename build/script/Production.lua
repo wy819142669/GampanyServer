@@ -23,7 +23,14 @@ function Production:CreateUserProduct(category, user)
     product.Id = id
     product.nNeedWorkLoad = categoryConfig.nWorkLoad
     product.Category = category
-    product.szName = category .. tostring(id)
+
+    local name = category .. tostring(id)
+    if GameLogic:PROD_IsPlatformP(product) then
+        name = "工具平台"
+    elseif GameLogic:PROD_IsPlatformQ(product) then
+        name = "引擎平台"
+    end
+    product.szName = name
     user.tbProduct[id] = product
     return id, product
 end

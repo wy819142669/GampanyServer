@@ -29,7 +29,7 @@ function Market.Publish(tbParam, user)
     product.nOrigQuality10 = quality10
     product.nQuality10 = quality10
 
-    local szReturnMsg = string.format("成功发布产品:%s%d", product.Category, tbParam.Id)
+    local szReturnMsg = string.format("成功发布产品:%s", product.szName)
     return szReturnMsg, true
 end
 
@@ -40,7 +40,7 @@ function Market.Marketing(tbParam, user)
     local nPreTotalExpense = 0
 
     for _, tbProduct in pairs(tbParam.Product) do
-        product = user.tbProduct[tbProduct.Id]
+        local product = user.tbProduct[tbProduct.Id]
 
         if not product then
             return "product not exist", false
@@ -334,10 +334,12 @@ function MarketMgr:NpcCloseLowQuality()
         print(rand, cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount)
         if rand < cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount then
             local id, product = MarketMgr:NpcGetLowestQualityProduct(category)
-            print("Npc close product: ", product.Category .. tostring(id))
-            product.State = tbConfig.tbProductState.nClosed
-            GameLogic:OnCloseProduct(id, product, true)
-            data.tbNpc.tbProduct[id] = nil
+            if id and product then
+                print("Npc close product: ", product.Category .. tostring(id))
+                product.State = tbConfig.tbProductState.nClosed
+                GameLogic:OnCloseProduct(id, product, true)
+                data.tbNpc.tbProduct[id] = nil
+            end
         end
     end
 end
@@ -387,7 +389,7 @@ function MarketMgr:LogNpcProducts()
                     string.format("Quality:%.1f", product.nQuality10 / 10),
                     string.format("Arpu:%.1f", product.fLastARPU),
                     "Expense:" .. tostring(math.floor(product.nLastMarketExpense)),
-                    string.format("Scale:%d(%+d)", product.nLastMarketScale, product.nLastMarketScaleDelta),                    
+                    string.format("Scale:%d(%+d)", product.nLastMarketScale, product.nLastMarketScaleDelta),
                     "Income:" .. tostring(product.nLastMarketIncome))
             end
         end
