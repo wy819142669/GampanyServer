@@ -83,14 +83,14 @@ tbConfig = {
     tbProductCategory = {
         A = {
             --==研发相关配置==
-            nMinTeam = 10,       --团队最小人数需求
-            nIdeaTeam = 20,     --团队理想人数
+            nMinTeam = 10,               --团队最小人数需求
+            nIdeaTeam = 20,              --团队理想人数
             nRenovateMinTeam = 27,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 40,     --翻新时团队理想人数
-            nWorkLoad = 60,     --工作量
-            nRenovationWorkload = 40,       --翻新时的工作量
-            nMaintainMinTeam = 10,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 15,         --上线运营时需要维护团队规模
+            nRenovateIdeaTeam = 40,      --翻新时团队理想人数
+            nWorkLoad = 60,              --工作量
+            nRenovationWorkload = 40,    --翻新时的工作量
+            nMaintainMinTeam = 10,       --上线运营时需要最小团队规模。低于此人数，会失去收入。
+            nMaintainIdeaTeam = 15,      --上线运营时需要维护团队规模。低于此人数，会品质下滑。
             --==市场运营相关配置==
             fProductRetentionRate = 0.5,    --产品基础留存率
             nBaseARPU = 4,                 --基础ARPU
@@ -113,16 +113,16 @@ tbConfig = {
         },
         B = {
             --==研发相关配置==
-            nMinTeam = 15,               --团队最小人数需求
+            nMinTeam = 15,              --团队最小人数需求
             nIdeaTeam = 30,             --团队理想人数
-            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
+            nRenovateMinTeam = 40,      --翻新时团队最小人数需求
             nRenovateIdeaTeam = 60,     --翻新时团队理想人数
-            nWorkLoad = 135,             --工作量
+            nWorkLoad = 135,            --工作量
             nRenovationWorkload = 90,   --翻新时的工作量
-            nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 23,         --上线运营时需要维护团队规模
+            nMaintainMinTeam = 15,      --上线运营时需要最小团队规模。低于此人数，会失去收入。
+            nMaintainIdeaTeam = 23,     --上线运营时需要维护团队规模。低于此人数，会品质下滑。
             --==市场运营相关配置==
-            fProductRetentionRate = 0.58,    --产品基础留存率
+            fProductRetentionRate = 0.58,   --产品基础留存率
             nBaseARPU = 12,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 430,             --市场总份额
@@ -144,13 +144,13 @@ tbConfig = {
         C = {
             --==研发相关配置==
             nMinTeam = 20,               --团队最小人数需求
-            nIdeaTeam = 40,             --团队理想人数
+            nIdeaTeam = 40,              --团队理想人数
             nRenovateMinTeam = 54,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 80,     --翻新时团队理想人数
+            nRenovateIdeaTeam = 80,      --翻新时团队理想人数
             nWorkLoad = 240,             --工作量
             nRenovationWorkload = 160,   --翻新时的工作量
-            nMaintainMinTeam = 20,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 30,         --上线运营时需要维护团队规模
+            nMaintainMinTeam = 20,       --上线运营时需要最小团队规模。低于此人数，会失去收入。
+            nMaintainIdeaTeam = 30,      --上线运营时需要维护团队规模。低于此人数，会品质下滑。
             --==市场运营相关配置==
             fProductRetentionRate = 0.73,    --产品基础留存率
             nBaseARPU = 11,                 --基础ARPU
@@ -174,13 +174,13 @@ tbConfig = {
         D = {
             --==研发相关配置==
             nMinTeam = 30,               --团队最小人数需求
-            nIdeaTeam = 60,             --团队理想人数
+            nIdeaTeam = 60,              --团队理想人数
             nRenovateMinTeam = 80,       --翻新时团队最小人数需求
             nRenovateIdeaTeam = 120,     --翻新时团队理想人数
             nWorkLoad = 360,             --工作量
             nRenovationWorkload = 240,   --翻新时的工作量
-            nMaintainMinTeam = 30,           --上线运营时需要最小团队规模
-            nMaintainIdeaTeam = 45,         --上线运营时需要维护团队规模
+            nMaintainMinTeam = 30,       --上线运营时需要最小团队规模。低于此人数，会失去收入。
+            nMaintainIdeaTeam = 45,      --上线运营时需要维护团队规模。低于此人数，会品质下滑。
             --==市场运营相关配置==
             fProductRetentionRate = 0.73,    --产品基础留存率
             nBaseARPU = 14,                 --基础ARPU
@@ -201,7 +201,7 @@ tbConfig = {
             nNpcInitProductQuality10 = 30,      --NPC，初始产品品质
             nNpcCloseLowQualityProbabilityPerProduct = 15, -- 每多一个npc产品，npc退市一个最低品质的产品的几率
         },
-        P = { --==中台项目（工具平台）==，设置项与产品项的有些不同 --加研发速度
+        P = { --== 工具平台 ==，设置项与产品项的有些不同 --加研发速度
             --==研发相关配置==
             nMinTeam = 10,               --团队最小人数需求
             nIdeaTeam = 20,             --团队理想人数
@@ -209,11 +209,11 @@ tbConfig = {
             nRenovateIdeaTeam = 40,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 80,       --翻新时的工作量
-            nMaintainMinTeam = 10,           --上线运营时需要最小团队规模
+            nMaintainMinTeam = 10,          --上线运营时需要最小团队规模。低于此人数，平台会失去作用。
             nMaintainIdeaTeam = 15,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
-        Q = { --==中台项目(引擎平台)==，设置项与产品项的有些不同  --加研发品质
+        Q = { --== 引擎平台 ==，设置项与产品项的有些不同  --加研发品质
             --==研发相关配置==
             nMinTeam = 15,               --团队最小人数需求
             nIdeaTeam = 30,             --团队理想人数
@@ -221,7 +221,7 @@ tbConfig = {
             nRenovateIdeaTeam = 60,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 80,       --翻新时的工作量
-            nMaintainMinTeam = 15,           --上线运营时需要最小团队规模
+            nMaintainMinTeam = 15,          --上线运营时需要最小团队规模，低于此人数，平台会失去作用。
             nMaintainIdeaTeam = 23,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
