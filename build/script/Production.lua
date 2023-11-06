@@ -43,8 +43,14 @@ function Production:Close(product, user)
         product.tbManpower[i] = 0
     end
 
-    if GameLogic:PROD_IsInMarket(product) then
-        GameLogic:OnCloseProduct(product.Id, product, false)
+    --如果是中台产品，关闭中台效果；如果是发布到市场上的上线产品，则下线。
+    if GameLogic:PROD_IsPlatformP(product) then
+        user.nPlatformPQuality10 = 0
+    elseif GameLogic:PROD_IsPlatformQ(product) then
+        user.nPlatformQQuality10 = 0
+    elseif GameLogic:PROD_IsInMarket(product) then
+        MarketMgr:CancelMarketing(product, user)    --退还当季拟投入的营销费用
+        GameLogic:OnCloseProduct(product.Id, product, false)    --下线下架
     end
 
     product.State = tbProductState.nClosed

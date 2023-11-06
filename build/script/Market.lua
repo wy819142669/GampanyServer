@@ -104,6 +104,14 @@ function MarketMgr:OnRecover()
     end
 end
 
+--玩家的某个产品，取消市场推广，退回市场费用
+function MarketMgr:CancelMarketing(product, user)
+    if product.nMarketExpense > 0 then
+        GameLogic:FIN_Unpay(user, tbConfig.tbFinClassify.Mkt, product.nMarketExpense)
+        product.nMarketExpense = 0
+    end
+end
+
 --产品份额的自然流失（受品类流失率及自身品质影响）
 function MarketMgr:LossMarket()
     for c, info in pairs(GetTableRuntime().tbCategoryInfo) do
