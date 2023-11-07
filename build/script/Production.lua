@@ -188,8 +188,9 @@ function Production:GetDevelopingQuality(product, user)
 
     -- 非中台部门要计算中台加成
     if not GameLogic:PROD_IsPlatform(product) then
-        local fManPowerRate, fQualityRate = GameLogic:GetPlatformEffect(user)
-        totalQuality, totalMan = totalQuality * fQualityRate, totalMan * fManPowerRate
+        local fManPowerRate = GameLogic:GetPlatformManpowerEffect(user)
+        local fQualityRate  = GameLogic:GetPlatformQualityEffect(user)
+        totalQuality, totalMan = totalQuality * fQualityRate * fManPowerRate, totalMan * fManPowerRate
     end
 
     return math.floor(totalQuality), math.floor(totalMan)

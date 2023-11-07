@@ -204,11 +204,8 @@ function GameLogic:PROD_NewPublished(id, product, renovate, npc)
     end
 end
 
-function GameLogic:GetPlatformEffect(user)
-    local manpowerRate = 1 + tbConfig.fPlatformManPowerRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio
-    local qualityRate =  (1 + tbConfig.fPlatformQualityRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio) * (1 + tbConfig.fPlatformQualityRate * user.nPlatformQQuality10 * tbConfig.fQualityRatio)
-
-    return manpowerRate, qualityRate
+function GameLogic:GetPlatformManpowerEffect(user)
+    return (1 + tbConfig.fPlatformManPowerRate * user.nPlatformPQuality10 * tbConfig.fQualityRatio)
 end
 
 function GameLogic:GetPlatformQualityEffect(user)
