@@ -186,14 +186,16 @@ function Production:GetDevelopingQuality(product, user)
 
     totalQuality = totalQuality * tbConfig.fQualityPerManpowerLevel
 
-    -- 非中台部门要计算中台加成
-    if not GameLogic:PROD_IsPlatform(product) then
-        local fManPowerRate = GameLogic:GetPlatformManpowerEffect(user)
-        local fQualityRate  = GameLogic:GetPlatformQualityEffect(user)
-        totalQuality, totalMan = totalQuality * fQualityRate * fManPowerRate, totalMan * fManPowerRate
+    local fManPowerRate = GameLogic:GetPlatformManpowerEffect(user)
+    local fQualityRate  = GameLogic:GetPlatformQualityEffect(user)
+    if GameLogic:PROD_IsPlatformP(product) then
+        fManPowerRate = 1   --不给自身加成
+    elseif GameLogic:PROD_IsPlatformQ(product) then
+        fQualityRate = 1    --不给自身加成
     end
-
-    return math.floor(totalQuality), math.floor(totalMan)
+    totalMan = math.floor(totalMan * fManPowerRate)
+    totalQuality = math.floor(totalQuality * fQualityRate * fManPowerRate) 
+    return totalQuality, totalMan
 end
 
 function Production:UpdateWorkload(product, user)
