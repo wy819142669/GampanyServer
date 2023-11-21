@@ -12,7 +12,7 @@ tbConfig = {
     bEnablePlatformYear = 3,    -- 开启平台的年份
 
     --==== 财务设置相关，只读不写 ====
-    nInitCash = 1000,       -- 初始时玩家公司的账上现金量
+    nInitCash = 2000,       -- 初始时玩家公司的账上现金量
     fTaxRate = 0.1,         -- 税率【每年税额=税前利润*税率，当年亏损（税前利润为负）则不扣税】
     tbFinClassify = {       -- 财务现金流分类
         Revenue = 1,        -- 销售收入
@@ -58,16 +58,16 @@ tbConfig = {
     --==== 人力相关系统设置数据，只读不写 ====
     nStandardPlayerCount = 6,   -- 基准玩家数，每次新人才进入市场，会以“实际玩家数/基准玩家数”为系数做调整
     tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数，子表元素个数需要等于tbConfig.nManpowerMaxExpLevel
-        {36, 16, 7, 1, 0},
-        {41, 23, 12, 2, 0},
-        {47, 23, 23, 6, 0},
-        {46, 39, 30, 11, 0},
-        {32, 33, 24, 11, 2},
-        {26, 26, 27, 12, 5},
-        {19, 22, 23, 14, 6},
-        {16, 17, 18, 14, 7},
-        {12, 14, 17, 16, 7},
-        {12, 12, 18, 19, 11},
+        {56, 16, 7, 1, 0},
+        {71, 33, 22, 6, 0},
+        {58, 43, 28, 12, 2},
+        {46, 59, 30, 11, 3},
+        {32, 43, 34, 11, 5},
+        {26, 36, 37, 12, 5},
+        {19, 22, 33, 14, 6},
+        {12, 15, 35, 15, 7},
+        {9, 12, 38, 16, 8},
+        {5, 8, 30, 19, 9},
     },
     fSeason1NewManpowerRatio = 0.3,     --第一季度新进人数占全年人数比例， 剩下的在第三季度新进
 
@@ -85,8 +85,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 10,               --团队最小人数需求
             nIdeaTeam = 20,              --团队理想人数
-            nRenovateMinTeam = 27,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 40,      --翻新时团队理想人数
+            nRenovateMinTeam = 20,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 30,      --翻新时团队理想人数
             nWorkLoad = 60,              --工作量
             nRenovationWorkload = 40,    --翻新时的工作量
             nMaintainMinTeam = 10,       --上线运营时需要最小团队规模。低于此人数，会失去收入。
@@ -115,14 +115,14 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 15,              --团队最小人数需求
             nIdeaTeam = 30,             --团队理想人数
-            nRenovateMinTeam = 40,      --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 60,     --翻新时团队理想人数
+            nRenovateMinTeam = 30,      --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 45,     --翻新时团队理想人数
             nWorkLoad = 135,            --工作量
             nRenovationWorkload = 90,   --翻新时的工作量
             nMaintainMinTeam = 15,      --上线运营时需要最小团队规模。低于此人数，会失去收入。
             nMaintainIdeaTeam = 23,     --上线运营时需要维护团队规模。低于此人数，会品质下滑。
             --==市场运营相关配置==
-            fProductRetentionRate = 0.58,   --产品基础留存率
+            fProductRetentionRate = 0.38,   --产品基础留存率
             nBaseARPU = 12,                 --基础ARPU
             nMaxMarketScale = 40,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 430,             --市场总份额
@@ -145,8 +145,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 20,               --团队最小人数需求
             nIdeaTeam = 40,              --团队理想人数
-            nRenovateMinTeam = 54,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 80,      --翻新时团队理想人数
+            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 60,      --翻新时团队理想人数
             nWorkLoad = 240,             --工作量
             nRenovationWorkload = 160,   --翻新时的工作量
             nMaintainMinTeam = 20,       --上线运营时需要最小团队规模。低于此人数，会失去收入。
@@ -175,14 +175,14 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 30,               --团队最小人数需求
             nIdeaTeam = 60,              --团队理想人数
-            nRenovateMinTeam = 80,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 120,     --翻新时团队理想人数
+            nRenovateMinTeam = 60,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 90,     --翻新时团队理想人数
             nWorkLoad = 360,             --工作量
             nRenovationWorkload = 240,   --翻新时的工作量
             nMaintainMinTeam = 30,       --上线运营时需要最小团队规模。低于此人数，会失去收入。
             nMaintainIdeaTeam = 45,      --上线运营时需要维护团队规模。低于此人数，会品质下滑。
             --==市场运营相关配置==
-            fProductRetentionRate = 0.73,    --产品基础留存率
+            fProductRetentionRate = 0.63,    --产品基础留存率
             nBaseARPU = 14,                 --基础ARPU
             nMaxMarketScale = 50,           --该品类市场总规模占全品类总规模上限百分比
             nTotalMarket = 900,             --市场总份额
@@ -205,8 +205,8 @@ tbConfig = {
             --==研发相关配置==
             nMinTeam = 10,               --团队最小人数需求
             nIdeaTeam = 20,             --团队理想人数
-            nRenovateMinTeam = 27,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 40,     --翻新时团队理想人数
+            nRenovateMinTeam = 20,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 30,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 80,       --翻新时的工作量
             nMaintainMinTeam = 10,          --上线运营时需要最小团队规模。低于此人数，平台会失去作用。
@@ -215,14 +215,14 @@ tbConfig = {
         },
         Q = { --== 引擎平台 ==，设置项与产品项的有些不同  --加研发品质
             --==研发相关配置==
-            nMinTeam = 15,               --团队最小人数需求
-            nIdeaTeam = 30,             --团队理想人数
-            nRenovateMinTeam = 40,       --翻新时团队最小人数需求
-            nRenovateIdeaTeam = 60,     --翻新时团队理想人数
+            nMinTeam = 10,               --团队最小人数需求
+            nIdeaTeam = 20,             --团队理想人数
+            nRenovateMinTeam = 20,       --翻新时团队最小人数需求
+            nRenovateIdeaTeam = 30,     --翻新时团队理想人数
             nWorkLoad = 40,             --工作量
             nRenovationWorkload = 80,       --翻新时的工作量
-            nMaintainMinTeam = 15,          --上线运营时需要最小团队规模，低于此人数，平台会失去作用。
-            nMaintainIdeaTeam = 23,         --上线运营时需要维护团队规模
+            nMaintainMinTeam = 10,          --上线运营时需要最小团队规模，低于此人数，平台会失去作用。
+            nMaintainIdeaTeam = 15,         --上线运营时需要维护团队规模
             fProductRetentionRate = 0.5,    --产品基础留存率
         },
     },
