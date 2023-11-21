@@ -58,6 +58,7 @@ tbConfig = {
     --==== 人力相关系统设置数据，只读不写 ====
     nStandardPlayerCount = 6,   -- 基准玩家数，每次新人才进入市场，会以“实际玩家数/基准玩家数”为系数做调整
     tbNewManpowerPerYear = {  -- 每年人才市场各等级新进人数，子表元素个数需要等于tbConfig.nManpowerMaxExpLevel
+--        {3600, 1600, 700, 100, 0},  --大量人才，用于测试
         {56, 16, 7, 1, 0},
         {71, 33, 22, 6, 0},
         {58, 43, 28, 12, 2},
@@ -308,7 +309,7 @@ tbInitTables = {
         tbManpower = {0,0,0,0,0},                   --团队人员
         nNeedWorkLoad = 0,                          --研发或翻新需要完成的工作量
         nFinishedWorkLoad = 0,                      --已完成工作量
-        nFinishedQuality = 0,                       --已完成工作量的累积品质
+        nFinishedQuality10 = 0,                     --已完成工作量的累积品质的10倍值
         szName = "",
     },
 

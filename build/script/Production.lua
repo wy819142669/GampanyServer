@@ -43,8 +43,14 @@ function Production:Close(product, user)
         product.tbManpower[i] = 0
     end
 
-    if GameLogic:PROD_IsInMarket(product) then
-        GameLogic:OnCloseProduct(product.Id, product, false)
+    --如果是中台产品，关闭中台效果；如果是发布到市场上的上线产品，则下线。
+    if GameLogic:PROD_IsPlatformP(product) then
+        user.nPlatformPQuality10 = 0
+    elseif GameLogic:PROD_IsPlatformQ(product) then
+        user.nPlatformQQuality10 = 0
+    elseif GameLogic:PROD_IsInMarket(product) then
+        MarketMgr:CancelMarketing(product, user)    --退还当季拟投入的营销费用
+        GameLogic:OnCloseProduct(product.Id, product, false)    --下线下架
     end
 
     product.State = tbProductState.nClosed
@@ -85,7 +91,7 @@ function Develop.Renovate(tbParam, user)
     product.State = tbProductState.nRenovating
     product.nNeedWorkLoad = categoryConfig.nRenovationWorkload
     product.nFinishedWorkLoad = 0
-    product.nFinishedQuality = 0
+    product.nFinishedQuality10 = 0
     return "success", true
 end
 
@@ -136,8 +142,9 @@ end
 function Production:Publish(product, user)
     --在Market.Publish中已对产品状态做过检查，此处略过
     --product.State == tbConfig.tbProductState.nEnabled or product.State == tbConfig.tbProductState.nRenovateDone
-    local quality = math.floor(product.nFinishedQuality / product.nFinishedWorkLoad * 10)
-    product.nFinishedQuality = 0
+    local quality = math.floor(product.nFinishedQuality10 / product.nFinishedWorkLoad)
+    product.nFinishedWorkLoad = 0
+    product.nFinishedQuality10 = 0
     product.State = tbProductState.nPublished
     return quality
 end
@@ -158,6 +165,10 @@ function Production:GetDevelopingQuality(product, user)
     local nMinTeam = bInRenovate and category.nRenovateMinTeam or category.nMinTeam
     local nIdeaTeam = bInRenovate and category.nRenovateIdeaTeam or category.nIdeaTeam
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
+
+    if totalMan == 0 then
+        return 0, 0
+    end
 
     if totalMan < nMinTeam then
         totalMan = totalMan * tbConfig.fSmallTeamRatio
@@ -180,20 +191,25 @@ function Production:GetDevelopingQuality(product, user)
 
     totalQuality = totalQuality * tbConfig.fQualityPerManpowerLevel
 
-    -- 非中台部门要计算中台加成
-    if not GameLogic:PROD_IsPlatform(product) then
-        local fManPowerRate, fQualityRate = GameLogic:GetPlatformEffect(user)
-        totalQuality, totalMan = totalQuality * fQualityRate, totalMan * fManPowerRate
+    local fManPowerRate = GameLogic:GetPlatformManpowerEffect(user)
+    local fQualityRate  = GameLogic:GetPlatformQualityEffect(user)
+    if GameLogic:PROD_IsPlatformP(product) then
+        fManPowerRate = 1   --不给自身加成
+    elseif GameLogic:PROD_IsPlatformQ(product) then
+        fQualityRate = 1    --不给自身加成
     end
 
-    return math.floor(totalQuality), math.floor(totalMan)
+    totalMan = totalMan * fManPowerRate
+    totalQuality = math.floor(totalQuality * fQualityRate * fManPowerRate * 10 / totalMan)
+    totalMan = math.floor(totalMan)
+    totalQuality = totalQuality * totalMan
+    return totalQuality, totalMan
 end
 
 function Production:UpdateWorkload(product, user)
-    local totalQuality, totalMan = self:GetDevelopingQuality(product, user)
+    local totalQuality10, totalMan = self:GetDevelopingQuality(product, user)
     product.nFinishedWorkLoad = product.nFinishedWorkLoad + totalMan
-    product.nFinishedQuality = product.nFinishedQuality + totalQuality
-
+    product.nFinishedQuality10 = product.nFinishedQuality10 + totalQuality10
     if product.nFinishedWorkLoad < product.nNeedWorkLoad then
         return
     end
@@ -245,7 +261,7 @@ function Production:UpdatePublished(product, user)
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
     local szReason
     local qualityEffect = GameLogic:GetPlatformQualityEffect(user)
-    if GameLogic:PROD_IsPlatform(product) then
+    if GameLogic:PROD_IsPlatformQ(product) then
         qualityEffect = 1
     end
     local avgQuality = math.floor(totalQuality / totalMan * 10 * qualityEffect)
