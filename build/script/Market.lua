@@ -88,6 +88,8 @@ function MarketMgr:DoStart()
             Market.NewNpcProduct(category, tbConfig.tbProductCategory[category].nNpcInitProductQuality10)
         end
     end
+
+    MarketMgr:DistributionMarket()
 end
 
 function MarketMgr:OnRecover()
@@ -339,7 +341,7 @@ function MarketMgr:NpcCloseLowQuality()
     for category, info in pairs(data.tbCategoryInfo) do
         local cat = tbConfig.tbProductCategory[category]
         local rand = math.random() * 100
-        print(rand, cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount)
+        print("rand:", rand, "CloseLowQualityRate:", cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount)
         if rand < cat.nNpcCloseLowQualityProbabilityPerProduct * info.nNpcProductCount then
             local id, product = MarketMgr:NpcGetLowestQualityProduct(category)
             if id and product then
