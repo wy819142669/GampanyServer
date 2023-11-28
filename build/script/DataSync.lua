@@ -2,11 +2,12 @@ require("Json")
 require("Lib")
 require("Config")
 
-local tbQueryFunc = {}
+DataSync = {}
+DataSync.tbQueryFunc = {}
 
 function Query(jsonParam)
     local tbParam = JsonDecode(jsonParam)
-    local func = tbQueryFunc[tbParam.FuncName]
+    local func = DataSync.tbQueryFunc[tbParam.FuncName]
     local szMsg
     local bRet = false
     if func then
@@ -23,15 +24,18 @@ function Query(jsonParam)
             tbResult[k] = v 
         end
     end
-    return JsonEncode(tbResult)
+    DataSync:SlimRuntimeDataForTransfer()
+    local stringResult = JsonEncode(tbResult)
+    DataSync:RestoreRuntimeDataAfterTransfer()
+    return stringResult
 end
 
 --------------------接口实现---------------------------------------
-function tbQueryFunc.GetConfigData(tbParam)
+function DataSync.tbQueryFunc.GetConfigData(tbParam)
     return "success", true,  { tbConfig = tbConfig }
 end
 
-function tbQueryFunc.GetRunTimeData(tbParam)
+function DataSync.tbQueryFunc.GetRunTimeData(tbParam)
     local data = GetTableRuntime()
     local ret = {}
 
@@ -47,6 +51,28 @@ function tbQueryFunc.GetRunTimeData(tbParam)
         ret.tbConfig = tbConfig
     end
     return "success", true, ret
+end
+
+-----------------------------------------------------------
+---为减少网络传送的data的体积，去除一些重复引用的数据，客户端可根据其它数据项自行恢复这些数据
+function DataSync:SlimRuntimeDataForTransfer()
+    local data = GetTableRuntime()
+    DataSync.TempHolder = {}
+    for category, info in pairs(data.tbCategoryInfo) do
+        DataSync.TempHolder[category] = info.tbPublishedProduct
+        info.tbPublishedProduct = nil
+    end
+end
+
+--还原数据原本的结构与信息
+function DataSync:RestoreRuntimeDataAfterTransfer()
+    if DataSync.TempHolder then
+        local data = GetTableRuntime()
+        for category, info in pairs(data.tbCategoryInfo) do
+            info.tbPublishedProduct = DataSync.TempHolder[category]
+        end
+        DataSync.TempHolder = nil
+    end
 end
 
 --=================================================================

@@ -123,6 +123,7 @@ function tbAdminFunc.ModifyUserData(tbParam)
     elseif tbParam.Key == "Password" then
         runtime.tbLoginAccount[tbParam.UserName].password = tbParam.Value
     end
+    return "success", true
 end
 
 function tbAdminFunc.DoStart(tbParam)

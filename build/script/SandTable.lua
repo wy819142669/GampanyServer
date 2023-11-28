@@ -63,8 +63,10 @@ function Action(jsonParam)
             tbResult[k] = v
         end
     end
-
-    return JsonEncode(tbResult)
+    DataSync:SlimRuntimeDataForTransfer()
+    local stringResult = JsonEncode(tbResult)
+    DataSync:RestoreRuntimeDataAfterTransfer()
+    return stringResult
 end
 
 function GetTableRuntime()
