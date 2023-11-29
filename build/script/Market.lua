@@ -261,14 +261,22 @@ function MarketMgr:GainRevenue()
         end
     end
     --结算玩家收入
-    for userName, user in pairs(data.tbUser) do
+    for _, user in pairs(data.tbUser) do
         local income = 0
+        local mktCost = 0
         for _, product in pairs(user.tbProduct) do
-            income = income + (product.nLastMarketIncome and product.nLastMarketIncome or 0) --非发布到市场的产品，不会有nLastMarketIncome
+            if product.nLastMarketIncome then  --非发布到市场的产品，不会有nLastMarketIncome
+                income = income + product.nLastMarketIncome
+                mktCost = mktCost + product.nLastMarketExpense
+            end
         end
         if income > 0 then
             GameLogic:FIN_Revenue(user, income)
-            table.insert(user.tbSysMsg, string.format("产品共获得收益 %d", income))
+            user.tbSeasonReport.Cash.In = user.tbSeasonReport.Cash.In + income
+            --table.insert(user.tbSysMsg, string.format("产品共获得收益 %d", income))
+        end
+        if mktCost >0 then
+            user.tbSeasonReport.ExpenseOthers.Mkt = mktCost            
         end
     end
 end

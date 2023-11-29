@@ -214,14 +214,16 @@ function PrepairSeasonReport(user)
 end
 
 function FinalizeSeasonReport(user)
-    local report = user.tbSeasonReport     
+    local report = user.tbSeasonReport
+    -- 现金部分
     report.Cash.End = user.nCash
-    if report.ExpenseOthers.HR == 0 then
-        report.ExpenseOthers.HR = nil
-    end
-    if report.ExpenseOthers.Mkt == 0 then
-        report.ExpenseOthers.Mkt = nil
-    end
+    report.Cash.Out = report.Cash.Begin + report.Cash.In - report.Cash.End 
+    if report.Cash.In == 0      then    report.Cash.In = nil        end    
+    if report.Cash.Out == 0     then    report.Cash.Out = nil       end
+
+    -- 其它费用部分
+    if report.ExpenseOthers.HR == 0     then    report.ExpenseOthers.HR = nil    end
+    if report.ExpenseOthers.Mkt == 0    then    report.ExpenseOthers.Mkt = nil   end
 end
 
 -- 每个季度结束后的自动处理
@@ -255,7 +257,12 @@ end
 function DoPostYear()
     for _, user in pairs(tbRuntimeData.tbUser) do
         --年尾扣税
-        GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Tax, GameLogic:FIN_Tax(user.tbYearReport.nGrossProfit))
+        local tax = GameLogic:FIN_Tax(user.tbYearReport.nGrossProfit)
+        if tax > 0 then
+            GameLogic:FIN_Pay(user, tbConfig.tbFinClassify.Tax, tax)
+            user.tbSeasonReport.ExpenseOthers.Tax = tax
+            user.tbSeasonReport.Cash.Out = user.tbSeasonReport.Cash.Out + tax
+        end
         --记录一年最后的账上结余
         user.tbYearReport.nBalance = user.nCash
         user.tbYearReport.nScore = user.nCash + user.tbYearReport.nNetProfit * tbConfig.fNetProfitRatioForReportSort
