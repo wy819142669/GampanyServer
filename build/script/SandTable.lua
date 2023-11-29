@@ -203,27 +203,51 @@ end
 function DoPreSeason()
     print("=============== Year:".. tbRuntimeData.nCurYear .. " Season:" .. tbRuntimeData.nCurSeason .. "  ===============")
     HumanResources:AddNewManpower() -- 新人才进入人才市场
-    HumanResources:SettleDepart()   -- 办理离职（交付流失员工）
-    HumanResources:SettleFire()     -- 解雇人员离职
-    HumanResources:SettleTrain()    -- 培训中的员工升级
-    HumanResources:SettlePoach()    -- 成功挖掘的人才入职
-    HumanResources:SettleHire()     -- 人才市场招聘结果
     MarketMgr:PreSeason()           -- 市场模块处理
     HumanResources:RecordProductManpower() -- 记录季度开始时的人力
+end
+
+function PrepairSeasonReport(user)
+    local cash = user.tbSeasonReport and user.tbSeasonReport.Cash.End or tbConfig.nInitCash
+    user.tbSeasonReport = Lib.copyTab(tbInitTables.tbInitSeasonReport)
+    user.tbSeasonReport.Cash.Begin = cash
+end
+
+function FinalizeSeasonReport(user)
+    local report = user.tbSeasonReport     
+    report.Cash.End = user.nCash
+    if report.ExpenseOthers.HR == 0 then
+        report.ExpenseOthers.HR = nil
+    end
+    if report.ExpenseOthers.Mkt == 0 then
+        report.ExpenseOthers.Mkt = nil
+    end
 end
 
 -- 每个季度结束后的自动处理
 function DoPostSeason()
     DataStorage:Save(tbRuntimeData)
 
-    for _, tbUser in pairs(tbRuntimeData.tbUser) do
-        tbUser.tbSysMsg = {}
+    for _, user in pairs(tbRuntimeData.tbUser) do
+        PrepairSeasonReport(user)
+        user.tbSysMsg = {}
     end
     MarketMgr:PostSeason()          -- 更新市场竞标结果 -- 获取上个季度市场收益
     Production:PostSeason()         -- 推进研发进度,更新产品品质
     HumanResources:PayOffSalary()   -- 支付薪水
+
+    ---------------------------------------
     for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
         info.newPublished = {}      --清空新产品列表
+    end
+
+    HumanResources:SettleDepart()   -- 办理离职（交付流失员工）
+    HumanResources:SettleFire()     -- 解雇人员离职
+    HumanResources:SettleTrain()    -- 培训中的员工升级
+    HumanResources:SettlePoach()    -- 成功挖掘的人才入职
+    HumanResources:SettleHire()     -- 人才市场招聘结果
+    for _, user in pairs(tbRuntimeData.tbUser) do
+        FinalizeSeasonReport(user)
     end
 end
 

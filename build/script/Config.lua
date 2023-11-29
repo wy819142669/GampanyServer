@@ -284,10 +284,42 @@ tbInitTables = {
         bBankruptcy = false,        -- 是否破产
 
         -- 系统消息
+        --tbSeasonReport = {},      -- 季度报告
         tbSysMsg = {},
         tbTips = {},
     },
 
+    --季报初始表
+    tbInitSeasonReport = {
+        Cash = {
+            Begin = 0,          -- 季度初期现金额
+            End = 0,            -- 季度末期现金额
+            In = 0,             -- 季度流入现金（暨总销售收入）
+            Out = 0,            -- 季度流出现金（总开支）
+        },
+        ExpenseDev = {          -- 研发费用
+            -- Pub = 0,         -- 已发布（在线）产品
+            -- New = 0,         -- 新产品
+            -- Platform = 0,    -- 平台
+        },
+        ExpenseOthers = {       -- 其它费用
+            HR = 0,             -- 行政人事
+            Mkt = 0,            -- 营销
+            -- Tax = 0,         -- 税款
+        },
+        HR = {                  -- 人事变动
+            -- Hire = 0,        -- 新招，即将入职人数
+            -- Fire = 0,        -- 解雇人数
+            -- Train = 0,       -- 受培训人数
+            -- Poach = 1,       -- 挖角来的，即将入职人数
+            -- Poached = 1,     -- 被挖角的，离职人数
+        },
+        AffectedProject = {
+            -- Poached = {},    -- 受挖角的影响
+            -- Train = {},      -- 受培训的影响
+        },
+    },
+    
     --年报初始表
     tbInitReport = {
         nTurnover = 0,          -- (销售)收入
