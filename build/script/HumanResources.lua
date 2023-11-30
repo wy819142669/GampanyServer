@@ -50,9 +50,6 @@ end
 -- 传入的nNum表示把欲解雇的人数更新为nNum，而不是再增加解雇nNum人
 function HR.CommitFire(tbParam, user)
     local tbRuntimeData = GetTableRuntime()
-    if tbRuntimeData.nCurSeason == 0 then
-        return "年初阶段不能解雇员工", false
-    end
     local tbFire = tbParam.tbFire
     local finalCount = 0
     for i = 1, tbConfig.nManpowerMaxExpLevel do
@@ -557,7 +554,7 @@ function HumanResources:PayOffSalary()
         local nCost = user.nTotalManpower * GameLogic:HR_GetSalary(user.nSalaryLevel)
         nCost = math.floor(nCost + 0.5)
         if nCost > 0 then
-            if GameLogic:FIN_Pay(user, nil, nCost) then
+            if GameLogic:FIN_Pay_Bankruptcy(user, nil, nCost) then
                 -- 分类记账
                 local dev, pub, plt, idle = HumanResources:SalaryByPosition(user, nCost)
                 if pub > 0 then

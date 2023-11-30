@@ -131,7 +131,7 @@ end
 function tbFunc.Action.HR(tbParam)
     local user = tbRuntimeData.tbUser[tbParam.Account]
     local func = HR[tbParam.Operate]
-    if func then
+    if func and (tbRuntimeData.nCurSeason ~= 0 or tbParam.Operate == "RaiseSalary")then
         return func(tbParam, user)
     end
     return "invalid HR operate", false
@@ -140,7 +140,7 @@ end
 function tbFunc.Action.Develop(tbParam)
     local user = tbRuntimeData.tbUser[tbParam.Account]
     local func = Develop[tbParam.Operate]
-    if func then
+    if func and tbRuntimeData.nCurSeason ~= 0 then
         return func(tbParam, user)
     end
     return "invalid Develop operate", false
@@ -149,7 +149,7 @@ end
 function tbFunc.Action.Market(tbParam)
     local user = tbRuntimeData.tbUser[tbParam.Account]
     local func = Market[tbParam.Operate]
-    if func then
+    if func and tbRuntimeData.nCurSeason ~= 0 then
         return func(tbParam, user)
     end
     return "invalid Market operate", false
@@ -293,6 +293,7 @@ function DoPreYear()
             local newUser = Administration:NewUser(name)
             newUser.nBankruptcyCount = tbUser.nBankruptcyCount
             newUser.tbHistoryYearReport = tbUser.tbHistoryYearReport
+            newUser.tbSeasonReport = tbUser.tbSeasonReport
             newUser.tbTips = tbUser.tbTips
 
             GameLogic:HR_RestartInitManpower(newUser)

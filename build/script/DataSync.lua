@@ -111,7 +111,7 @@ function GameLogic:FIN_Tax(profit)
     return math.max(0, math.floor(profit * tbConfig.fTaxRate + 0.5))
 end
 
---企业付款
+--企业付款(账面不足则返回失败且不扣款)
 function GameLogic:FIN_Pay(user, classify, amount)
     if amount < 0 or user.nCash < amount then
         return false
@@ -119,6 +119,16 @@ function GameLogic:FIN_Pay(user, classify, amount)
     user.nCash = user.nCash - amount
     GameLogic:FIN_ModifyReport(user.tbYearReport, classify, amount)
     return true
+end
+
+--企业付款(账面不足则返回失败且扣成负值)
+function GameLogic:FIN_Pay_Bankruptcy(user, classify, amount)
+    if amount < 0 then
+        return false
+    end
+    user.nCash = user.nCash - amount
+    GameLogic:FIN_ModifyReport(user.tbYearReport, classify, amount)
+    return (user.nCash >= 0)
 end
 
 --企业付款后的退款
@@ -297,7 +307,7 @@ function GameLogic:Bankruptcy(user)
         user.tbIdleManpower[i] = 0
     end
 
-    user.nCash = 0
+--    user.nCash = 0
     user.tbPoach = nil
     user.tbHire = nil
     table.insert(user.tbTips, "你已经破产，明年再重整旗鼓。")
