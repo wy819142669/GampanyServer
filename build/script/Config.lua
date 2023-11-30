@@ -285,7 +285,6 @@ tbInitTables = {
 
         -- 系统消息
         --tbSeasonReport = {},      -- 季度报告
-        tbSysMsg = {},
         tbTips = {},
     },
 

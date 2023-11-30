@@ -233,17 +233,6 @@ function MarketMgr:DistributionMarket()
             end
         end
     end
-
-    for _, user in pairs(GetTableRuntime().tbUser) do
-        for _, product in pairs(user.tbProduct) do
-            if product.nLastMarketScaleDelta and product.nLastMarketScaleDelta ~= 0 then
-                if user.tbSysMsg then
-                    table.insert(user.tbSysMsg, string.format("产品%s 用户%d（%+d）", 
-                        product.szName, product.nLastMarketScale, product.nLastMarketScaleDelta))
-                end
-            end
-        end
-    end
 end
 
 -- 获得收益
@@ -255,8 +244,6 @@ function MarketMgr:GainRevenue()
         for id, product in pairs(info.tbPublishedProduct) do
             GameLogic:MKT_UpdateArpuAndIncome(product)
             info.nTotalIncome = info.nTotalIncome + product.nLastMarketIncome
-            --print("GainRevenue", id, product.fLastARPU, product.nLastMarketScale, product.nLastMarketIncome)
-
             product.nSeasonCount = product.nSeasonCount + 1 --更新产品上市后的时长（季度数）
         end
     end
@@ -273,7 +260,6 @@ function MarketMgr:GainRevenue()
         if income > 0 then
             GameLogic:FIN_Revenue(user, income)
             user.tbSeasonReport.Cash.In = user.tbSeasonReport.Cash.In + income
-            --table.insert(user.tbSysMsg, string.format("产品共获得收益 %d", income))
         end
         if mktCost >0 then
             user.tbSeasonReport.ExpenseOthers.Mkt = mktCost            

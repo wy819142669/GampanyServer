@@ -214,13 +214,10 @@ function Production:UpdateWorkload(product, user)
         return
     end
 
-    local szMsg = ""
     if product.State == tbProductState.nBuilding then 
         product.State = tbProductState.nEnabled
-        szMsg = "产品%s研发完成，多余的%d人手已经释放到待岗区"
     elseif product.State == tbProductState.nRenovating then
         product.State = tbProductState.nRenovateDone
-        szMsg = "产品%s翻新完成，多余的%d人手已经释放到待岗区"
     else
         return --之前就已经完成了，还重新配上多余人手，则保持不做释放多余人手
     end
@@ -247,11 +244,6 @@ function Production:UpdateWorkload(product, user)
             end
         end
     end
-
-
-    if totalMan > category.nMaintainIdeaTeam and szMsg ~= "" then
-        table.insert(user.tbSysMsg, string.format(szMsg, product.szName, totalMan - category.nMaintainIdeaTeam))
-    end
 end
 
 function Production:UpdatePublished(product, user)
@@ -259,7 +251,6 @@ function Production:UpdatePublished(product, user)
     local nLastQuality10 = product.nQuality10
     local category = tbConfig.tbProductCategory[product.Category]
     local totalMan, totalQuality = Production:GetTeamScaleQuality(product)
-    local szReason
     local qualityEffect = GameLogic:GetPlatformQualityEffect(user)
     if GameLogic:PROD_IsPlatformQ(product) then
         qualityEffect = 1
@@ -272,14 +263,9 @@ function Production:UpdatePublished(product, user)
                 return
             end
             addQuality = tbConfig.fQualityDelta  --维护团队的等级不低于原始品质等级，则恢复品质
-            szReason = "维护团队规模和品质优秀"
         elseif avgQuality >= product.nQuality10 / tbConfig.fQualityPerManpowerLevel then
             return
-        else
-            szReason = string.format("维护团队平均等级不足%.1f", product.nOrigQuality10 / 10 / tbConfig.fQualityPerManpowerLevel)
         end
-    else
-        szReason = string.format("维护人数不足%d人", category.nMaintainIdeaTeam)
     end
 
     product.nQuality10 = math.min(product.nQuality10 + addQuality, product.nOrigQuality10)    -- 不能超过初始品质
@@ -291,17 +277,14 @@ function Production:UpdatePublished(product, user)
                 user.nPlatformPQuality10 = product.nQuality10
             else
                 user.nPlatformPQuality10 = 0
-                table.insert(user.tbSysMsg, "工具平台由于维护人数不足，失去作用。")
             end
         elseif GameLogic:PROD_IsPlatformQ(product) then
             if totalMan >= category.nMaintainMinTeam then
                 user.nPlatformQQuality10 = product.nQuality10
             else
                 user.nPlatformQQuality10 = 0
-                table.insert(user.tbSysMsg, "引擎平台由于维护人数不足，失去作用。")
             end
         end
-        table.insert(user.tbSysMsg, string.format("已发布产品%s由于%s品质由%.1f变更为%.1f", product.szName, szReason, nLastQuality10 / 10, product.nQuality10 / 10))
     end
     if product.nQuality10 < product.nOrigQuality10 then
         SeasonReportAddAffectedProject(user, product, "Quality")

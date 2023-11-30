@@ -222,7 +222,14 @@ end
 
 function SeasonReportAddAffectedProject(user, product, reason)
     local data = user.tbSeasonReport.AffectedProject
-    local project = product.Category .. product.Id
+    local project
+    if GameLogic:PROD_IsPlatformP(product) then
+        project = "工具"
+    elseif GameLogic:PROD_IsPlatformQ(product) then
+        project = "引擎"
+    else
+        project = product.Category .. product.Id    
+    end    
     local list = data[reason] or {}
     if not table.contain_value(list, project) then  -- 如无重复的记录，则插入
         table.insert(list, project)
@@ -236,7 +243,6 @@ function DoPostSeason()
 
     for _, user in pairs(tbRuntimeData.tbUser) do
         PrepairSeasonReport(user)
-        user.tbSysMsg = {}
     end
     Production:PostSeason()         -- 推进研发进度,更新产品品质
     MarketMgr:PostSeason()          -- 更新市场竞标结果 -- 获取上个季度市场收益
@@ -287,7 +293,6 @@ function DoPreYear()
             local newUser = Administration:NewUser(name)
             newUser.nBankruptcyCount = tbUser.nBankruptcyCount
             newUser.tbHistoryYearReport = tbUser.tbHistoryYearReport
-            newUser.tbSysMsg = tbUser.tbSysMsg
             newUser.tbTips = tbUser.tbTips
 
             GameLogic:HR_RestartInitManpower(newUser)
