@@ -244,9 +244,9 @@ function DoPostSeason()
     for _, user in pairs(tbRuntimeData.tbUser) do
         PrepairSeasonReport(user)
     end
+    HumanResources:PayOffSalary()   -- 支付薪水
     Production:PostSeason()         -- 推进研发进度,更新产品品质
     MarketMgr:PostSeason()          -- 更新市场竞标结果 -- 获取上个季度市场收益
-    HumanResources:PayOffSalary()   -- 支付薪水
 
     ---------------------------------------
     for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
