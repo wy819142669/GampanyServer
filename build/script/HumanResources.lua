@@ -260,7 +260,7 @@ function HumanResources:SettleDepart()
                                 nNum = nNum - nCount
                                 product.tbManpower[i] = product.tbManpower[i] - nCount
                                 totalCount = totalCount + nCount
-                                HumanResources:AddAffectedProject(user, product, "Poached")
+                                SeasonReportAddAffectedProject(user, product, "Poached")
                                 --local info = string.format("公司的%s%d项目的员工中%d名%d级员工辞职离开了公司", product.Category, id, nCount, i)
                                 --table.insert(user.tbSysMsg, info)
                             end
@@ -444,7 +444,7 @@ function HumanResources:SettleTrain()
                                 product.tbManpower[i + 1] = product.tbManpower[i + 1] + nLevelUpCount
                                 --table.insert(user.tbSysMsg, string.format("%s项目的%d名%d级员工晋升到%d级", product.szName, nLevelUpCount, i, i + 1))
                                 totalCount = totalCount + nLevelUpCount
-                                HumanResources:AddAffectedProject(user, product, "Train")
+                                SeasonReportAddAffectedProject(user, product, "Train")
                             end
                         end
                     end
@@ -611,15 +611,5 @@ function HumanResources:UpdateTotalManpower()
                 data.nTotalManpower = data.nTotalManpower + total
             end
         end
-    end
-end
-
-function HumanResources:AddAffectedProject(user, product, reason)
-    local data = user.tbSeasonReport.AffectedProject
-    local project = product.Category .. product.Id
-    local list = data[reason] or {}
-    if not table.contain_value(list, project) then  -- 如无重复的记录，则插入
-        table.insert(list, project)
-        data[reason] = list
     end
 end

@@ -303,6 +303,9 @@ function Production:UpdatePublished(product, user)
         end
         table.insert(user.tbSysMsg, string.format("已发布产品%s由于%s品质由%.1f变更为%.1f", product.szName, szReason, nLastQuality10 / 10, product.nQuality10 / 10))
     end
+    if product.nQuality10 < product.nOrigQuality10 then
+        SeasonReportAddAffectedProject(user, product, "Quality")
+    end
 end
 
 function Production:IsPublished(product)

@@ -128,10 +128,6 @@ function tbFunc.Action.StepDone(tbParam)
     return "success", true
 end
 
-function tbFunc.Action.DoOperate(tbParam)
-    return tbFunc.Action.funcDoOperate[tbParam.OperateType](tbParam)
-end
-
 function tbFunc.Action.HR(tbParam)
     local user = tbRuntimeData.tbUser[tbParam.Account]
     local func = HR[tbParam.Operate]
@@ -158,8 +154,6 @@ function tbFunc.Action.Market(tbParam)
     end
     return "invalid Market operate", false
 end
-
-tbFunc.Action.funcDoOperate = {}
 
 --------------------------------------------------------------------
 function NextStepIfAllGamersDone(forceAllDone)
@@ -226,6 +220,16 @@ function FinalizeSeasonReport(user)
     if report.ExpenseOthers.Mkt == 0    then    report.ExpenseOthers.Mkt = nil   end
 end
 
+function SeasonReportAddAffectedProject(user, product, reason)
+    local data = user.tbSeasonReport.AffectedProject
+    local project = product.Category .. product.Id
+    local list = data[reason] or {}
+    if not table.contain_value(list, project) then  -- 如无重复的记录，则插入
+        table.insert(list, project)
+        data[reason] = list
+    end
+end
+
 -- 每个季度结束后的自动处理
 function DoPostSeason()
     DataStorage:Save(tbRuntimeData)
@@ -234,8 +238,8 @@ function DoPostSeason()
         PrepairSeasonReport(user)
         user.tbSysMsg = {}
     end
-    MarketMgr:PostSeason()          -- 更新市场竞标结果 -- 获取上个季度市场收益
     Production:PostSeason()         -- 推进研发进度,更新产品品质
+    MarketMgr:PostSeason()          -- 更新市场竞标结果 -- 获取上个季度市场收益
     HumanResources:PayOffSalary()   -- 支付薪水
 
     ---------------------------------------
