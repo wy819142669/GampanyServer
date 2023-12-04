@@ -55,6 +55,13 @@ function tbAdminFunc.Logout(tbParam)
     return "success", true
 end
 
+-- 暂停游戏
+function tbAdminFunc.ChangePauseState(tbParam)
+    local runtime = GetTableRuntime()
+    runtime.bPause = tbParam.Pause or false
+    return "success", true
+end
+
 -- 重置 {FuncName = "DoReset"}
 function tbAdminFunc.DoReset(tbParam)
     local runtime = GetTableRuntime()

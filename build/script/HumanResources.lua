@@ -568,6 +568,7 @@ function HumanResources:PayOffSalary()
                 end
                 if plt > 0 then
                     user.tbSeasonReport.ExpenseDev.Platform = plt
+                    GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, plt)
                 end
                 if idle > 0 then
                     GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)

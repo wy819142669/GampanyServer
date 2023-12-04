@@ -15,6 +15,7 @@ require("DataStorage")
 local tbRuntimeData = {
     --==== 游戏整体运行信息 ====
     bPlaying = false,
+    bPause = false,     -- 游戏暂停时，非管理员无法进行任何操作
     nCurYear = 0,       -- 当前年份, 取值为0时，表示游戏未开始
     nCurSeason = 0,     -- 当前季度, 取值为0~4, 0表示新年开始时且1季度开始前
     nNewProductId = 0,  -- 新建项目的id值
@@ -45,7 +46,9 @@ function Action(jsonParam)
     local func = tbFunc.Action[tbParam.FuncName]
     local szMsg
     local bRet = false
-    if func then
+    if tbRuntimeData.bPause then
+        szMsg = "暂停游戏中！"
+    elseif func then
         szMsg, bRet, tbCustomData = func(tbParam)
         --简单处理，只要收到客户端来的指令就认为数据变更了
         DoUpdateGamerDataVersion(tbParam.Account)
