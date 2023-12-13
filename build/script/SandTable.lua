@@ -14,6 +14,7 @@ require("DataStorage")
 
 local tbRuntimeData = {
     --==== 游戏整体运行信息 ====
+    nGameRoundId = 0,   -- 游戏运行id, 不同id，则是不同次运行
     bPlaying = false,
     bPause = false,     -- 游戏暂停时，非管理员无法进行任何操作
     nCurYear = 0,       -- 当前年份, 取值为0时，表示游戏未开始
@@ -322,6 +323,16 @@ function DoUpdateGamerDataVersion(account)
     tbRuntimeData.nLastVersionTime = os.time()
 end
 
-print("╔════════════════════════════════════════════╗")
-print("║           Gampany © Seasun 2023            ║")
-print("╚════════════════════════════════════════════╝")
+function OnGampanyLaunched()
+    math.randomseed(os.time())
+    tbRuntimeData.nGameRoundId = math.random(100000000)
+
+    print("╔════════════════════════════════════════════╗")
+    print("║           Gampany © Seasun 2023            ║")
+    print("╚════════════════════════════════════════════╝")
+    local str = string.format("║           Game Round Id:%8d           ║", tbRuntimeData.nGameRoundId)
+    print(str)
+    print("╚════════════════════════════════════════════╝")
+end
+
+OnGampanyLaunched()

@@ -66,6 +66,7 @@ end
 function tbAdminFunc.DoReset(tbParam)
     local runtime = GetTableRuntime()
 
+    runtime.nGameRoundId = runtime.nGameRoundId + 1 
     runtime.bPlaying = false
     runtime.nCurYear = 0
     runtime.nCurSeason = 0
@@ -79,6 +80,10 @@ function tbAdminFunc.DoReset(tbParam)
     runtime.tbNpc = {}
     runtime.tbCategoryInfo = {}
 
+    local str = string.format("║           Game Round Id:%8d           ║", runtime.nGameRoundId)
+    print("╔════════════════════════════════════════════╗")
+    print(str)
+    print("╚════════════════════════════════════════════╝")
     return "success", true
 end
 
@@ -142,7 +147,6 @@ function tbAdminFunc.DoStart(tbParam)
         return "failed, no gamer", false
     end
 
-    math.randomseed(os.time())
     runtime.bPlaying = true
     runtime.nCurYear = tbParam.Year or 1
     runtime.nCurSeason = 0
