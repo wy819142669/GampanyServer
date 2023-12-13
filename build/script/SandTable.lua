@@ -49,6 +49,8 @@ function Action(jsonParam)
     local bRet = false
     if tbRuntimeData.bPause then
         szMsg = "暂停游戏中！"
+    elseif tbParam.GameRoundId ~= tbRuntimeData.nGameRoundId and tbParam.FuncName ~= "Login" then
+        szMsg = "已开始新游戏！"
     elseif func then
         szMsg, bRet, tbCustomData = func(tbParam)
         --简单处理，只要收到客户端来的指令就认为数据变更了
@@ -135,8 +137,12 @@ end
 function tbFunc.Action.HR(tbParam)
     local user = tbRuntimeData.tbUser[tbParam.Account]
     local func = HR[tbParam.Operate]
-    if func and (tbRuntimeData.nCurSeason ~= 0 or tbParam.Operate == "RaiseSalary")then
-        return func(tbParam, user)
+    if func then
+        if tbRuntimeData.nCurSeason ~= 0 or tbParam.Operate == "RaiseSalary" then
+            return func(tbParam, user)
+        else
+            return "年初仅可以进行调薪操作", false
+        end
     end
     return "invalid HR operate", false
 end
