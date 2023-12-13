@@ -175,7 +175,7 @@ function HR.Poach(tbParam, user)
             tbTargetUser.tbDepartManpower = tbTargetUser.tbDepartManpower or {}
             tbTargetUser.tbDepartManpower[lvl] = 1
         end
-        table.insert(tbTargetUser.tbTips, string.format("你的一个%d级员工提交了离职申请，将在下个季度初离开公司。", lvl))
+        table.insert(tbTargetUser.tbTips, string.format("一位%d级员工提出离职，将在下个季度初离开。", lvl))
     else
         nCost = math.floor(tbParam.nExpense * (1 - tbConfig.fPoachFailedReturnExpenseRatio))
         nCost = math.max(nCost, 1)

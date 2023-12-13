@@ -156,16 +156,6 @@ function tbAdminFunc.DoStart(tbParam)
     return "success", true
 end
 
-function tbAdminFunc.RecoverData(tbParam)
-    local tbData, szError = DataStorage:Load()
-    if not tbData then
-        return szError, false
-    end
-
-    RecoverTableRuntime(tbData)
-    return "success", true
-end
-
 function Administration:NewUser(name)
     local runtime = GetTableRuntime()
     local user = Lib.copyTab(tbInitTables.tbInitUserData)
