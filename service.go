@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"time"
 
 	//"jtwsm.net/gocode/utility/netutil"
 	//"net"
@@ -20,6 +21,7 @@ func Start(port int32) error {
 	http.HandleFunc("/query", doQuery)
 	http.HandleFunc("/action", doAction)
 	http.HandleFunc("/admin", doAdmin)
+	http.HandleFunc("/ping", doPing)
 
 	address := fmt.Sprintf(":%v", port)
 	err := http.ListenAndServe(address, nil)
@@ -58,4 +60,9 @@ func doAdmin(w http.ResponseWriter, r *http.Request) {
 
 	ret := CallLua("Admin", bodyString)
 	io.WriteString(w, ret)
+}
+
+func doPing(w http.ResponseWriter, r *http.Request) {
+    msg := time.Now().Format("[2006-01-02 15:04:05]  Gampany Ping OK!")
+   	io.WriteString(w, msg)
 }
