@@ -91,8 +91,14 @@ function tbAdminFunc.SetConfig(tbParam)
     if tbParam.Key == nil or tbParam.Value == nil then
         return "failed, need Key and Value", false
     end
+    if tbParam.Key == "AddCashForAll" then
+        if Administration:AddCashForAll(tbParam.Value) then
+            return "success", true
+        end
+        return "failed", false
+    end
     if tbConfig[tbParam.Key] == nil then
-        return "failed, Key:".. tbParam.Key .. "not exist", false
+        return "failed, Key:".. tbParam.Key .. " not exist", false
     end
     local old = tbConfig[tbParam.Key]
     if old ~= tbParam.Value then
@@ -158,6 +164,18 @@ function tbAdminFunc.DoStart(tbParam)
     SandTableStart()
 
     return "success", true
+end
+
+function Administration:AddCashForAll(delta)
+    local runtime = GetTableRuntime()
+    if runtime.bPlaying == false or delta < 0 then
+        return false
+    end
+    delta = math.floor(delta)
+    for _,user in pairs(runtime.tbUser) do
+        GameLogic:FIN_GM(user, delta)
+    end
+    return true
 end
 
 function Administration:NewUser(name)

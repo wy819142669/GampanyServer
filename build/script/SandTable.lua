@@ -335,7 +335,7 @@ function OnGampanyLaunched()
 
     print("╔════════════════════════════════════════════╗")
     print("║           Gampany © Seasun 2023            ║")
-    print("╚════════════════════════════════════════════╝")
+    print("╠════════════════════════════════════════════╣")
     local str = string.format("║           Game Round Id:%8d           ║", tbRuntimeData.nGameRoundId)
     print(str)
     print("╚════════════════════════════════════════════╝")
