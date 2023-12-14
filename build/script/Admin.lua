@@ -47,7 +47,8 @@ function tbAdminFunc.Login(tbParam)
     if tbParam.Password ~= tbConfig.szAdminPassword then
         return "failed, incorrect password", false
     end
-    return "success", true
+    local param = { GameRoundId = GetTableRuntime().nGameRoundId }
+    return "success", true, param
 end
 
 -- 登出 {FuncName = "Logout"}
