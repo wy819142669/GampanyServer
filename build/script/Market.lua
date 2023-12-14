@@ -104,6 +104,12 @@ function MarketMgr:OnRecover()
             end
         end
     end
+    for id, product in pairs(data.tbNpc.tbProduct) do
+        local info = data.tbCategoryInfo[product.Category]
+        if info then
+           info.tbPublishedProduct[id] = product
+        end
+    end
 end
 
 --玩家的某个产品，取消市场推广，退回市场费用

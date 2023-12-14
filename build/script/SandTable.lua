@@ -80,7 +80,13 @@ function GetTableRuntime()
 end
 
 function RecoverTableRuntime(tbData)
+    tbData.nGameRoundId = math.random(100000000)
     tbRuntimeData = tbData
+    --年报处理
+    local year = tbRuntimeData.nCurYear
+    for _, user in pairs(tbRuntimeData.tbUser) do
+        user.tbHistoryYearReport[year] = user.tbYearReport 
+    end
     MarketMgr:OnRecover()
 end
 
