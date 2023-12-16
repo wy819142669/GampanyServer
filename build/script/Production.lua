@@ -122,18 +122,15 @@ function Production:GetProductLoopSequence(tbProductList)
     return tbResult
 end
 
-function Production:PostSeason()
-    local tbRuntimeData = GetTableRuntime()
-    for _, user in pairs(tbRuntimeData.tbUser) do
-        for _, product in pairs(self:GetProductLoopSequence(user.tbProduct)) do
-            -- 研发/翻新中都需要执行UpdateWorkload函数
-            if GameLogic:PROD_IsDeveloping(product) then
-                Production:UpdateWorkload(product, user)
-            end
-            -- 发布后都需要团队维持品质
-            if GameLogic:PROD_IsPublished(product) then
-                Production:UpdatePublished(product, user)
-            end
+function Production:PostSeason(user)
+    for _, product in pairs(self:GetProductLoopSequence(user.tbProduct)) do
+        -- 研发/翻新中都需要执行UpdateWorkload函数
+        if GameLogic:PROD_IsDeveloping(product) then
+            Production:UpdateWorkload(product, user)
+        end
+        -- 发布后都需要团队维持品质
+        if GameLogic:PROD_IsPublished(product) then
+            Production:UpdatePublished(product, user)
         end
     end
 end

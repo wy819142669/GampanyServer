@@ -226,68 +226,65 @@ function HR.Reassign(tbParam, user)
     return "success", true
 end
 
-function HumanResources:SettleDepart()
-    local tbRuntimeData = GetTableRuntime()
-    for _, user in pairs(tbRuntimeData.tbUser) do
-        if user.tbDepartManpower then
-            local totalCount = 0
-            for i = 1, tbConfig.nManpowerMaxExpLevel do -- #user.tbDepartManpower
-                if user.tbDepartManpower[i] then
-                    local nNum = user.tbDepartManpower[i]
-                    if nNum > 0 then
-                        local nCount = math.min(nNum, user.tbFireManpower[i])
-                        if nCount > 0 then
-                            nNum = nNum - nCount
-                            user.tbFireManpower[i] = user.tbFireManpower[i] - nCount
-                            totalCount = totalCount + nCount
-                        end
-
-                        nCount = math.min(nNum, user.tbIdleManpower[i])
-                        if nCount > 0 then
-                            nNum = nNum - nCount
-                            user.tbIdleManpower[i] = user.tbIdleManpower[i] - nCount
-                            totalCount = totalCount + nCount
-                        end
-
-                        for id, product in pairs(user.tbProduct) do
-                            nCount = math.min(nNum, product.tbManpower[i])
-                            if nCount > 0 then
-                                nNum = nNum - nCount
-                                product.tbManpower[i] = product.tbManpower[i] - nCount
-                                totalCount = totalCount + nCount
-                                SeasonReportAddAffectedProject(user, product, "Poached")
-                            end
-                            if nNum == 0 then
-                                break
-                            end
-                        end
-                        assert(nNum == 0)
-                    end
-                    user.nTotalManpower = user.nTotalManpower - user.tbDepartManpower[i]
-                    user.tbDepartManpower[i] = 0
+function HumanResources:SettleDepart(user)
+    if user.tbDepartManpower == nil then
+        return
+    end 
+    local totalCount = 0
+    for i = 1, tbConfig.nManpowerMaxExpLevel do -- #user.tbDepartManpower
+        if user.tbDepartManpower[i] then
+            local nNum = user.tbDepartManpower[i]
+            if nNum > 0 then
+                local nCount = math.min(nNum, user.tbFireManpower[i])
+                if nCount > 0 then
+                    nNum = nNum - nCount
+                    user.tbFireManpower[i] = user.tbFireManpower[i] - nCount
+                    totalCount = totalCount + nCount
                 end
+
+                nCount = math.min(nNum, user.tbIdleManpower[i])
+                if nCount > 0 then
+                    nNum = nNum - nCount
+                    user.tbIdleManpower[i] = user.tbIdleManpower[i] - nCount
+                    totalCount = totalCount + nCount
+                end
+
+                for id, product in pairs(user.tbProduct) do
+                    nCount = math.min(nNum, product.tbManpower[i])
+                    if nCount > 0 then
+                        nNum = nNum - nCount
+                        product.tbManpower[i] = product.tbManpower[i] - nCount
+                        totalCount = totalCount + nCount
+                        SeasonReportAddAffectedProject(user, product, "Poached")
+                    end
+                    if nNum == 0 then
+                        break
+                    end
+                end
+                assert(nNum == 0)
             end
-            HumanResources:UpdateJobManpower(user)
-            if totalCount > 0 then
-                user.tbSeasonReport.HR.Poached = totalCount
-            end
+            user.nTotalManpower = user.nTotalManpower - user.tbDepartManpower[i]
+            user.tbDepartManpower[i] = 0
         end
     end
+    HumanResources:UpdateJobManpower(user)
+    if totalCount > 0 then
+        user.tbSeasonReport.HR.Poached = totalCount
+    end
+    user.tbDepartManpower = nil
 end
 
-function HumanResources:SettlePoach()
-    local tbRuntimeData = GetTableRuntime()
-    for _, user in pairs(tbRuntimeData.tbUser) do
-        if user.tbPoach then
-            if user.tbPoach.bSuccess then
-                user.tbIdleManpower[user.tbPoach.nLevel] = user.tbIdleManpower[user.tbPoach.nLevel] + 1
-                user.nTotalManpower = user.nTotalManpower + 1
-                user.tbSeasonReport.HR.Poach = 1
-            end
-            user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + user.tbPoach.nExpense
-            user.tbPoach = nil
-        end
+function HumanResources:SettlePoach(user)
+    if user.tbPoach == nil then
+        return
     end
+    if user.tbPoach.bSuccess then
+        user.tbIdleManpower[user.tbPoach.nLevel] = user.tbIdleManpower[user.tbPoach.nLevel] + 1
+        user.nTotalManpower = user.nTotalManpower + 1
+        user.tbSeasonReport.HR.Poach = 1
+    end
+    user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + user.tbPoach.nExpense
+    user.tbPoach = nil
 end
 
 -- 人才市场予以处理各企业的招聘计划
@@ -395,65 +392,61 @@ function HumanResources:AddNewManpower()
     end
 end
 
-function HumanResources:SettleFire()
-    local tbRuntimeData = GetTableRuntime()
-    for _, user in pairs(tbRuntimeData.tbUser) do
-        local count = 0
-        for i = 1, tbConfig.nManpowerMaxExpLevel do
-            if user.tbFireManpower[i] > 0 then
-                tbRuntimeData.tbManpowerInMarket[i] = tbRuntimeData.tbManpowerInMarket[i] + user.tbFireManpower[i]
-                user.nTotalManpower = user.nTotalManpower - user.tbFireManpower[i]
-                count = count + user.tbFireManpower[i]
-                user.tbFireManpower[i] = 0
-            end
+function HumanResources:SettleFire(user)
+    local runtime = GetTableRuntime()
+    local count = 0
+    for i = 1, tbConfig.nManpowerMaxExpLevel do
+        if user.tbFireManpower[i] > 0 then
+            runtime.tbManpowerInMarket[i] = runtime.tbManpowerInMarket[i] + user.tbFireManpower[i]
+            user.nTotalManpower = user.nTotalManpower - user.tbFireManpower[i]
+            count = count + user.tbFireManpower[i]
+            user.tbFireManpower[i] = 0
         end
-        if count > 0 then
-            user.tbSeasonReport.HR.Fire = count
-        end
+    end
+    if count > 0 then
+        user.tbSeasonReport.HR.Fire = count
     end
 end
 
-function HumanResources:SettleTrain()
-    local tbRuntimeData = GetTableRuntime()
-    for name, user in pairs(tbRuntimeData.tbUser) do
-        if user.tbTrainManpower then
-            local totalCount = 0
-            local commitCount = 0
-            for i = tbConfig.nManpowerMaxExpLevel - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
-                if user.tbTrainManpower[i] > 0 then
-                    commitCount = commitCount + user.tbTrainManpower[i]
-                    for _, product in pairs(user.tbProduct) do -- TODO：改成按照产品优先级排序
-                        if product.tbManpower[i] > 0 and user.tbTrainManpower[i] > 0 then
-                            local nLevelUpCount = math.min(product.tbManpower[i], user.tbTrainManpower[i])
-                            if nLevelUpCount > 0 then
-                                user.tbTrainManpower[i] = user.tbTrainManpower[i] - nLevelUpCount
-                                product.tbManpower[i] = product.tbManpower[i] - nLevelUpCount
-                                product.tbManpower[i + 1] = product.tbManpower[i + 1] + nLevelUpCount
-                                totalCount = totalCount + nLevelUpCount
-                                SeasonReportAddAffectedProject(user, product, "Train")
-                            end
-                        end
+function HumanResources:SettleTrain(user)
+    if user.tbTrainManpower == nil then
+        return
+    end
+    local totalCount = 0
+    local commitCount = 0
+    for i = tbConfig.nManpowerMaxExpLevel - 1, 1, -1 do -- 从高到低遍历， 防止某级没有员工了但是设置了培训，会出现某员工连升级2次的情况
+        if user.tbTrainManpower[i] > 0 then
+            commitCount = commitCount + user.tbTrainManpower[i]
+            for _, product in pairs(user.tbProduct) do -- TODO：改成按照产品优先级排序
+                if product.tbManpower[i] > 0 and user.tbTrainManpower[i] > 0 then
+                    local nLevelUpCount = math.min(product.tbManpower[i], user.tbTrainManpower[i])
+                    if nLevelUpCount > 0 then
+                        user.tbTrainManpower[i] = user.tbTrainManpower[i] - nLevelUpCount
+                        product.tbManpower[i] = product.tbManpower[i] - nLevelUpCount
+                        product.tbManpower[i + 1] = product.tbManpower[i + 1] + nLevelUpCount
+                        totalCount = totalCount + nLevelUpCount
+                        SeasonReportAddAffectedProject(user, product, "Train")
                     end
-                    if user.tbTrainManpower[i] > 0 then
-                        local nLevelUpCount = math.min(user.tbIdleManpower[i], user.tbTrainManpower[i])
-                        if nLevelUpCount > 0 then
-                            user.tbTrainManpower[i] = user.tbTrainManpower[i] - nLevelUpCount
-                            user.tbIdleManpower[i] = user.tbIdleManpower[i] - nLevelUpCount
-                            user.tbIdleManpower[i + 1] = user.tbIdleManpower[i + 1] + nLevelUpCount
-                            totalCount = totalCount + nLevelUpCount
-                        end
-                    end
-                    --若有多余，那是本季度离职的人
                 end
             end
-            if totalCount > 0 then
-                user.tbSeasonReport.HR.Train = totalCount
+            if user.tbTrainManpower[i] > 0 then
+                local nLevelUpCount = math.min(user.tbIdleManpower[i], user.tbTrainManpower[i])
+                if nLevelUpCount > 0 then
+                    user.tbTrainManpower[i] = user.tbTrainManpower[i] - nLevelUpCount
+                    user.tbIdleManpower[i] = user.tbIdleManpower[i] - nLevelUpCount
+                    user.tbIdleManpower[i + 1] = user.tbIdleManpower[i + 1] + nLevelUpCount
+                    totalCount = totalCount + nLevelUpCount
+                end
             end
-            HumanResources:UpdateJobManpower(user)
-            user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + commitCount * tbConfig.nSalary
+            --若有多余，那是本季度离职的人
         end
-        user.tbTrainManpower = nil
     end
+    if totalCount > 0 then
+        user.tbSeasonReport.HR.Train = totalCount
+    end
+    HumanResources:UpdateJobManpower(user)
+    user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + commitCount * tbConfig.nSalary
+    user.tbTrainManpower = nil
 end
 
 function HumanResources:UpdateAllUserManpower()
@@ -548,36 +541,33 @@ function HumanResources:SalaryByPosition(user, amount)
     return salary[1], salary[2], salary[3], salary[4]
 end
 
-function HumanResources:PayOffSalary()
-    local tbRuntimeData = GetTableRuntime()
-    for _, user in pairs(tbRuntimeData.tbUser) do
-        local nCost = user.nTotalManpower * GameLogic:HR_GetSalary(user.nSalaryLevel)
-        nCost = math.floor(nCost + 0.5)
-        if nCost > 0 then
-            if GameLogic:FIN_Pay_Bankruptcy(user, nil, nCost) then
-                -- 分类记账
-                local dev, pub, plt, idle = HumanResources:SalaryByPosition(user, nCost)
-                if pub > 0 then
-                    user.tbSeasonReport.ExpenseDev.Pub = pub
-                    GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Pub, pub)
-                    
-                end
-                if dev > 0 then
-                    user.tbSeasonReport.ExpenseDev.New = dev
-                    GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, dev)
-                end
-                if plt > 0 then
-                    user.tbSeasonReport.ExpenseDev.Platform = plt
-                    GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, plt)
-                end
-                if idle > 0 then
-                    GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)
-                    user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + idle
-                end                
-            else
-                if not user.bBankruptcy then
-                    GameLogic:Bankruptcy(user)
-                end
+function HumanResources:PayOffSalary(user)
+    local nCost = user.nTotalManpower * GameLogic:HR_GetSalary(user.nSalaryLevel)
+    nCost = math.floor(nCost + 0.5)
+    if nCost > 0 then
+        if GameLogic:FIN_Pay_Bankruptcy(user, nil, nCost) then
+            -- 分类记账
+            local dev, pub, plt, idle = HumanResources:SalaryByPosition(user, nCost)
+            if pub > 0 then
+                user.tbSeasonReport.ExpenseDev.Pub = pub
+                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Pub, pub)
+                
+            end
+            if dev > 0 then
+                user.tbSeasonReport.ExpenseDev.New = dev
+                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, dev)
+            end
+            if plt > 0 then
+                user.tbSeasonReport.ExpenseDev.Platform = plt
+                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, plt)
+            end
+            if idle > 0 then
+                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)
+                user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + idle
+            end                
+        else
+            if not user.bBankruptcy then
+                GameLogic:Bankruptcy(user)
             end
         end
     end

@@ -259,9 +259,9 @@ function DoPostSeason()
 
     for _, user in pairs(tbRuntimeData.tbUser) do
         PrepairSeasonReport(user)
+        HumanResources:PayOffSalary(user)   -- 支付薪水
+        Production:PostSeason(user)         -- 推进研发进度,更新产品品质
     end
-    HumanResources:PayOffSalary()   -- 支付薪水
-    Production:PostSeason()         -- 推进研发进度,更新产品品质
     MarketMgr:PostSeason()          -- 更新市场竞标结果 -- 获取上个季度市场收益
 
     ---------------------------------------
@@ -269,12 +269,12 @@ function DoPostSeason()
         info.newPublished = {}      --清空新产品列表
     end
 
-    HumanResources:SettleDepart()   -- 办理离职（交付流失员工）
-    HumanResources:SettleFire()     -- 解雇人员离职
-    HumanResources:SettleTrain()    -- 培训中的员工升级
-    HumanResources:SettlePoach()    -- 成功挖掘的人才入职
     HumanResources:SettleHire()     -- 人才市场招聘结果
     for _, user in pairs(tbRuntimeData.tbUser) do
+        HumanResources:SettlePoach(user)    -- 成功挖掘的人才入职
+        HumanResources:SettleFire(user)     -- 解雇人员离职
+        HumanResources:SettleTrain(user)    -- 培训中的员工升级
+        HumanResources:SettleDepart(user)   -- 办理离职（交付流失员工）
         FinalizeSeasonReport(user)
     end
 end
