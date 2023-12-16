@@ -142,6 +142,9 @@ end
 
 function tbFunc.Action.HR(tbParam)
     local user = tbRuntimeData.tbUser[tbParam.Account]
+    if user.bBankruptcy then
+        return "破产状态，不能开展业务！", false
+    end
     local func = HR[tbParam.Operate]
     if func then
         if tbRuntimeData.nCurSeason ~= 0 or tbParam.Operate == "RaiseSalary" then
@@ -155,6 +158,9 @@ end
 
 function tbFunc.Action.Develop(tbParam)
     local user = tbRuntimeData.tbUser[tbParam.Account]
+    if user.bBankruptcy then
+        return "破产状态，不能开展业务！", false
+    end
     local func = Develop[tbParam.Operate]
     if func and tbRuntimeData.nCurSeason ~= 0 then
         return func(tbParam, user)
@@ -259,22 +265,22 @@ function DoPostSeason()
 
     for _, user in pairs(tbRuntimeData.tbUser) do
         PrepairSeasonReport(user)
-        HumanResources:PayOffSalary(user)   -- 支付薪水
-        Production:PostSeason(user)         -- 推进研发进度,更新产品品质
-    end
-    MarketMgr:PostSeason()          -- 更新市场竞标结果 -- 获取上个季度市场收益
-
-    ---------------------------------------
-    for _, info in pairs(tbRuntimeData.tbCategoryInfo) do
-        info.newPublished = {}      --清空新产品列表
+        if not user.bBankruptcy then
+            HumanResources:CalcSalary(user)     -- 计算薪资
+            Production:PostSeason(user)         -- 推进研发进度,更新产品品质            
+        end
     end
 
-    HumanResources:SettleHire()     -- 人才市场招聘结果
+    MarketMgr:PostSeason()                      -- 更新市场竞标结果 -- 获取上个季度市场收益
+    HumanResources:PayOffSalary()               -- 支付薪水
+    HumanResources:SettleHire()                 -- 人才市场招聘结果
     for _, user in pairs(tbRuntimeData.tbUser) do
-        HumanResources:SettlePoach(user)    -- 成功挖掘的人才入职
-        HumanResources:SettleFire(user)     -- 解雇人员离职
-        HumanResources:SettleTrain(user)    -- 培训中的员工升级
-        HumanResources:SettleDepart(user)   -- 办理离职（交付流失员工）
+        if not user.bBankruptcy then
+            HumanResources:SettlePoach(user)    -- 成功挖掘的人才入职
+            HumanResources:SettleTrain(user)    -- 培训中的员工升级
+            HumanResources:SettleDepart(user)   -- 办理离职（交付流失员工）
+        end
+        HumanResources:SettleFire(user)         -- 解雇人员离职
         FinalizeSeasonReport(user)
     end
 end

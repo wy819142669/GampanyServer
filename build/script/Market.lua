@@ -419,7 +419,10 @@ function MarketMgr:PostSeason()
     MarketMgr:DistributionMarket()      -- 各品类内部，根据产品品质情况与市场费用，分配份额
     MarketMgr:GainRevenue()             -- 获得收益
     if tbConfig.bLogNpcProducts then
-        MarketMgr:LogNpcProducts()          -- 输出npc产品信息
+        MarketMgr:LogNpcProducts()      -- 输出npc产品信息
+    end
+    for _, info in pairs(GetTableRuntime().tbCategoryInfo) do
+        info.newPublished = {}          --清空新产品列表
     end
 end
 

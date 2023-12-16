@@ -5,10 +5,6 @@ Production = {}    --研发模块的内部函数
 
 -- 立项 {FuncName = "Develop", Operate = "NewProduct", Category="A" }
 function Develop.NewProduct(tbParam, user)
-    if user.bBankruptcy then
-        return "破产状态无法立项", false
-    end
-    
     if tbParam.Category == nil then
         return "立项需要指明品类", false
     end

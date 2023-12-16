@@ -296,7 +296,7 @@ tbInitTables = {
             In = 0,             -- 季度流入现金（暨总销售收入）
             Out = 0,            -- 季度流出现金（总开支）
         },
-        ExpenseDev = {          -- 研发费用
+        ExpenseSalary = {          -- 研发费用
             -- Pub = 0,         -- 已发布（在线）产品
             -- New = 0,         -- 新产品
             -- Platform = 0,    -- 平台

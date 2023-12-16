@@ -297,18 +297,36 @@ end
 function GameLogic:Bankruptcy(user)
     user.bBankruptcy = true
     user.nBankruptcyCount = user.nBankruptcyCount + 1
-
+    -- 关闭全部产品
     for _, product in pairs(user.tbProduct) do
         Production:Close(product, user)
     end
 
+    -- 各种人事操作，记录开销，并取消操作
+    local expense = user.tbSeasonReport.ExpenseOthers
+    if user.tbPoach then
+        expense.HR = expense.HR + user.tbPoach.nExpense
+        user.tbPoach = nil
+    end
+    if user.tbHire then
+        expense.HR = expense.HR + user.tbHire.nExpense
+        user.tbHire = nil
+    end
+    if user.tbTrainManpower then
+        local commitCount = 0
+        for i = 1, tbConfig.nManpowerMaxExpLevel - 1 do
+            commitCount = commitCount + user.tbTrainManpower[i]                
+        end
+        expense.HR = expense.HR + commitCount * tbConfig.nSalary
+        user.tbTrainManpower = nil
+    end
+    user.tbDepartManpower = nil
+
+    -- 解雇全部员工
     for i = 1, tbConfig.nManpowerMaxExpLevel do
         user.tbFireManpower[i] = user.tbFireManpower[i] + user.tbIdleManpower[i]
         user.tbIdleManpower[i] = 0
     end
-
 --    user.nCash = 0
-    user.tbPoach = nil
-    user.tbHire = nil
     table.insert(user.tbTips, "你已经破产，明年再重整旗鼓。")
 end

@@ -229,7 +229,7 @@ end
 function HumanResources:SettleDepart(user)
     if user.tbDepartManpower == nil then
         return
-    end 
+    end
     local totalCount = 0
     for i = 1, tbConfig.nManpowerMaxExpLevel do -- #user.tbDepartManpower
         if user.tbDepartManpower[i] then
@@ -541,34 +541,42 @@ function HumanResources:SalaryByPosition(user, amount)
     return salary[1], salary[2], salary[3], salary[4]
 end
 
-function HumanResources:PayOffSalary(user)
+function HumanResources:CalcSalary(user)
     local nCost = user.nTotalManpower * GameLogic:HR_GetSalary(user.nSalaryLevel)
     nCost = math.floor(nCost + 0.5)
     if nCost > 0 then
-        if GameLogic:FIN_Pay_Bankruptcy(user, nil, nCost) then
-            -- 分类记账
-            local dev, pub, plt, idle = HumanResources:SalaryByPosition(user, nCost)
-            if pub > 0 then
-                user.tbSeasonReport.ExpenseDev.Pub = pub
-                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Pub, pub)
-                
+        -- 分类记账
+        local dev, pub, plt, idle = HumanResources:SalaryByPosition(user, nCost)
+        if pub > 0 then
+            user.tbSeasonReport.ExpenseSalary.Pub = pub
+            GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Pub, pub)
+        end
+        if dev > 0 then
+            user.tbSeasonReport.ExpenseSalary.New = dev
+            GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, dev)                
+        end
+        if plt > 0 then
+            user.tbSeasonReport.ExpenseSalary.Platform = plt
+            GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, plt)
+        end
+        if idle > 0 then
+            user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + idle
+            GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)
+        end
+        user.tbSeasonReport.ExpenseSalary.Total = nCost
+    end
+end
+
+function HumanResources:PayOffSalary()
+    for _, user in pairs(GetTableRuntime().tbUser) do
+        if not user.bBankruptcy then
+            local nCost = user.tbSeasonReport.ExpenseSalary.Total or 0
+            if nCost > 0 then
+                if GameLogic:FIN_Pay_Bankruptcy(user, nil, nCost) == false then
+                    GameLogic:Bankruptcy(user)
+                end
             end
-            if dev > 0 then
-                user.tbSeasonReport.ExpenseDev.New = dev
-                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, dev)
-            end
-            if plt > 0 then
-                user.tbSeasonReport.ExpenseDev.Platform = plt
-                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.Salary_Dev, plt)
-            end
-            if idle > 0 then
-                GameLogic:FIN_ModifyReport(user.tbYearReport, tbConfig.tbFinClassify.HR, idle)
-                user.tbSeasonReport.ExpenseOthers.HR = user.tbSeasonReport.ExpenseOthers.HR + idle
-            end                
-        else
-            if not user.bBankruptcy then
-                GameLogic:Bankruptcy(user)
-            end
+            user.tbSeasonReport.ExpenseSalary.Total = nil            
         end
     end
 end
