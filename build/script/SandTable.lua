@@ -312,14 +312,7 @@ function DoPreYear()
         tbUser.tbHistoryYearReport[tbRuntimeData.nCurYear] = tbUser.tbYearReport
 
         if tbUser.bBankruptcy then
-            local newUser = Administration:NewUser(name)
-            newUser.nBankruptcyCount = tbUser.nBankruptcyCount
-            newUser.tbHistoryYearReport = tbUser.tbHistoryYearReport
-            newUser.tbSeasonReport = tbUser.tbSeasonReport
-            newUser.tbTips = tbUser.tbTips
-
-            GameLogic:HR_RestartInitManpower(newUser)
-
+            DoUserRestart(tbUser, name)
             bNeedUpdateManpower = true
         end
     end
@@ -327,6 +320,15 @@ function DoPreYear()
     if bNeedUpdateManpower then
         HumanResources:UpdateAllUserManpower()
     end
+end
+
+function DoUserRestart(user, name)
+    local newUser = Administration:NewUser(name)
+    newUser.nBankruptcyCount = user.nBankruptcyCount
+    newUser.tbHistoryYearReport = user.tbHistoryYearReport
+    newUser.tbSeasonReport = user.tbSeasonReport
+    newUser.tbTips = user.tbTips
+    GameLogic:HR_RestartInitManpower(newUser)
 end
 
 -- 更新玩家数据版本

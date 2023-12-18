@@ -128,7 +128,7 @@ function tbAdminFunc.SetProductConfig(tbParam)
 end
 
 function tbAdminFunc.ModifyUserData(tbParam)
-    if tbParam.Key == nil or tbParam.UserName == nil or tbParam.Value == nil then
+    if tbParam.Key == nil or tbParam.UserName == nil or (tbParam.Value == nil and tbParam.Key ~= "Restart") then
         return "failed, need Key, Name and Value", false
     end
     local runtime = GetTableRuntime()
@@ -141,6 +141,11 @@ function tbAdminFunc.ModifyUserData(tbParam)
         GameLogic:FIN_GM(user, tbParam.Value)
     elseif tbParam.Key == "Password" then
         runtime.tbLoginAccount[tbParam.UserName].password = tbParam.Value
+    elseif tbParam.Key == "Restart" then
+        if user.bBankruptcy then
+            DoUserRestart(user, tbParam.UserName)
+            HumanResources:UpdateAllUserManpower()
+        end
     end
     return "success", true
 end
