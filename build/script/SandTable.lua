@@ -326,6 +326,7 @@ function DoUserRestart(user, name)
     local newUser = Administration:NewUser(name)
     newUser.nBankruptcyCount = user.nBankruptcyCount
     newUser.tbHistoryYearReport = user.tbHistoryYearReport
+    newUser.tbYearReport = newUser.tbHistoryYearReport[tbRuntimeData.nCurYear] 
     newUser.tbSeasonReport = user.tbSeasonReport
     newUser.tbTips = user.tbTips
     GameLogic:HR_RestartInitManpower(newUser)
