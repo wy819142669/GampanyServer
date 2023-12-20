@@ -69,6 +69,7 @@ function tbAdminFunc.DoReset(tbParam)
 
     runtime.nGameRoundId = runtime.nGameRoundId + 1 
     runtime.bPlaying = false
+    runtime.bPause = false
     runtime.nCurYear = 0
     runtime.nCurSeason = 0
     runtime.nNewProductId = 0
