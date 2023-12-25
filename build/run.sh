@@ -1,3 +1,3 @@
 
-nohup ./SandTableServer>log.txt 2>&1 &
+nohup ./GampanyServer>log.txt 2>&1 &
 
